@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-SQLALCHEMY_DATABASE_URL = "mysql+pymysql://root:@localhost/rentdao_db" #The connection string
+SQLALCHEMY_DATABASE_URL = "mysql+pymysql://root:@127.0.0.1:3306/rentdao_db" #The connection string  (this might not work on the host pc, change it localhost if it doesnt)
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL) # The Engine is the actual connection to the database
 

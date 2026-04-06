@@ -18,11 +18,19 @@
         
         <button type="submit">Add Item</button>
     </form>
+
     
-    <hr> <ul>
+    
+    <hr> 
+    
+    <ul> <!-- Deleting an item --> 
         {% for item in items %}
             <li>
                 <strong>{{ item.name }}</strong> - {{ item.description }}
+                
+                <form action="/items/delete/{{ item.id }}" method="post" style="display:inline;">
+                    <button type="submit">Delete</button>
+                </form>
             </li>
         {% endfor %}
     </ul>

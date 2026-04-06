@@ -35,6 +35,19 @@ def create_item(
     
     return RedirectResponse(url = "/items" , status_code=303)
 
+@app.post("/items/delete/{item_id}")
+def delete_item(
+    item_id: int , #The id that would be deleted
+    db: Session = Depends(get_db)
+):
+    #Finding that item
+    item= db.query(models.Item).filter(models.Item.id== item_id).first()
+
+    if item: #checking if the item really exists
+        db.delete(item)
+        db.commit()
+    
+    return RedirectResponse(url = "/items" , status_code=303)
 
 #push
 #uvicorn main:app --reload

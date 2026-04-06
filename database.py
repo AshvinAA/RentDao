@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
 
-SQLALCHEMY_DATABASE_URL = "mysql+pymysql://root:@127.0.0.1:3306/rentdao_db" #The connection string  (this might not work on the host pc, change it localhost if it doesnt)
+SQLALCHEMY_DATABASE_URL = "mysql+pymysql://bYQ197N8JPYfXq4.root:zE4l9vk6EZPTabRl@gateway01.ap-southeast-1.prod.aws.tidbcloud.com:4000/rentdao?ssl_verify_cert=true&ssl_verify_identity=true" #The connection string  (this might not work on the host pc, change it localhost if it doesnt)
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL) # The Engine is the actual connection to the database
 
@@ -15,3 +15,5 @@ def get_db():   #this works as a open and close mechanism for the database , so 
         yield db        #acts as a pause button and opens the database connection to read/write data \
     finally:
         db.close() #shuts down the connection after the job is done
+
+

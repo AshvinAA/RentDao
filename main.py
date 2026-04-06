@@ -36,7 +36,7 @@ def create_item(
     return RedirectResponse(url = "/items" , status_code=303)
 
 
-
+#push
 #uvicorn main:app --reload
 #source venv/Scripts/activate
 

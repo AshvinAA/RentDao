@@ -16,7 +16,7 @@ templates = Jinja2Templates(directory="templates")  #creates a Jinja2 object and
 @app.get("/")
 def read_root(request: Request):#request is a variable that basically catches all our data and packs them into our request variable
     # format for templates=         inside index html we would perform a request and the message that would be passed is "message"
-    return templates.TemplateResponse("index.html" , {"request": request , "message": "Welcomes to RentDao's new frontend"})
+    return templates.TemplateResponse("index.html" , {"request": request , "message": "Welcomes to RentDao's new crazy frontend "})
 
 @app.get("/items")
 def read_items(request: Request , db: Session = Depends(get_db)):

@@ -2,7 +2,7 @@ from fastapi import APIRouter, Request, Depends
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
-import models
+import models, math
 from database import get_db
 from forms import ItemCreateForm
 
@@ -12,9 +12,28 @@ templates = Jinja2Templates(directory="templates")
 
 
 @router.get("/items")
-def read_items(request: Request , db: Session = Depends(get_db)):
-    items= db.query(models.Item).all()
-    return templates.TemplateResponse("items.html",{"request":request , "items":items})
+def read_items(request: Request , db: Session = Depends(get_db), page: int =1, limit: int=5): #calculating how many items to show on the page
+    # Calculate how many items to skip based on the current page
+    # e.g. page 2 with limit 5 → skip the first 10 items
+    offset = (page - 1) * limit
+    
+    # Get the total number of items in the database (needed to calculate total pages)
+    total = db.query(models.Item).count()
+    
+    # Fetch only the items for the current page
+    items = db.query(models.Item).offset(offset).limit(limit).all()
+    
+    # Round up so partial pages still get their own page number
+    # e.g. 11 items with limit 5 → 3 pages, not 2
+    total_pages = math.ceil(total / limit)
+    
+    # Pass everything to the template — page and total_pages drive the pagination buttons
+    return templates.TemplateResponse("items.html", {
+        "request": request,
+        "items": items,
+        "page": page,
+        "total_pages": total_pages
+    })
 
 @router.post("/items")
 def create_item(

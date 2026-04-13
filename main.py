@@ -1,7 +1,7 @@
 from fastapi import FastAPI,Request,Depends,Form
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
-import models
+import models, math
 from sqlalchemy.orm import Session
 from database import engine,get_db
 from forms import ItemCreateForm
@@ -19,10 +19,20 @@ def read_root(request: Request):#request is a variable that basically catches al
     return templates.TemplateResponse("index.html" , {"request": request , "message": "Welcomes to RentDao's new frontend"})
 
 @app.get("/items")
-def read_items(request: Request , db: Session = Depends(get_db)):
-    items= db.query(models.Item).all()
-    return templates.TemplateResponse("items.html",{"request":request , "items":items})
-
+def read_items(request: Request , db: Session = Depends(get_db), page: int =1, limit: int=5):
+    offset = (page-1)*limit
+    total = db.query(models.Item).count()
+    items = db.query(models.Item).offset(offset).limit(limit).all()
+    total_pages=math.ceil(total/limit)
+    
+    return templates.TemplateResponse("items.html", {
+        "request":request,
+        "items": items,
+        "page": page,
+        "total_pages":total_pages
+    }
+      )
+    
 @app.post("/items")
 def create_item(
     form_data: ItemCreateForm = Depends(), #catching the whole form at once

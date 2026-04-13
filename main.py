@@ -5,6 +5,7 @@ import models
 from sqlalchemy.orm import Session
 from database import engine,get_db
 from forms import ItemCreateForm
+from security import get_password_hash
 
 app = FastAPI()
 
@@ -48,6 +49,44 @@ def delete_item(
         db.commit()
     
     return RedirectResponse(url = "/items" , status_code=303)
+
+
+@app.post("/register")
+def register_user(
+    email: str = Form(...),        
+    name: str = Form(...),         
+    password: str = Form(...),
+    location: str = Form(...),
+    phone_no: str = Form(...),
+    picture: str = Form(None),     
+    payment_option: str = Form(...),
+    db: Session = Depends(get_db)
+):
+    hashed_pw = get_password_hash(password)
+
+    
+    new_user = models.User(
+        email=email,
+        name=name,
+        hashed_password=hashed_pw,
+        picture=picture,
+        location=location,
+        phone_no=phone_no,
+        payment_option=payment_option
+    )
+
+    db.add(new_user)
+    db.commit()
+
+    return RedirectResponse(url='/login', status_code=303)
+
+@app.get("/register")
+def show_register_page(request: Request):
+    return templates.TemplateResponse("register.html" , {"request": request})
+
+
+
+
 
 #push
 #uvicorn main:app --reload

@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Register - RentDao</title>
+    <style>
+        body { font-family: sans-serif; margin: 40px; line-height: 1.6; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: bold; margin-bottom: 5px; }
+        input, select { width: 100%; padding: 8px; max-width: 400px; border: 1px solid #ccc; border-radius: 4px; }
+        button, .btn { background-color: #28a745; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; text-decoration: none; display: inline-block; }
+        button:hover, .btn:hover { background-color: #218838; }
+        
+        .error-message { 
+            color: white; background-color: #dc3545; padding: 10px; border-radius: 4px; max-width: 400px; margin-bottom: 15px; font-weight: bold;
+        }
+        .links { margin-top: 20px; font-size: 0.9em; }
+
+        /* --- NEW MODAL (POPUP) CSS --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.6); /* Semi-transparent black background */
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000;
+        }
+        
+        .modal-box {
+            background-color: white; padding: 30px; border-radius: 8px;
+            max-width: 400px; text-align: center; box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        .modal-box h2 { color: #dc3545; margin-top: 0; }
+        .modal-box p { margin-bottom: 25px; }
+        
+        .btn-blue { background-color: #007bff; }
+        .btn-blue:hover { background-color: #0056b3; }
+        .btn-gray { background-color: #6c757d; margin-left: 10px; }
+        .btn-gray:hover { background-color: #5a6268; }
+    </style>
+</head>
+<body>
+
+    <h1>Create your RentDao Account</h1>
+
+    {% if error %}
+        {% if error == 'User already exists' %}
+            <div class="modal-overlay" id="errorPopup">
+                <div class="modal-box">
+                    <h2>⚠️ User Already Exists</h2>
+                    <p>An account with that email address is already registered in RentDao.</p>
+                    
+                    <a href="/login" class="btn btn-blue">Go to Login</a>
+                    
+                    <button class="btn btn-gray" onclick="document.getElementById('errorPopup').style.display='none'">Try Different Email</button>
+                </div>
+            </div>
+        {% else %}
+            <div class="error-message">
+                ⚠️ {{ error }}
+            </div>
+        {% endif %}
+    {% endif %}
+
+
+    <form action="/register" method="POST" enctype="multipart/form-data">
+        
+        <div class="form-group">
+            <label>Email Address:</label>
+            <input type="email" name="email" required>
+        </div>
+
+        <div class="form-group">
+            <label>Full Name:</label>
+            <input type="text" name="name" required>
+        </div>
+        
+        <div class="form-group">
+            <label>Password:</label>
+            <input type="password" name="password" required>
+        </div>
+
+        <div class="form-group">
+            <label>Location:</label>
+            <input type="text" name="location" required>
+        </div>
+
+        <div class="form-group">
+            <label>Phone Number:</label>
+            <input type="text" name="phone_no" required>
+        </div>
+
+        <div class="form-group">
+            <label>Profile Picture (Upload):</label>
+            <input type="file" name="picture" accept="image/*">
+        </div>
+
+        <div class="form-group">
+            <label>Preferred Payment Option:</label>
+            <select name="payment_option">
+                <option value="Card">Card</option>
+                <option value="Cash On Delivery">Cash On Delivery</option>
+            </select>
+        </div>
+        
+        <button type="submit">Sign Up</button>
+    </form>
+
+    <div class="links">
+        <p>Already have an account? <a href="/login">Log in here</a>.</p>
+    </div>
+
+</body>
+</html>

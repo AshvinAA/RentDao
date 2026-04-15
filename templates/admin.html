@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <h2>Admin Dashboard</h2>
+    <a href="/admin/logout">Logout</a>
+
+    <h3>Items</h3>
+    {% for item in items %}
+        <p>{{ item.name }}
+            {% if not item.is_approved %}
+            <form method="post" action="/admin/items/{{ item.id }}/approve" style="display:inline">
+                <button type="submit">Approve</button>
+            </form>
+            {% endif %}
+            <form method="post" action="/admin/items/{{ item.id }}/remove" style="display:inline">
+                <button type="submit">Remove</button>
+            </form>
+        </p>
+    {% endfor %}
+
+    <h3>Users</h3>
+    {% for user in users %}
+        <p>{{ user.username }}
+            {% if not user.is_suspended %}
+            <form method="post" action="/admin/users/{{ user.id }}/suspend" style="display:inline">
+                <button type="submit">Suspend</button>
+            </form>
+            {% endif %}
+        </p>
+    {% endfor %}
+</body>
+</html>

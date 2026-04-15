@@ -11,6 +11,7 @@ class Item(Base):
     name = Column(String(50) , index = True)
     description = Column(String(400))
     is_available = Column(Boolean,default = True)
+    is_approved=Column(Boolean, default=False)
 
     owner_id = Column(Integer, ForeignKey("users.id"))
     owner = relationship("User", back_populates="items_posted")

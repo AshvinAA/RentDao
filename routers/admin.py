@@ -9,7 +9,7 @@ from database import get_db
 router=APIRouter(prefix="/admin") #every route in the file starts with /admin
 templates=Jinja2Templates(directory="templates")
 
-ADMIN_PASSWORD_HASH=b'$2b$12$/5cHFrUorCznmA72MTPEkeck3zjrhrQHXRniS/eU2WQLeyt4sNf6y' #idk eta claude ke diye bujha lagbe
+# ADMIN_PASSWORD_HASH=b'$2b$12$/5cHFrUorCznmA72MTPEkeck3zjrhrQHXRniS/eU2WQLeyt4sNf6y' #idk eta claude ke diye bujha lagbe
 
 #dependency function 
 #anywhere that u see dependencies=[Depends(require_admin)] runs ts first
@@ -22,13 +22,20 @@ def require_admin(request: Request):
 def loginPage(request:Request):
     return templates.TemplateResponse("admin_login.html", {"request": request})
 
+ADMIN_EMAILS = {"admin@rentdao.com", "saiberry@gmail.com", "a5hv1n@gmail.com"}  # add whatever emails
+
 @router.post("/login")
-def login(request: Request, password: str = Form(...)):
-    if bcrypt.checkpw(password.encode(), ADMIN_PASSWORD_HASH): #bcrypt checks the passwords aainst each other
-        request.session["admin_logged_in"]=True
-        return RedirectResponse(url="/admin", status_code=303)
-    #wrong password
-    return templates.TemplateResponse("admin_login.html", {"request": request, "error":"Incorrect Password"})
+def login(request: Request, email: str = Form(...), password: str = Form(...), db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.email == email).first()
+    
+    if not user or not bcrypt.checkpw(password.encode(), user.hashed_password.encode()):
+        return templates.TemplateResponse("admin_login.html", {"request": request, "error": "Invalid credentials"})
+    
+    if email not in ADMIN_EMAILS:  # check against hardcoded list instead of user.is_admin
+        return templates.TemplateResponse("admin_login.html", {"request": request, "error": "You are not an admin"})
+    
+    request.session["admin_logged_in"] = True
+    return RedirectResponse(url="/admin", status_code=303)
 
 #admin logout
 #next time we need to go through a protected route login is required
@@ -69,3 +76,14 @@ def suspend(user_id: int, db: Session=Depends(get_db)):
         user.is_suspended=True
         db.commit()
     return RedirectResponse(url="/admin",status_code=303)
+
+@router.get("/users/search", dependencies=[Depends(require_admin)])
+def search_user(request: Request, user_id: int, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    return templates.TemplateResponse("admin.html", {
+        "request": request,
+        "items": db.query(models.Item).all(),
+        "users": db.query(models.User).all(),
+        "searched_user": user,  # None if not found
+        "search_id": user_id
+    })

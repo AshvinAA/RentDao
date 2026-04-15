@@ -1,72 +1,33 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html>
+<body>
+    <h2>Admin Dashboard</h2>
+    <a href="/admin/logout">Logout</a>
 
-{% block title %}Admin Dashboard - RentDao{% endblock %}
+    <h3>Items</h3>
+    {% for item in items %}
+        <p>{{ item.name }}
+            {% if not item.is_approved %}
+            <form method="post" action="/admin/items/{{ item.id }}/approve" style="display:inline">
+                <button type="submit">Approve</button>
+            </form>
+            {% endif %}
+            <form method="post" action="/admin/items/{{ item.id }}/remove" style="display:inline">
+                <button type="submit">Remove</button>
+            </form>
+        </p>
+    {% endfor %}
+    
 
-{% block content %}
-<h1>Admin Dashboard</h1>
-
-<div class="card">
-    <div class="card-header">
-        <h3 class="card-title">Items Management</h3>
-    </div>
-
-    {% if items %}
-        <ul class="item-list">
-            {% for item in items %}
-                <li>
-                    <div class="item-title">{{ item.name }}</div>
-                    <div class="item-description">
-                        Status: {% if item.is_approved %}Approved{% else %}Pending Approval{% endif %}
-                    </div>
-
-                    <div style="margin-top: 10px;">
-                        {% if not item.is_approved %}
-                        <form method="post" action="/admin/items/{{ item.id }}/approve" style="display:inline;">
-                            <button type="submit" class="btn btn-primary" style="font-size: 0.9rem; padding: 6px 12px;">Approve</button>
-                        </form>
-                        {% endif %}
-                        <form method="post" action="/admin/items/{{ item.id }}/remove" style="display:inline;">
-                            <button type="submit" class="btn btn-danger" style="font-size: 0.9rem; padding: 6px 12px;">Remove</button>
-                        </form>
-                    </div>
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p style="text-align: center; color: #666; padding: 20px;">No items to manage.</p>
-    {% endif %}
-</div>
-
-<div class="card">
-    <div class="card-header">
-        <h3 class="card-title">Users Management</h3>
-    </div>
-
-    {% if users %}
-        <ul class="item-list">
-            {% for user in users %}
-                <li>
-                    <div class="item-title">{{ user.name }} ({{ user.email }})</div>
-                    <div class="item-description">
-                        Status: {% if user.is_suspended %}Suspended{% else %}Active{% endif %}
-                    </div>
-
-                    <div style="margin-top: 10px;">
-                        {% if not user.is_suspended %}
-                        <form method="post" action="/admin/users/{{ user.id }}/suspend" style="display:inline;">
-                            <button type="submit" class="btn btn-danger" style="font-size: 0.9rem; padding: 6px 12px;">Suspend</button>
-                        </form>
-                        {% endif %}
-                    </div>
-                </li>
-            {% endfor %}
-        </ul>
-    {% else %}
-        <p style="text-align: center; color: #666; padding: 20px;">No users to manage.</p>
-    {% endif %}
-</div>
-
-<div style="text-align: center; margin-top: 30px;">
-    <a href="/admin/logout" class="btn btn-secondary">Logout</a>
-</div>
-{% endblock %}
+    <h3>Users</h3>
+    {% for user in users %}
+        <p>{{ user.username }}
+            {% if not user.is_suspended %}
+            <form method="post" action="/admin/users/{{ user.id }}/suspend" style="display:inline">
+                <button type="submit">Suspend</button>
+            </form>
+            {% endif %}
+        </p>
+    {% endfor %}
+</body>
+</html>

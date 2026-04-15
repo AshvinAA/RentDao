@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Depends
+from fastapi import APIRouter, Request, Depends ,Form
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
@@ -60,3 +60,20 @@ def delete_item(
         db.commit()
     
     return RedirectResponse(url = "/items" , status_code=303)
+
+@router.post("/items/edit/{item_id}")
+def edit_item(
+    item_id: int,
+    name: str = Form(...),
+    description: str = Form(...),
+    db: Session = Depends(get_db)
+    ):
+
+    item = db.query(models.Item).filter(models.Item.id == item_id).first()
+
+    if item:
+        item.name = name 
+        item.description = description
+        db.commit()
+
+    return RedirectResponse (url="/profile" , status_code = 303)

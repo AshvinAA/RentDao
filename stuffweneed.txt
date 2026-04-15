@@ -1,4 +1,5 @@
 pip install "bcrypt==3.2.2" 
 pip install itsdangerous
 pip install passlib
+
 #use ts or it will not work holy shit

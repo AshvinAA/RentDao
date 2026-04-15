@@ -1,13 +1,24 @@
-<!DOCTYPE html>
-<html>
-<body>
+{% extends "base.html" %}
+
+{% block title %}Admin Login - RentDao{% endblock %}
+
+{% block content %}
+<div class="form-container">
     <h2>Admin Login</h2>
+
     {% if error %}
-        <p style="color:red;">{{ error }}</p>
+        <div class="message message-error">
+            ⚠️ {{ error }}
+        </div>
     {% endif %}
+
     <form method="post" action="/admin/login">
-        <input type="password" name="password" placeholder="Enter admin password" />
-        <button type="submit">Login</button>
+        <div class="form-group">
+            <label for="password">Admin Password:</label>
+            <input type="password" id="password" name="password" required placeholder="Enter admin password">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Login</button>
     </form>
-</body>
-</html>
+</div>
+{% endblock %}

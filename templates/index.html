@@ -1,9 +1,21 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>RentDao</title>
-</head>
-<body>
-    <h1>{{ message }}</h1>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block title %}Welcome to RentDao{% endblock %}
+
+{% block content %}
+<div style="text-align: center; padding: 60px 20px;">
+    <h1>Welcome to RentDao 2026</h1>
+    <p style="font-size: 1.2rem; color: #666; margin-bottom: 40px;">
+        Your trusted platform for renting items and connecting with local communities.
+    </p>
+
+    <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
+        <a href="/items" class="btn btn-primary" style="padding: 15px 30px; font-size: 1.1rem;">
+            Browse Items
+        </a>
+        <a href="/register" class="btn btn-secondary" style="padding: 15px 30px; font-size: 1.1rem;">
+            Join RentDao
+        </a>
+    </div>
+</div>
+{% endblock %}

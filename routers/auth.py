@@ -64,7 +64,8 @@ def register_user(
 
 # --- LOGIN ROUTES ---
 @router.get("/login")
-def show_login_page(request: Request, error: str = None):
+def show_login_page(request: Request):
+    error = request.query_params.get("error")
     return templates.TemplateResponse("login.html", {"request": request, "error": error})
 
 @router.post("/login")

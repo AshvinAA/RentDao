@@ -28,7 +28,7 @@ def read_items(request: Request , db: Session = Depends(get_db), page: int =1, l
     total_pages = math.ceil(total / limit)
     
     # Pass everything to the template — page and total_pages drive the pagination buttons
-    return templates.TemplateResponse("items.html", {
+    return templates.TemplateResponse("browse.html", {
         "request": request,
         "items": items,
         "page": page,

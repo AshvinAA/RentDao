@@ -1,60 +1,34 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Login - RentDao</title>
-    <style>
-        body { font-family: sans-serif; margin: 40px; line-height: 1.6; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; }
-        input { width: 100%; padding: 8px; max-width: 400px; border: 1px solid #ccc; border-radius: 4px; }
-        
-        /* Blue button to distinguish from the green Register button */
-        button { background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; }
-        button:hover { background-color: #0056b3; }
-        
-        /* Styling for the error pop-up */
-        .error-message { 
-            color: white; 
-            background-color: #dc3545; 
-            padding: 10px; 
-            border-radius: 4px; 
-            max-width: 400px; 
-            margin-bottom: 15px; 
-            font-weight: bold;
-        }
-        
-        .links { margin-top: 20px; font-size: 0.9em; }
-    </style>
-</head>
-<body>
+ {% extends "base.html" %}
 
-    <h1>Welcome Back to RentDao</h1>
+{% block title %}Login - RentDao{% endblock %}
+
+{% block content %}
+<div class="form-container">
+    <h2>Welcome Back to RentDao</h2>
 
     {% if error %}
-        <div class="error-message">
+        <div class="message message-error">
             ⚠️ {{ error }}
         </div>
     {% endif %}
 
     <form action="/login" method="POST">
         <div class="form-group">
-            <label>Email Address:</label>
-            <input type="email" name="email" required placeholder="Enter your email">
+            <label for="email">Email Address:</label>
+            <input type="email" id="email" name="email" required placeholder="Enter your email">
         </div>
 
         <div class="form-group">
-            <label>Password:</label>
-            <input type="password" name="password" required placeholder="Enter your password">
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required placeholder="Enter your password">
         </div>
-        
-        <button type="submit">Log In</button>
+
+        <button type="submit" class="btn btn-primary">Log In</button>
     </form>
 
     <div class="links">
         <p>Don't have an account? <a href="/register">Sign up here</a>.</p>
-        <p><a href="/items">← Back to Items Gallery</a></p>
     </div>
+</div>
+{% endblock %}
 
-</body>
-</html>

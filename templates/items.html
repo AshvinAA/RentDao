@@ -1,38 +1,48 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>RentDao</title>
-</head>
-<body>
-    <h1>RentDao Items Available</h1>
+{% extends "base.html" %}
 
-    <h3>Add a New Rental Item</h3>
+{% block title %}Items - RentDao{% endblock %}
+
+{% block content %}
+<h1>RentDao Items Available</h1>
+
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Add a New Rental Item</h3>
+    </div>
+
     <form action="/items" method="POST">
-        <label>Item Name:</label>
-        <input type="text" name="name" required>
-        <br><br>
-        
-        <label>Description:</label>
-        <input type="text" name="description" required>
-        <br><br>
-        
-        <button type="submit">Add Item</button>
-    </form>
+        <div class="form-group">
+            <label for="name">Item Name:</label>
+            <input type="text" id="name" name="name" required placeholder="Enter item name">
+        </div>
 
-    
-    
-    <hr> 
-    
-    <ul> <!-- Deleting an item --> 
+        <div class="form-group">
+            <label for="description">Description:</label>
+            <input type="text" id="description" name="description" required placeholder="Enter item description">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Add Item</button>
+    </form>
+</div>
+
+{% if items %}
+<div class="card">
+    <div class="card-header">
+        <h3 class="card-title">Available Items</h3>
+    </div>
+
+    <ul class="item-list">
         {% for item in items %}
             <li>
-                <strong>{{ item.name }}</strong> - {{ item.description }}
-                
+                <div class="item-title">{{ item.name }}</div>
+                <div class="item-description">{{ item.description }}</div>
+
                 <form action="/items/delete/{{ item.id }}" method="post" style="display:inline;">
-                    <button type="submit">Delete</button>
+                    <button type="submit" class="btn btn-danger" style="font-size: 0.9rem; padding: 6px 12px;">Delete</button>
                 </form>
             </li>
         {% endfor %}
     </ul>
-</body>
-</html>
+</div>
+{% endif %}
+{% endblock %}

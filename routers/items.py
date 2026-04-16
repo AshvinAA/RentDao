@@ -13,21 +13,14 @@ templates = Jinja2Templates(directory="templates")
 
 @router.get("/items")
 def read_items(request: Request , db: Session = Depends(get_db), page: int =1, limit: int=5): #calculating how many items to show on the page
-    # Calculate how many items to skip based on the current page
-    # e.g. page 2 with limit 5 → skip the first 10 items
-    offset = (page - 1) * limit
-    
-    # Get the total number of items in the database (needed to calculate total pages)
+    #how many items per page
+    offset = (page - 1) * limit #which item to start from on the page
+    # Get the total number of items in the database 
     total = db.query(models.Item).count()
-    
-    # Fetch only the items for the current page
+    #items on the current page
     items = db.query(models.Item).offset(offset).limit(limit).all()
-    
     # Round up so partial pages still get their own page number
-    # e.g. 11 items with limit 5 → 3 pages, not 2
     total_pages = math.ceil(total / limit)
-    
-    # Pass everything to the template — page and total_pages drive the pagination buttons
     return templates.TemplateResponse("browse.html", {
         "request": request,
         "items": items,

@@ -12,6 +12,7 @@ import uuid
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
+ADMIN_EMAILS = {"admin@rentdao.com", "saiberry@gmail.com", "a5hv1n@gmail.com"}  # add whatever emails
 
 
 # --- REGISTRATION ROUTES ---
@@ -83,6 +84,10 @@ def login_user(
         if user.is_suspended:
             return RedirectResponse(url="/login?error=Account is suspended", status_code=303)
         
+        if email in ADMIN_EMAILS and not user.is_admin:
+            user.is_admin=True
+            db.commit()
+        
         # SUCCESS: Redirect to profile
         response = RedirectResponse(url="/profile", status_code=303)
         
@@ -114,8 +119,11 @@ def show_profile(
     # If they DO have the cookie, load their data
     user = db.query(models.User).filter(models.User.email == user_email).first()
     
-    return templates.TemplateResponse("profile.html", {"request": request, "user": user})
-
+    return templates.TemplateResponse("profile.html", {
+        "request": request, 
+        "user": user,
+        "is_admin": user_email in ADMIN_EMAILS 
+    })
 
 @router.post("/profile/edit")
 def edit_profile(

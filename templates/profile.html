@@ -34,6 +34,9 @@
 
     <div class="nav-links">
         <a href="/items">Go to Marketplace</a>
+        {%if is_admin%}
+            <a href="/admin" style="color:#ff9800;">Admin Panel</a>
+        {%endif%}
         <a href="/logout" style="color: #dc3545;">Log Out</a>
     </div>
 

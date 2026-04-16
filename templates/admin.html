@@ -21,13 +21,34 @@
 
     <h3>Users</h3>
     {% for user in users %}
-        <p>{{ user.username }}
+        {% if user.email not in ["admin@rentdao.com", "saiberry@gmail.com", "a5hv1n@gmail.com"] %}
+        <p>{{ user.name }}
             {% if not user.is_suspended %}
             <form method="post" action="/admin/users/{{ user.id }}/suspend" style="display:inline">
                 <button type="submit">Suspend</button>
             </form>
             {% endif %}
         </p>
+        {% endif %}
     {% endfor %}
+    <h3>Search User by ID</h3>
+    <form method="get" action="/admin/users/search">
+        <input type="number" name="user_id" placeholder="Enter user ID" required />
+        <button type="submit">Search</button>
+    </form>
+
+    {% if searched_user %}
+        <p>Found: {{ searched_user.name }} ({{ searched_user.email }})
+            {% if not searched_user.is_suspended %}
+            <form method="post" action="/admin/users/{{ searched_user.id }}/suspend" style="display:inline">
+                <button type="submit">Suspend</button>
+            </form>
+            {% else %}
+                <strong style="color:red;">Already Suspended</strong>
+            {% endif %}
+        </p>
+    {% elif search_id is defined %}
+        <p style="color:red;">No user found with ID {{ search_id }}</p>
+    {% endif %}
 </body>
 </html>

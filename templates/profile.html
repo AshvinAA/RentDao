@@ -1,44 +1,325 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>My Profile - RentDao</title>
-    <style>
-        body { font-family: sans-serif; margin: 40px; background-color: #f4f7f6; color: #333; }
-        .dashboard-container { display: flex; gap: 40px; max-width: 1200px; margin: 0 auto; }
-        
-        /* LEFT COLUMN STYLES */
-        .profile-card { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); flex: 1; }
-        .profile-header { display: flex; align-items: center; gap: 20px; margin-bottom: 20px; }
-        .profile-pic { width: 100px; height: 100px; border-radius: 50%; object-fit: cover; background-color: #ccc; }
-        
-        .form-group { margin-bottom: 15px; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 0.9em;}
-        input, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        .btn-green { background-color: #28a745; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; width: 100%; font-weight: bold;}
-        .btn-green:hover { background-color: #218838; }
+{% extends "base.html" %}
 
-        /* RIGHT COLUMN STYLES */
-        .content-card { flex: 2; display: flex; flex-direction: column; gap: 30px; }
-        .section-box { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        
-        .item-list { list-style: none; padding: 0; }
-        .item-list li { background: #e9ecef; padding: 15px; margin-bottom: 10px; border-radius: 4px; }
-        
-        /* NAVIGATION BAR */
-        .nav-links { text-align: right; margin-bottom: 20px; }
-        .nav-links a { margin-left: 15px; text-decoration: none; color: #007bff; font-weight: bold; }
-    </style>
-</head>
-<body>
+{% block title %}My Profile - RentDao{% endblock %}
 
-    <div class="nav-links">
-        <a href="/items">Go to Marketplace</a>
-        <a href="/logout" style="color: #dc3545;">Log Out</a>
+{% block extra_head %}
+<style>
+    .profile-page-content {
+        max-width: 1200px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
+
+    .page-header {
+        margin-bottom: 40px;
+    }
+
+    .page-header h1 {
+        font-size: 2.5em;
+        color: #333;
+        margin: 0 0 10px 0;
+    }
+
+    .dashboard-container {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 40px;
+    }
+
+    /* PROFILE CARD */
+    .profile-card {
+        background: white;
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+        height: fit-content;
+        position: sticky;
+        top: 100px;
+    }
+
+    .profile-header {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .profile-pic {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: 4px solid #f0f0f0;
+        margin-bottom: 15px;
+    }
+
+    .profile-header h2 {
+        margin: 10px 0 5px 0;
+        font-size: 1.5em;
+        color: #333;
+    }
+
+    .profile-header p {
+        margin: 0;
+        color: #666;
+        font-size: 0.95em;
+    }
+
+    .profile-card hr {
+        border: none;
+        border-top: 2px solid #f0f0f0;
+        margin: 25px 0;
+    }
+
+    .profile-card h3 {
+        font-size: 1.2em;
+        color: #333;
+        margin-bottom: 20px;
+    }
+
+    /* FORM STYLES */
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    label {
+        display: block;
+        font-weight: 600;
+        margin-bottom: 8px;
+        font-size: 0.95em;
+        color: #333;
+    }
+
+    input, select {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 6px;
+        box-sizing: border-box;
+        font-size: 0.95em;
+        transition: border-color 0.3s ease;
+    }
+
+    input:focus, select:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .btn-green {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        width: 100%;
+        font-weight: 600;
+        font-size: 1em;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-green:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    /* RIGHT COLUMN STYLES */
+    .content-card {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    .section-box {
+        background: white;
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .section-box h2 {
+        font-size: 1.5em;
+        color: #333;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    /* ITEM LIST STYLES */
+    .item-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .item-list li {
+        background: linear-gradient(135deg, #f5f7fa 0%, #f0f0f2 100%);
+        padding: 20px;
+        margin-bottom: 15px;
+        border-radius: 8px;
+        border-left: 4px solid #667eea;
+        transition: box-shadow 0.3s ease;
+    }
+
+    .item-list li:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+
+    .item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 10px;
+    }
+
+    .item-name {
+        font-size: 1.1em;
+        font-weight: 600;
+        color: #333;
+    }
+
+    .item-description {
+        margin: 8px 0 0 0;
+        font-size: 0.95em;
+        color: #666;
+        line-height: 1.4;
+    }
+
+    .btn-delete {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        padding: 8px 14px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 0.85em;
+        font-weight: 600;
+        transition: background-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .btn-delete:hover {
+        background-color: #c82333;
+        transform: translateY(-2px);
+    }
+
+    .btn-delete:active {
+        transform: translateY(0);
+    }
+
+    /* EDIT FORM STYLES */
+    .edit-toggle {
+        cursor: pointer;
+        color: #667eea;
+        font-size: 0.9em;
+        font-weight: 600;
+        outline: none;
+        background: none;
+        border: none;
+        margin-top: 12px;
+        transition: color 0.2s ease;
+    }
+
+    .edit-toggle:hover {
+        color: #764ba2;
+    }
+
+    .edit-form {
+        margin-top: 15px;
+        background: white;
+        padding: 20px;
+        border: 1px solid #e0e0e0;
+        border-radius: 6px;
+    }
+
+    .edit-form .form-group {
+        margin-bottom: 12px;
+    }
+
+    .edit-form label {
+        font-size: 0.85em;
+        color: #666;
+    }
+
+    .edit-form input {
+        padding: 8px;
+        font-size: 0.9em;
+    }
+
+    .btn-save {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 0.9em;
+        font-weight: 600;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #999;
+    }
+
+    .empty-state p {
+        font-size: 1em;
+        font-style: italic;
+    }
+
+    /* RESPONSIVE DESIGN */
+    @media (max-width: 768px) {
+        .dashboard-container {
+            grid-template-columns: 1fr;
+        }
+
+        .profile-card {
+            position: static;
+        }
+
+        .page-header h1 {
+            font-size: 1.8em;
+        }
+
+        .profile-pic {
+            width: 100px;
+            height: 100px;
+        }
+
+        .section-box, .profile-card {
+            padding: 25px;
+        }
+
+        .item-header {
+            flex-direction: column;
+        }
+
+        .btn-delete {
+            margin-top: 10px;
+            width: 100%;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="profile-page-content">
+    <div class="page-header">
+        <h1>My Profile</h1>
     </div>
 
+
     <div class="dashboard-container">
-        
+        <!-- LEFT COLUMN: PROFILE CARD -->
         <div class="profile-card">
             <div class="profile-header">
                 {% if user.picture %}
@@ -48,8 +329,8 @@
                 {% endif %}
                 
                 <div>
-                    <h2 style="margin: 0;">{{ user.name }}</h2>
-                    <p style="margin: 0; color: gray;">{{ user.email }}</p>
+                    <h2>{{ user.name }}</h2>
+                    <p>{{ user.email }}</p>
                 </div>
             </div>
 
@@ -58,22 +339,22 @@
             
             <form action="/profile/edit" method="POST" enctype="multipart/form-data">
                 <div class="form-group">
-                    <label>Full Name:</label>
+                    <label>Full Name</label>
                     <input type="text" name="name" value="{{ user.name }}" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Location:</label>
+                    <label>Location</label>
                     <input type="text" name="location" value="{{ user.location }}" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Phone Number:</label>
+                    <label>Phone Number</label>
                     <input type="text" name="phone_no" value="{{ user.phone_no }}" required>
                 </div>
 
                 <div class="form-group">
-                    <label>Payment Option:</label>
+                    <label>Payment Method</label>
                     <select name="payment_option">
                         <option value="Card" {% if user.payment_option == 'Card' %}selected{% endif %}>Card</option>
                         <option value="Cash On Delivery" {% if user.payment_option == 'Cash On Delivery' %}selected{% endif %}>Cash On Delivery</option>
@@ -81,7 +362,7 @@
                 </div>
 
                 <div class="form-group">
-                    <label>Upload New Picture (Optional):</label>
+                    <label>Profile Picture (Optional)</label>
                     <input type="file" name="picture" accept="image/*">
                 </div>
                 
@@ -89,43 +370,44 @@
             </form>
         </div>
 
+        <!-- RIGHT COLUMN: CONTENT CARDS -->
         <div class="content-card">
             
+            <!-- MY POSTED ITEMS SECTION -->
             <div class="section-box">
                 <h2>My Posted Items</h2>
                 
                 {% if user.items_posted %}
                     <ul class="item-list">
                         {% for item in user.items_posted %}
-                            <li style="display: flex; flex-direction: column; gap: 10px;">
-                                
-                                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                            <li>
+                                <div class="item-header">
                                     <div>
-                                        <strong style="font-size: 1.1em; color: #007bff;">{{ item.name }}</strong>
-                                        <p style="margin: 5px 0 0 0; font-size: 0.95em; color: #555;">{{ item.description }}</p>
+                                        <div class="item-name">{{ item.name }}</div>
+                                        <p class="item-description">{{ item.description }}</p>
                                     </div>
                                     
                                     <form action="/items/delete/{{ item.id }}" method="POST" style="margin: 0;">
-                                        <button type="submit" style="background-color: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8em; font-weight: bold;">Delete</button>
+                                        <button type="submit" class="btn-delete">Delete</button>
                                     </form>
                                 </div>
 
-                                <details style="margin-top: 5px;">
-                                    <summary style="cursor: pointer; color: #28a745; font-size: 0.9em; font-weight: bold; outline: none;">✏️ Edit Item</summary>
+                                <details>
+                                    <summary class="edit-toggle">✏️ Edit Item</summary>
                                     
-                                    <form action="/items/edit/{{ item.id }}" method="POST" style="margin-top: 10px; background: white; padding: 15px; border: 1px solid #ccc; border-radius: 4px;">
+                                    <form action="/items/edit/{{ item.id }}" method="POST" class="edit-form">
                                         
-                                        <div class="form-group" style="margin-bottom: 10px;">
-                                            <label style="font-size: 0.85em; color: gray;">Item Name:</label>
-                                            <input type="text" name="name" value="{{ item.name }}" required style="padding: 6px;">
+                                        <div class="form-group">
+                                            <label>Item Name</label>
+                                            <input type="text" name="name" value="{{ item.name }}" required>
                                         </div>
                                         
-                                        <div class="form-group" style="margin-bottom: 10px;">
-                                            <label style="font-size: 0.85em; color: gray;">Description:</label>
-                                            <input type="text" name="description" value="{{ item.description }}" required style="padding: 6px;">
+                                        <div class="form-group">
+                                            <label>Description</label>
+                                            <input type="text" name="description" value="{{ item.description }}" required>
                                         </div>
                                         
-                                        <button type="submit" style="background-color: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 0.9em; font-weight: bold;">Save Updates</button>
+                                        <button type="submit" class="btn-save">Save Updates</button>
                                     </form>
                                 </details>
 
@@ -133,17 +415,21 @@
                         {% endfor %}
                     </ul>
                 {% else %}
-                    <p style="color: gray;">You haven't posted any items on the marketplace yet.</p>
+                    <div class="empty-state">
+                        <p>You haven't posted any items yet. <a href="/items">Browse the marketplace</a> to get started!</p>
+                    </div>
                 {% endif %}
             </div>
 
+            <!-- RENTAL HISTORY SECTION -->
             <div class="section-box">
                 <h2>Rental History</h2>
-                <p><em>Your past rentals will appear here once the rental feature is active.</em></p>
+                <div class="empty-state">
+                    <p>Your past rentals will appear here once the rental feature is active.</p>
+                </div>
             </div>
 
         </div>
     </div>
-
-</body>
-</html>
+</div>
+{% endblock %}

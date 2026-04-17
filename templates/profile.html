@@ -317,15 +317,21 @@
         box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
     }
 
-    .empty-state {
-        text-align: center;
-        padding: 40px 20px;
-        color: #999;
+    .pending-item {
+        border-left-color: #ff9800 !important;
+        background: linear-gradient(135deg, #fff8e1 0%, #fff3c4 100%) !important;
     }
 
-    .empty-state p {
-        font-size: 1em;
-        font-style: italic;
+    .pending-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.8em;
+        font-weight: 600;
+        margin-top: 8px;
+        box-shadow: 0 2px 8px rgba(255, 152, 0, 0.3);
     }
 
     /* RESPONSIVE DESIGN */
@@ -371,6 +377,7 @@
 
     <div class="profile-nav">
         <a href="/items" class="nav-btn marketplace">🛒 Go to Marketplace</a>
+        <a href="/add-item" class="nav-btn post-item">➕ Post an Item</a>
         {% if is_admin %}
         <a href="/admin" class="nav-btn admin">⚙️ Admin Panel</a>
         {% endif %}
@@ -436,9 +443,10 @@
             <div class="section-box">
                 <h2>My Posted Items</h2>
                 
-                {% if user.items_posted %}
+                {% set approved_items = user.items_posted | selectattr("is_approved", "equalto", true) | list %}
+                {% if approved_items %}
                     <ul class="item-list">
-                        {% for item in user.items_posted %}
+                        {% for item in approved_items %}
                             <li>
                                 <div class="item-header">
                                     <div>
@@ -475,7 +483,34 @@
                     </ul>
                 {% else %}
                     <div class="empty-state">
-                        <p>You haven't posted any items yet. <a href="/items">Browse the marketplace</a> to get started!</p>
+                        <p>You haven't posted any approved items yet. <a href="/add-item">Post your first item</a> to get started!</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- PENDING APPROVAL SECTION -->
+            <div class="section-box">
+                <h2>Pending Approval</h2>
+                
+                {% set pending_items = user.items_posted | selectattr("is_approved", "equalto", false) | list %}
+                
+                {% if pending_items %}
+                    <ul class="item-list">
+                        {% for item in pending_items %}
+                            <li class="pending-item">
+                                <div class="item-header">
+                                    <div>
+                                        <div class="item-name">{{ item.name }}</div>
+                                        <p class="item-description">{{ item.description }}</p>
+                                        <span class="pending-badge">⏳ Awaiting Approval</span>
+                                    </div>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="empty-state">
+                        <p>No items pending approval.</p>
                     </div>
                 {% endif %}
             </div>

@@ -100,7 +100,7 @@ def login_user(
     
 @router.get("/logout")
 def logout():
-    response = RedirectResponse(url="/login" , status_code =383)
+    response = RedirectResponse(url="/login" , status_code =302)
     response.delete_cookie("user_email") #Delete the cookie
     return response
 

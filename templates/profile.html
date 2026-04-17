@@ -20,6 +20,58 @@
         margin: 0 0 10px 0;
     }
 
+    /* NAVIGATION BUTTONS */
+    .profile-nav {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 30px;
+        flex-wrap: wrap;
+    }
+
+    .nav-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 6px;
+        text-decoration: none;
+        font-weight: 600;
+        font-size: 0.95em;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .nav-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .nav-btn.marketplace {
+        background: linear-gradient(135deg, #19662b 0%, #1c8968 100%);
+    }
+
+    .nav-btn.marketplace:hover {
+        box-shadow: 0 6px 20px rgba(40, 167, 69, 0.4);
+    }
+
+    .nav-btn.admin {
+        background: linear-gradient(135deg, #c57701 0%, #c4441d 100%);
+    }
+
+    .nav-btn.admin:hover {
+        box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
+    }
+
+    .nav-btn.logout {
+        background: linear-gradient(135deg, #711d25 0%, #c82333 100%);
+    }
+
+    .nav-btn.logout:hover {
+        box-shadow: 0 6px 20px rgba(220, 53, 69, 0.4);
+    }
+
     .dashboard-container {
         display: grid;
         grid-template-columns: 1fr 2fr;
@@ -315,26 +367,14 @@
 <div class="profile-page-content">
     <div class="page-header">
         <h1>My Profile</h1>
-        /* RIGHT COLUMN STYLES */
-        .content-card { flex: 2; display: flex; flex-direction: column; gap: 30px; }
-        .section-box { background: white; padding: 30px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
-        
-        .item-list { list-style: none; padding: 0; }
-        .item-list li { background: #e9ecef; padding: 15px; margin-bottom: 10px; border-radius: 4px; }
-        
-        /* NAVIGATION BAR */
-        .nav-links { text-align: right; margin-bottom: 20px; }
-        .nav-links a { margin-left: 15px; text-decoration: none; color: #007bff; font-weight: bold; }
-    </style>
-</head>
-<body>
+    </div>
 
-    <div class="nav-links">
-        <a href="/items">Go to Marketplace</a>
-        {%if is_admin%}
-            <a href="/admin" style="color:#ff9800;">Admin Panel</a>
-        {%endif%}
-        <a href="/logout" style="color: #dc3545;">Log Out</a>
+    <div class="profile-nav">
+        <a href="/items" class="nav-btn marketplace">🛒 Go to Marketplace</a>
+        {% if is_admin %}
+        <a href="/admin" class="nav-btn admin">⚙️ Admin Panel</a>
+        {% endif %}
+        <a href="/logout" class="nav-btn logout">🚪 Logout</a>
     </div>
 
     <div class="dashboard-container">

@@ -479,7 +479,7 @@
                                 </details>
 
                                 </li>
-                            {%endif%}    
+                               
                         {% endfor %}
                     </ul>
                 {% else %}
@@ -515,27 +515,7 @@
                     </div>
                 {% endif %}
             </div>
-            <div class="section-box">
-            <h2>Pending Approval</h2>
             
-            {% set pending_items = user.items_posted | selectattr("is_approved", "equalto", false) | list %}
-            
-            {% if pending_items %}
-                <ul class="item-list">
-                    {% for item in pending_items %}
-                        <li style="display: flex; justify-content: space-between; align-items: center;">
-                            <div>
-                                <strong style="font-size: 1.1em; color: #ff9800;">{{ item.name }}</strong>
-                                <p style="margin: 5px 0 0 0; font-size: 0.95em; color: #555;">{{ item.description }}</p>
-                            </div>
-                            <span style="background-color: #fff3cd; color: #856404; padding: 4px 10px; border-radius: 4px; font-size: 0.85em; font-weight: bold;">⏳ Awaiting Approval</span>
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p style="color: gray;">No items pending approval.</p>
-            {% endif %}
-            </div>
 
             <!-- RENTAL HISTORY SECTION -->
             <div class="section-box">

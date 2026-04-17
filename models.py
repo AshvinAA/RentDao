@@ -12,7 +12,7 @@ class Item(Base):
     description = Column(String(400))
     is_available = Column(Boolean,default = True)
     is_approved=Column(Boolean, default=False)
-
+    # rating=Column(Float, default=0.0)
     owner_id = Column(Integer, ForeignKey("users.id"))
     owner = relationship("User", back_populates="items_posted")
 

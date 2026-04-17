@@ -2,25 +2,159 @@
 
 {% block title %}Welcome to RentDao{% endblock %}
 
-{% block content %}
-<div style="text-align: center; padding: 60px 20px;">
-    <h1>Welcome to RentDao 2026</h1>
-    <p style="font-size: 1.2rem; color: #666; margin-bottom: 40px;">
-        Your trusted platform for renting items and connecting with local communities.
-    </p>
+{% block extra_head %}
+<style>
+    /* WELCOME PAGE STYLING */
+    .welcome-hero {
+        text-align: center;
+        padding: 80px 20px;
+        position: relative;
+        overflow: hidden;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+    }
 
-    <div style="display: flex; gap: 20px; justify-content: center; flex-wrap: wrap;">
-        <a href="/items" class="btn btn-primary" style="padding: 15px 30px; font-size: 1.1rem;">
-            Browse Items
-        </a>
-        {% if user_email %}
-            <a href="/profile" class="btn btn-secondary" style="padding: 15px 30px; font-size: 1.1rem;">
-                My Profile
+    .welcome-content {
+        max-width: 800px;
+        z-index: 2;
+        position: relative;
+    }
+
+    .welcome-title {
+        font-size: 3.5em;
+        font-weight: 700;
+        margin: 0 0 20px 0;
+        background: linear-gradient(135deg, #bc628f 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: titleGlow 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes titleGlow {
+        0% { filter: brightness(1); }
+        100% { filter: brightness(1.1); }
+    }
+
+    .welcome-subtitle {
+        font-size: 1.3rem;
+        color: #64748b;
+        margin-bottom: 50px;
+        line-height: 1.6;
+        font-weight: 300;
+    }
+
+    .welcome-buttons {
+        display: flex;
+        gap: 25px;
+        justify-content: center;
+        flex-wrap: wrap;
+    }
+
+    .welcome-btn {
+        padding: 18px 35px;
+        font-size: 1.2rem;
+        font-weight: 600;
+        border: none;
+        border-radius: 50px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+    }
+
+    .welcome-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+        transition: left 0.5s;
+    }
+
+    .welcome-btn:hover::before {
+        left: 100%;
+    }
+
+    .welcome-btn.primary {
+        background: linear-gradient(135deg, #bc628f 0%, #764ba2 100%);
+        color: white;
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    }
+
+    .welcome-btn.primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(102, 126, 234, 0.5);
+    }
+
+    .welcome-btn.secondary {
+        background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+        color: #475569;
+        border: 2px solid #e2e8f0;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+    }
+
+    .welcome-btn.secondary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+        border-color: #667eea;
+    }
+
+    /* RESPONSIVE DESIGN */
+    @media (max-width: 768px) {
+        .welcome-title {
+            font-size: 2.5em;
+        }
+
+        .welcome-subtitle {
+            font-size: 1.1rem;
+        }
+
+        .welcome-buttons {
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .welcome-btn {
+            width: 250px;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="welcome-hero">
+    <div class="welcome-content">
+        <h1 class="welcome-title">Welcome to RentDao</h1>
+        <p class="welcome-subtitle">
+            Your trusted platform for renting items and connecting with local communities in 2026.
+        </p>
+
+        <div class="welcome-buttons">
+            <a href="/items" class="welcome-btn primary">
+                🛒 Browse Items
             </a>
-        {% endif %}
-        <a href="/register" class="btn btn-secondary" style="padding: 15px 30px; font-size: 1.1rem;">
-            Join RentDao
-        </a>
+            {% if user_email %}
+                <a href="/profile" class="btn btn-secondary" style="padding: 15px 30px; font-size: 1.1rem;">
+                    My Profile
+                </a>
+            {% endif %}
+            <a href="/register" class="welcome-btn secondary">
+                ✨ Join RentDao
+            </a>
+        </div>
     </div>
 </div>
 {% endblock %}

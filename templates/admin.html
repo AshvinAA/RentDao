@@ -1,54 +1,503 @@
-<!DOCTYPE html>
-<html>
-<body>
-    <h2>Admin Dashboard</h2>
-    <a href="/admin/logout">Logout</a>
+{% extends "base.html" %}
 
-    <h3>Items</h3>
-    {% for item in items %}
-        <p>{{ item.name }}
-            {% if not item.is_approved %}
-            <form method="post" action="/admin/items/{{ item.id }}/approve" style="display:inline">
-                <button type="submit">Approve</button>
-            </form>
-            {% endif %}
-            <form method="post" action="/admin/items/{{ item.id }}/remove" style="display:inline">
-                <button type="submit">Remove</button>
-            </form>
-        </p>
-    {% endfor %}
-    
+{% block title %}Admin Dashboard - RentDao{% endblock %}
 
-    <h3>Users</h3>
-    {% for user in users %}
-        {% if user.email not in ["admin@rentdao.com", "saiberry@gmail.com", "a5hv1n@gmail.com"] %}
-        <p>{{ user.name }}
-            {% if not user.is_suspended %}
-            <form method="post" action="/admin/users/{{ user.id }}/suspend" style="display:inline">
-                <button type="submit">Suspend</button>
-            </form>
-            {% endif %}
-        </p>
-        {% endif %}
-    {% endfor %}
-    <h3>Search User by ID</h3>
-    <form method="get" action="/admin/users/search">
-        <input type="number" name="user_id" placeholder="Enter user ID" required />
-        <button type="submit">Search</button>
-    </form>
+{% block extra_head %}
+<style>
+    .admin-page-content {
+        max-width: 1400px;
+        margin: 40px auto;
+        padding: 0 20px;
+    }
 
-    {% if searched_user %}
-        <p>Found: {{ searched_user.name }} ({{ searched_user.email }})
-            {% if not searched_user.is_suspended %}
-            <form method="post" action="/admin/users/{{ searched_user.id }}/suspend" style="display:inline">
-                <button type="submit">Suspend</button>
-            </form>
+    .page-header {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .page-header h1 {
+        font-size: 2.8em;
+        color: #333;
+        margin: 0 0 10px 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .page-header p {
+        font-size: 1.1em;
+        color: #666;
+        margin: 0;
+    }
+
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 30px;
+    }
+
+    .dashboard-section {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+        padding: 30px;
+        height: fit-content;
+    }
+
+    .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #f0f0f0;
+    }
+
+    .section-header h2 {
+        font-size: 1.6em;
+        color: #333;
+        margin: 0;
+    }
+
+    .section-stats {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 0.9em;
+        font-weight: 600;
+    }
+
+    /* ITEMS LIST */
+    .items-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .item-card {
+        background: linear-gradient(135deg, #f8f9fa 0%, #f0f2f5 100%);
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .item-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        border-color: #667eea;
+    }
+
+    .item-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 10px;
+    }
+
+    .item-name {
+        font-size: 1.1em;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+    }
+
+    .item-status {
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 0.8em;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-approved {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-pending {
+        background: #fff3cd;
+        color: #856404;
+    }
+
+    .item-description {
+        color: #666;
+        font-size: 0.95em;
+        line-height: 1.4;
+        margin: 8px 0;
+    }
+
+    .item-meta {
+        font-size: 0.85em;
+        color: #999;
+        margin: 5px 0;
+    }
+
+    .item-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+
+    .btn-action {
+        padding: 8px 16px;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.9em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .btn-approve {
+        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        color: white;
+    }
+
+    .btn-approve:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+    }
+
+    .btn-remove {
+        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+        color: white;
+    }
+
+    .btn-remove:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+    }
+
+    /* USERS LIST */
+    .users-list {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .user-card {
+        background: linear-gradient(135deg, #f8f9fa 0%, #f0f2f5 100%);
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 15px;
+        transition: all 0.3s ease;
+    }
+
+    .user-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        border-color: #667eea;
+    }
+
+    .user-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .user-details h3 {
+        margin: 0 0 5px 0;
+        font-size: 1.1em;
+        color: #333;
+    }
+
+    .user-email {
+        color: #666;
+        font-size: 0.9em;
+    }
+
+    .user-status {
+        padding: 4px 12px;
+        border-radius: 12px;
+        font-size: 0.8em;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+
+    .status-active {
+        background: #d4edda;
+        color: #155724;
+    }
+
+    .status-suspended {
+        background: #f8d7da;
+        color: #721c24;
+    }
+
+    /* SEARCH SECTION */
+    .search-section {
+        grid-column: 1 / -1;
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
+        padding: 30px;
+        margin-top: 20px;
+    }
+
+    .search-form {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .search-input {
+        flex: 1;
+        padding: 12px 16px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 1em;
+        transition: border-color 0.3s ease;
+    }
+
+    .search-input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    }
+
+    .btn-search {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1em;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-search:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    /* SEARCH RESULTS */
+    .search-result {
+        background: #f8f9fa;
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 20px;
+        margin-top: 20px;
+    }
+
+    .search-result.success {
+        border-color: #28a745;
+        background: #d4edda;
+    }
+
+    .search-result.error {
+        border-color: #dc3545;
+        background: #f8d7da;
+    }
+
+    .search-result h3 {
+        margin: 0 0 10px 0;
+        font-size: 1.1em;
+    }
+
+    .search-result p {
+        margin: 5px 0;
+        font-size: 0.95em;
+    }
+
+    /* RESPONSIVE DESIGN */
+    @media (max-width: 1024px) {
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .page-header h1 {
+            font-size: 2.2em;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .admin-page-content {
+            padding: 0 15px;
+        }
+
+        .dashboard-section {
+            padding: 20px;
+        }
+
+        .section-header {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .item-actions, .user-info {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 10px;
+        }
+
+        .search-form {
+            flex-direction: column;
+            align-items: stretch;
+        }
+
+        .btn-search {
+            align-self: flex-start;
+        }
+    }
+
+    /* EMPTY STATE */
+    .empty-state {
+        text-align: center;
+        padding: 40px 20px;
+        color: #999;
+    }
+
+    .empty-state p {
+        font-size: 1em;
+        font-style: italic;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="admin-page-content">
+    <div class="page-header">
+        <h1>Admin Dashboard</h1>
+        <p>Manage items, users, and platform moderation</p>
+    </div>
+
+    <div class="dashboard-grid">
+        <!-- ITEMS MANAGEMENT -->
+        <div class="dashboard-section">
+            <div class="section-header">
+                <h2>📦 Item Management</h2>
+                <div class="section-stats">{{ items|length }} Total Items</div>
+            </div>
+
+            {% if items %}
+                <ul class="items-list">
+                    {% for item in items %}
+                        <li class="item-card">
+                            <div class="item-header">
+                                <div>
+                                    <h3 class="item-name">{{ item.name }}</h3>
+                                    <div class="item-status {% if item.is_approved %}status-approved{% else %}status-pending{% endif %}">
+                                        {% if item.is_approved %}Approved{% else %}Pending{% endif %}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p class="item-description">{{ item.description }}</p>
+                            <div class="item-meta">
+                                Posted by: {{ item.owner.name }} ({{ item.owner.email }})
+                            </div>
+
+                            <div class="item-actions">
+                                {% if not item.is_approved %}
+                                    <form method="post" action="/admin/items/{{ item.id }}/approve" style="display:inline">
+                                        <button type="submit" class="btn-action btn-approve">✅ Approve</button>
+                                    </form>
+                                {% endif %}
+                                <form method="post" action="/admin/items/{{ item.id }}/remove" style="display:inline">
+                                    <button type="submit" class="btn-action btn-remove" onclick="return confirm('Are you sure you want to remove this item?')">🗑️ Remove</button>
+                                </form>
+                            </div>
+                        </li>
+                    {% endfor %}
+                </ul>
             {% else %}
-                <strong style="color:red;">Already Suspended</strong>
+                <div class="empty-state">
+                    <p>No items found in the system.</p>
+                </div>
             {% endif %}
-        </p>
-    {% elif search_id is defined %}
-        <p style="color:red;">No user found with ID {{ search_id }}</p>
-    {% endif %}
-</body>
-</html>
+        </div>
+
+        <!-- USERS MANAGEMENT -->
+        <div class="dashboard-section">
+            <div class="section-header">
+                <h2>👥 User Management</h2>
+                <div class="section-stats">{{ users|length }} Total Users</div>
+            </div>
+
+            {% if users %}
+                <ul class="users-list">
+                    {% for user in users %}
+                        {% if user.email not in ["admin@rentdao.com", "saiberry@gmail.com", "a5hv1n@gmail.com"] %}
+                            <li class="user-card">
+                                <div class="user-info">
+                                    <div class="user-details">
+                                        <h3>{{ user.name }}</h3>
+                                        <p class="user-email">{{ user.email }}</p>
+                                    </div>
+
+                                    <div class="user-status {% if not user.is_suspended %}status-active{% else %}status-suspended{% endif %}">
+                                        {% if not user.is_suspended %}Active{% else %}Suspended{% endif %}
+                                    </div>
+                                </div>
+
+                                {% if not user.is_suspended %}
+                                    <div style="margin-top: 15px;">
+                                        <form method="post" action="/admin/users/{{ user.id }}/suspend" style="display:inline">
+                                            <button type="submit" class="btn-action btn-remove" onclick="return confirm('Are you sure you want to suspend this user?')">🚫 Suspend User</button>
+                                        </form>
+                                    </div>
+                                {% endif %}
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <div class="empty-state">
+                    <p>No users found in the system.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- SEARCH SECTION -->
+    <div class="search-section">
+        <h2>🔍 Search User by ID</h2>
+        <form method="get" action="/admin/users/search" class="search-form">
+            <input type="number" name="user_id" placeholder="Enter user ID" required class="search-input" />
+            <button type="submit" class="btn-search">Search User</button>
+        </form>
+
+        {% if searched_user %}
+            <div class="search-result success">
+                <h3>✅ User Found</h3>
+                <p><strong>Name:</strong> {{ searched_user.name }}</p>
+                <p><strong>Email:</strong> {{ searched_user.email }}</p>
+                <p><strong>Status:</strong>
+                    {% if not searched_user.is_suspended %}
+                        <span style="color: #28a745;">Active</span>
+                    {% else %}
+                        <span style="color: #dc3545;">Suspended</span>
+                    {% endif %}
+                </p>
+
+                {% if not searched_user.is_suspended %}
+                    <form method="post" action="/admin/users/{{ searched_user.id }}/suspend" style="display:inline; margin-top: 10px;">
+                        <button type="submit" class="btn-action btn-remove" onclick="return confirm('Are you sure you want to suspend this user?')">🚫 Suspend User</button>
+                    </form>
+                {% else %}
+                    <p><strong style="color: #dc3545;">This user is already suspended.</strong></p>
+                {% endif %}
+            </div>
+        {% elif search_id is defined %}
+            <div class="search-result error">
+                <h3>❌ User Not Found</h3>
+                <p>No user found with ID {{ search_id }}.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

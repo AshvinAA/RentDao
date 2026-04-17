@@ -91,3 +91,10 @@ def edit_item(
         db.commit()
 
     return RedirectResponse (url="/profile" , status_code = 303)
+
+#to let users add items from their profile page
+@router.get("/add-item")
+def add_item_page(request: Request, user_email: str = Cookie(None)):
+    if not user_email:
+        return RedirectResponse(url="/login?error=You are not logged in.", status_code=303)
+    return templates.TemplateResponse("items.html", {"request": request})

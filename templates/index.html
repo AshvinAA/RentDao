@@ -146,6 +146,11 @@
             <a href="/items" class="welcome-btn primary">
                 🛒 Browse Items
             </a>
+            {% if user_email %}
+                <a href="/profile" class="btn btn-secondary" style="padding: 15px 30px; font-size: 1.1rem;">
+                    My Profile
+                </a>
+            {% endif %}
             <a href="/register" class="welcome-btn secondary">
                 ✨ Join RentDao
             </a>

@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Cookie
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 # from fastapi.middleware.sessions import SessionMiddleware #idk this either
@@ -27,10 +27,13 @@ app.include_router(admin.router)
 
 
 @app.get("/")
-def read_root(request: Request):#request is a variable that basically catches all our data and packs them into our request variable
+def read_root(request: Request, user_email: str=Cookie(None)):#request is a variable that basically catches all our data and packs them into our request variable
     # format for templates=         inside index html we would perform a request and the message that would be passed is "message"
-    return templates.TemplateResponse("index.html" , {"request": request , "message": "Welcomes to RentDao's new crazy frontend "})
-
+    return templates.TemplateResponse("index.html", {
+    "request": request, 
+    "message": "Welcome to RentDao's new crazy frontend",
+    "user_email": user_email
+})
 
 
 

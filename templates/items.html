@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 
-{% block title %}Items - RentDao{% endblock %}
+{% block title %}Add Item - RentDao{% endblock %}
 
 {% block content %}
-<h1>RentDao Items Available</h1>
+<h1>Add a New Rental Item</h1>
 
 <div class="card">
     <div class="card-header">
@@ -24,25 +24,4 @@
         <button type="submit" class="btn btn-primary">Add Item</button>
     </form>
 </div>
-
-{% if items %}
-<div class="card">
-    <div class="card-header">
-        <h3 class="card-title">Available Items</h3>
-    </div>
-
-    <ul class="item-list">
-        {% for item in items %}
-            <li>
-                <div class="item-title">{{ item.name }}</div>
-                <div class="item-description">{{ item.description }}</div>
-
-                <form action="/items/delete/{{ item.id }}" method="post" style="display:inline;">
-                    <button type="submit" class="btn btn-danger" style="font-size: 0.9rem; padding: 6px 12px;">Delete</button>
-                </form>
-            </li>
-        {% endfor %}
-    </ul>
-</div>
-{% endif %}
 {% endblock %}

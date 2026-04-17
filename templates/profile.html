@@ -34,6 +34,7 @@
 
     <div class="nav-links">
         <a href="/items">Go to Marketplace</a>
+        <a href="/add-item">Post an Item</a>
         {%if is_admin%}
             <a href="/admin" style="color:#ff9800;">Admin Panel</a>
         {%endif%}
@@ -97,47 +98,71 @@
             <div class="section-box">
                 <h2>My Posted Items</h2>
                 
-                {% if user.items_posted %}
+                {% set approved_items = user.items_posted | selectattr("is_approved", "equalto", true) | list %}
+                {% if approved_items %}
                     <ul class="item-list">
-                        {% for item in user.items_posted %}
-                            <li style="display: flex; flex-direction: column; gap: 10px;">
-                                
-                                <div style="display: flex; justify-content: space-between; align-items: flex-start;">
-                                    <div>
-                                        <strong style="font-size: 1.1em; color: #007bff;">{{ item.name }}</strong>
-                                        <p style="margin: 5px 0 0 0; font-size: 0.95em; color: #555;">{{ item.description }}</p>
+                        {% for item in approved_items %}
+                            {% if item.is_approved %}
+                                <li style="display: flex; flex-direction: column; gap: 10px;">
+                                    
+                                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                                        <div>
+                                            <strong style="font-size: 1.1em; color: #007bff;">{{ item.name }}</strong>
+                                            <p style="margin: 5px 0 0 0; font-size: 0.95em; color: #555;">{{ item.description }}</p>
+                                        </div>
+                                        
+                                        <form action="/items/delete/{{ item.id }}" method="POST" style="margin: 0;">
+                                            <button type="submit" style="background-color: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8em; font-weight: bold;">Delete</button>
+                                        </form>
                                     </div>
-                                    
-                                    <form action="/items/delete/{{ item.id }}" method="POST" style="margin: 0;">
-                                        <button type="submit" style="background-color: #dc3545; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8em; font-weight: bold;">Delete</button>
-                                    </form>
-                                </div>
+                                
+                                    <details style="margin-top: 5px;">
+                                        <summary style="cursor: pointer; color: #28a745; font-size: 0.9em; font-weight: bold; outline: none;">✏️ Edit Item</summary>
+                                        
+                                        <form action="/items/edit/{{ item.id }}" method="POST" style="margin-top: 10px; background: white; padding: 15px; border: 1px solid #ccc; border-radius: 4px;">
+                                            
+                                            <div class="form-group" style="margin-bottom: 10px;">
+                                                <label style="font-size: 0.85em; color: gray;">Item Name:</label>
+                                                <input type="text" name="name" value="{{ item.name }}" required style="padding: 6px;">
+                                            </div>
+                                            
+                                            <div class="form-group" style="margin-bottom: 10px;">
+                                                <label style="font-size: 0.85em; color: gray;">Description:</label>
+                                                <input type="text" name="description" value="{{ item.description }}" required style="padding: 6px;">
+                                            </div>
+                                            
+                                            <button type="submit" style="background-color: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 0.9em; font-weight: bold;">Save Updates</button>
+                                        </form>
+                                    </details>
 
-                                <details style="margin-top: 5px;">
-                                    <summary style="cursor: pointer; color: #28a745; font-size: 0.9em; font-weight: bold; outline: none;">✏️ Edit Item</summary>
-                                    
-                                    <form action="/items/edit/{{ item.id }}" method="POST" style="margin-top: 10px; background: white; padding: 15px; border: 1px solid #ccc; border-radius: 4px;">
-                                        
-                                        <div class="form-group" style="margin-bottom: 10px;">
-                                            <label style="font-size: 0.85em; color: gray;">Item Name:</label>
-                                            <input type="text" name="name" value="{{ item.name }}" required style="padding: 6px;">
-                                        </div>
-                                        
-                                        <div class="form-group" style="margin-bottom: 10px;">
-                                            <label style="font-size: 0.85em; color: gray;">Description:</label>
-                                            <input type="text" name="description" value="{{ item.description }}" required style="padding: 6px;">
-                                        </div>
-                                        
-                                        <button type="submit" style="background-color: #007bff; color: white; border: none; padding: 8px 15px; border-radius: 4px; cursor: pointer; font-size: 0.9em; font-weight: bold;">Save Updates</button>
-                                    </form>
-                                </details>
-
-                            </li>
+                                </li>
+                            {%endif%}    
                         {% endfor %}
                     </ul>
                 {% else %}
                     <p style="color: gray;">You haven't posted any items on the marketplace yet.</p>
                 {% endif %}
+            </div>
+            <div class="section-box">
+            <h2>Pending Approval</h2>
+            
+            {% set pending_items = user.items_posted | selectattr("is_approved", "equalto", false) | list %}
+            
+            {% if pending_items %}
+                <ul class="item-list">
+                    {% for item in pending_items %}
+                        <li style="display: flex; justify-content: space-between; align-items: center;">
+                            <div>
+                                <strong style="font-size: 1.1em; color: #ff9800;">{{ item.name }}</strong>
+                                <p style="margin: 5px 0 0 0; font-size: 0.95em; color: #555;">{{ item.description }}</p>
+                            </div>
+                            <span style="background-color: #fff3cd; color: #856404; padding: 4px 10px; border-radius: 4px; font-size: 0.85em; font-weight: bold;">⏳ Awaiting Approval</span>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p style="color: gray;">No items pending approval.</p>
+            {% endif %}
             </div>
 
             <div class="section-box">

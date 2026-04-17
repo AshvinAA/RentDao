@@ -13,6 +13,11 @@
         <a href="/items" class="btn btn-primary" style="padding: 15px 30px; font-size: 1.1rem;">
             Browse Items
         </a>
+        {% if user_email %}
+            <a href="/profile" class="btn btn-secondary" style="padding: 15px 30px; font-size: 1.1rem;">
+                My Profile
+            </a>
+        {% endif %}
         <a href="/register" class="btn btn-secondary" style="padding: 15px 30px; font-size: 1.1rem;">
             Join RentDao
         </a>

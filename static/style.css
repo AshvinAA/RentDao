@@ -147,6 +147,60 @@ h3 {
     box-shadow: 0 5px 20px rgba(0,0,0,0.1);
 }
 
+.admin-login-container {
+    max-width: 640px;
+    padding: 52px 46px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,250,252,0.98));
+    border: 1px solid rgba(118, 75, 162, 0.14);
+    box-shadow: 0 24px 80px rgba(86, 70, 142, 0.18);
+    border-radius: 22px;
+    position: relative;
+    overflow: hidden;
+}
+
+.admin-login-container::before {
+    content: '';
+    position: absolute;
+    top: -20px;
+    right: -20px;
+    width: 180px;
+    height: 180px;
+    background: rgba(188, 98, 143, 0.14);
+    border-radius: 50%;
+    filter: blur(28px);
+    z-index: 0;
+}
+
+.admin-login-container h2,
+.admin-login-container .message,
+.admin-login-container form,
+.admin-login-container input,
+.admin-login-container button {
+    position: relative;
+    z-index: 1;
+}
+
+.admin-login-container h2 {
+    margin-bottom: 28px;
+    font-size: 2.4rem;
+    color: #372b5b;
+}
+
+.admin-login-container input {
+    min-height: 52px;
+    margin-bottom: 18px;
+    background: #fbfbfd;
+    border: 1px solid rgba(124, 95, 188, 0.18);
+}
+
+.admin-login-container button.btn-primary {
+    width: 100%;
+    padding: 16px 24px;
+    font-size: 1rem;
+    border-radius: 16px;
+    box-shadow: 0 16px 40px rgba(118, 75, 162, 0.18);
+}
+
 .form-group {
     margin-bottom: 20px;
 }

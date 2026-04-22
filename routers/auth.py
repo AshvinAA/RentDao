@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Depends, Form , Cookie, UploadFile, File
+from fastapi import APIRouter, Request, Depends, Form , HTTPException, Cookie, UploadFile, File
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
@@ -14,6 +14,15 @@ router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 ADMIN_EMAILS = {"admin@rentdao.com", "saiberry@gmail.com", "a5hv1n@gmail.com"}  # add whatever emails
 
+def get_current_user(user_email: str = Cookie(None), db: Session = Depends(get_db)):
+    if not user_email:
+        raise HTTPException(status_code=302, headers={"Location": "/login?error=You are not logged in."})
+    user = db.query(models.User).filter(models.User.email == user_email).first()
+    if not user:
+        raise HTTPException(status_code=302, headers={"Location": "/login?error=You are not logged in."})
+    if user.is_suspended:
+        raise HTTPException(status_code=302, headers={"Location": "/login?error=Account is suspended."})
+    return user
 
 # --- REGISTRATION ROUTES ---
 @router.get("/register")

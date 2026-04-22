@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}My Reports - RentDao{% endblock %}</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="container">
+        <h1>My Reports</h1>
+        {% if reports %}
+        <ul>
+            {% for report in reports %}
+            <li>
+                Reported User ID: {{ report.reported_user_id }} - Reason: {{ report.reason }} - Details: {{ report.details }}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>You have not submitted any reports.</p>
+        {% endif %}
+    </div>
+    {% endblock %}
+</body>
+</html>

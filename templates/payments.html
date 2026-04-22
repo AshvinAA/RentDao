@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Payments - RentDao{% endblock %}</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="container">
+        <h1>My Payments</h1>
+
+        <h2>Payments Received</h2>
+        {% if payments_received %}
+        <ul>
+            {% for payment in payments_received %}
+            <li>
+                Booking ID: {{ payment.booking_id }} - Amount: ${{ payment.amount }} - Status: {{ payment.payment_status }}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No payments received.</p>
+        {% endif %}
+
+        <h2>Payments Made</h2>
+        {% if payments_made %}
+        <ul>
+            {% for payment in payments_made %}
+            <li>
+                Booking ID: {{ payment.booking_id }} - Amount: ${{ payment.amount }} - Status: {{ payment.payment_status }}
+                {% if payment.payment_status == 'pending' %}
+                <form action="/payments/complete/{{ payment.id }}" method="post" style="display:inline;">
+                    <button type="submit">Mark as Completed</button>
+                </form>
+                <form action="/payments/fail/{{ payment.id }}" method="post" style="display:inline;">
+                    <button type="submit">Mark as Failed</button>
+                </form>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p>No payments made.</p>
+        {% endif %}
+    </div>
+    {% endblock %}
+</body>
+</html>

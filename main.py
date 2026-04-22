@@ -10,7 +10,7 @@ from database import engine
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key="change-this-to-something-secret") #idk this
 
-from routers import items, auth, admin, item_tags, cart, wishlist
+from routers import items, auth, admin, bookings, insurance, reviews, reports, payments, item_tags, cart, wishlist
 
 models.Base.metadata.create_all(bind=engine) # This is the magic line that tells SQLAlchemy to build the tables!
 
@@ -24,6 +24,11 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(items.router)
 app.include_router(auth.router)
 app.include_router(admin.router)
+app.include_router(bookings.router)
+app.include_router(reviews.router)
+app.include_router(reports.router)
+app.include_router(payments.router)
+app.include_router(insurance.router)
 app.include_router(item_tags.router)
 app.include_router(cart.router)
 app.include_router(wishlist.router)
@@ -44,6 +49,3 @@ def read_root(request: Request, user_email: str=Cookie(None)):#request is a vari
 #push
 #uvicorn main:app --reload
 #source venv/Scripts/activate
-
-
-

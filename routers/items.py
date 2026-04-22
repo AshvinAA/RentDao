@@ -98,3 +98,27 @@ def add_item_page(request: Request, user_email: str = Cookie(None)):
     if not user_email:
         return RedirectResponse(url="/login?error=You are not logged in.", status_code=303)
     return templates.TemplateResponse("items.html", {"request": request})
+
+@router.post("/bookings/approve/{booking_id}")
+def approve_booking(
+    booking_id: int,
+    user_email: str = Cookie(None),
+    db: Session = Depends(get_db)
+):
+    # CHANGED: models.Booking to models.Booking_details
+    booking = db.query(models.Booking_details).filter(models.Booking_details.id == booking_id).first()
+    
+    if booking:
+        booking.status = "approved"
+
+        new_delivery = models.Delivery_history(
+            booking_id=booking.id,
+            delivery_status="awaiting_admin", 
+            pickup_location=booking.item.owner.location, 
+            dropoff_location=booking.rentor.location,
+            delivery_date=booking.start_date
+        )
+        db.add(new_delivery)
+        db.commit()
+
+    return RedirectResponse(url="/profile", status_code=303)

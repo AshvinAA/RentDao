@@ -6,11 +6,10 @@ from starlette.middleware.sessions import SessionMiddleware #if i put this taile
 import os
 import models
 from database import engine
-
+from routers import auth, items, admin, driver
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key="change-this-to-something-secret") #idk this
 
-from routers import items, auth, admin
 
 models.Base.metadata.create_all(bind=engine) # This is the magic line that tells SQLAlchemy to build the tables!
 
@@ -24,7 +23,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(items.router)
 app.include_router(auth.router)
 app.include_router(admin.router)
-
+app.include_router(driver.router)
 
 @app.get("/")
 def read_root(request: Request, user_email: str=Cookie(None)):#request is a variable that basically catches all our data and packs them into our request variable

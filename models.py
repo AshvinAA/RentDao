@@ -45,7 +45,7 @@ class User(Base):
 
     items_posted = relationship("Item",back_populates="owner")
 
-    history = relationship("Booking_details", backref="user")
+    history = relationship("Booking_details", backref="items_booked")
     
 class Booking_details(Base):
     __tablename__="booking_details"
@@ -53,7 +53,7 @@ class Booking_details(Base):
     id=Column(Integer, primary_key=True, index=True)
     item_id=Column(Integer, ForeignKey("items.id"))
     user_id=Column(Integer, ForeignKey("users.id"))
-    item = relationship("Item")
+    items_booked = relationship("Item" , backref="history")    
     start_date=Column(String(20))
     end_date=Column(String(20))
     total_price=Column(Integer)
@@ -67,9 +67,78 @@ class Booking_details(Base):
         return None
     
     
+class Item_Tags(Base):
+    __tablename__="item_tags"
+
+    id=Column(Integer, primary_key=True, index=True)
+    item_id=Column(Integer, ForeignKey("items.id"))
+    tag=Column(String(50), index=True)
+    items = relationship("Item", backref="tags")
+
+class Cart(Base):
+    __tablename__="cart"
+
+    id=Column(Integer, primary_key=True, index=True)
+    user_id=Column(Integer, ForeignKey("users.id"))
+    item_id=Column(Integer, ForeignKey("items.id"))
+    item = relationship("Item")
+    users = relationship("User")
+
+class Item_Images(Base):
+    __tablename__="item_images"
+
+    id=Column(Integer, primary_key=True, index=True)
+    item_id=Column(Integer, ForeignKey("items.id"))
+    image_url=Column(String(255))
+    item = relationship("Item", backref="images")
+
+class Wishlist(Base):
+    __tablename__="wishlist"
+
+    id=Column(Integer, primary_key=True, index=True)
+    user_id=Column(Integer, ForeignKey("users.id"))
+    item_id=Column(Integer, ForeignKey("items.id"))
+    item = relationship("Item")
+    users = relationship("User")
+
+class Reviews(Base):
+    review_id=Column(Integer, primary_key=True, index=True)
+    item_id=Column(Integer, ForeignKey("items.id"))
+    booking_id=Column(Integer, ForeignKey("booking_details.id"))
+    reviewer_id=Column(Integer, ForeignKey("users.id"))
+    reviewee_id=Column(Integer, ForeignKey("users.id"))
+    rating=Column(Integer)
+    comment=Column(String(400) , default="")
+
+class Reports(Base):
+    __tablename__="reports"
+
+    id=Column(Integer, primary_key=True, index=True)
+    reporter_id=Column(Integer, ForeignKey("users.id"))
+    reported_user_id=Column(Integer, ForeignKey("users.id"))
+    item_id=Column(Integer, ForeignKey("items.id"), nullable=True)
+    reason=Column(String(400))
+    details =Column(String(400) , default="")
+
+class Insurance(Base):
+    __tablename__="insurance"
+
+    id=Column(Integer, primary_key=True, index=True)
+    item_id=Column(Integer, ForeignKey("items.id"))
+    insurance_provider=Column(String(100))
+    policy_number=Column(String(100))
+    coverage_details=Column(String(400))
 
 
+class Payment(Base):
+    __tablename__="payments"
 
-
-
+    id=Column(Integer, primary_key=True, index=True)
+    booking_id=Column(Integer, ForeignKey("booking_details.id"))
+    owner_id=Column(Integer, ForeignKey("users.id"))
+    amount=Column(Integer)
+    payment_status=Column(String(20), default="pending") #pending, completed, failed
+    payment_details=Column(String(400) , default="")
+    payment_method=Column(String(100))
+    payment_status=Column(String(20), default="pending")
 

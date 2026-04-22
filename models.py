@@ -34,7 +34,7 @@ class User(Base):
     picture = Column(String(255) , nullable =True) #We will store the image URL/path and not the image file itself
     location = Column(String(100), index=True, nullable=False)
     phone_no = Column(String(20))
-    rating = Column(Float, default=0.0)
+    # rating = Column(Float, default=0.0)
     payment_option = Column(String(100))
 
     #Admin/Suspended Flags
@@ -183,6 +183,7 @@ class Payment(Base):
     id=Column(Integer, primary_key=True, index=True)
     booking_id=Column(Integer, ForeignKey("booking_details.id"))
     owner_id=Column(Integer, ForeignKey("users.id"))
+    rentor_id=Column(Integer, ForeignKey("users.id"))
     amount=Column(Integer)
     payment_status=Column(String(20), default="pending") #pending, completed, failed
     payment_details=Column(String(400) , default="")

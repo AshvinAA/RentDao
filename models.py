@@ -130,3 +130,15 @@ class Insurance(Base):
     coverage_details=Column(String(400))
 
 
+class Payment(Base):
+    __tablename__="payments"
+
+    id=Column(Integer, primary_key=True, index=True)
+    booking_id=Column(Integer, ForeignKey("booking_details.id"))
+    owner_id=Column(Integer, ForeignKey("users.id"))
+    amount=Column(Integer)
+    payment_status=Column(String(20), default="pending") #pending, completed, failed
+    payment_details=Column(String(400) , default="")
+    payment_method=Column(String(100))
+    payment_status=Column(String(20), default="pending")
+

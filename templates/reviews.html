@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+
+{% block title %}Leave a Review - RentDao{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>Leave a Review</h1>
+    
+    <form action="/reviews/create" method="post">
+        <label for="booking_id">Booking ID:</label>
+        <input type="number" name="booking_id" id="booking_id" required><br><br>
+
+        <label for="rating">Rating (1-5):</label>
+        <select name="rating" id="rating" required>
+            <option value="1">1 - Poor</option>
+            <option value="2">2 - Fair</option>
+            <option value="3">3 - Good</option>
+            <option value="4">4 - Very Good</option>
+            <option value="5">5 - Excellent</option>
+        </select><br><br>
+
+        <label for="comment">Comment:</label><br>
+        <textarea name="comment" id="comment" rows="4" cols="50" placeholder="Share your experience..."></textarea><br><br>
+
+        <button type="submit">Submit Review</button>
+    </form>
+</div>
+{% endblock %}

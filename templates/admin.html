@@ -1,507 +1,198 @@
-{% extends "base.html" %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard - RentDao</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background-color: #f4f7f6; color: #333; }
+        
+        /* Navbar */
+        .navbar { background-color: #343a40; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
+        .navbar h1 { margin: 0; font-size: 1.5em; }
+        .logout-btn { color: #ff6b6b; text-decoration: none; font-weight: bold; border: 1px solid #ff6b6b; padding: 5px 15px; border-radius: 4px; }
+        .logout-btn:hover { background-color: #ff6b6b; color: white; }
 
-{% block title %}Admin Dashboard - RentDao{% endblock %}
+        /* Main Container */
+        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
+        
+        /* Cards & Sections */
+        .section-card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .section-card h2 { margin-top: 0; color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px;}
+        
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #dee2e6; }
+        th { background-color: #f8f9fa; font-weight: 600; color: #495057; }
+        
+        /* Buttons */
+        .btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.85em; text-decoration: none; display: inline-block;}
+        .btn-blue { background-color: #007bff; color: white; }
+        .btn-green { background-color: #28a745; color: white; }
+        .btn-red { background-color: #dc3545; color: white; }
+        .btn-gray { background-color: #6c757d; color: white; }
+        
+        /* Search Box */
+        .search-box { margin-bottom: 20px; display: flex; gap: 10px; align-items: center; }
+        .search-box input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 200px; }
+        
+        /* Status Badges */
+        .badge { padding: 4px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold; }
+        .badge-active { background-color: #d4edda; color: #155724; }
+        .badge-suspended { background-color: #f8d7da; color: #721c24; }
+        .badge-pending { background-color: #fff3cd; color: #856404; }
+    </style>
+</head>
+<body>
 
-{% block extra_head %}
-<style>
-    .admin-page-content {
-        max-width: 1400px;
-        margin: 40px auto;
-        padding: 0 20px;
-    }
-
-    .page-header {
-        text-align: center;
-        margin-bottom: 40px;
-    }
-
-    .page-header h1 {
-        font-size: 2.8em;
-        color: #333;
-        margin: 0 0 10px 0;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-        background-clip: text;
-    }
-
-    .page-header p {
-        font-size: 1.1em;
-        color: #666;
-        margin: 0;
-    }
-
-    .dashboard-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 30px;
-    }
-
-    .dashboard-section {
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
-        padding: 30px;
-        height: fit-content;
-    }
-
-    .section-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 25px;
-        padding-bottom: 15px;
-        border-bottom: 2px solid #f0f0f0;
-    }
-
-    .section-header h2 {
-        font-size: 1.6em;
-        color: #333;
-        margin: 0;
-    }
-
-    .section-stats {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 8px 16px;
-        border-radius: 20px;
-        font-size: 0.9em;
-        font-weight: 600;
-    }
-
-    /* ITEMS LIST */
-    .items-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    .item-card {
-        background: linear-gradient(135deg, #f8f9fa 0%, #f0f2f5 100%);
-        border: 1px solid #e9ecef;
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 15px;
-        transition: all 0.3s ease;
-        position: relative;
-    }
-
-    .item-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-        border-color: #667eea;
-    }
-
-    .item-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: flex-start;
-        margin-bottom: 10px;
-    }
-
-    .item-name {
-        font-size: 1.1em;
-        font-weight: 600;
-        color: #333;
-        margin: 0;
-    }
-
-    .item-status {
-        padding: 4px 12px;
-        border-radius: 12px;
-        font-size: 0.8em;
-        font-weight: 600;
-        text-transform: uppercase;
-    }
-
-    .status-approved {
-        background: #d4edda;
-        color: #155724;
-    }
-
-    .status-pending {
-        background: #fff3cd;
-        color: #856404;
-    }
-
-    .item-description {
-        color: #666;
-        font-size: 0.95em;
-        line-height: 1.4;
-        margin: 8px 0;
-    }
-
-    .item-meta {
-        font-size: 0.85em;
-        color: #999;
-        margin: 5px 0;
-    }
-
-    .item-actions {
-        display: flex;
-        gap: 10px;
-        margin-top: 15px;
-    }
-
-    .btn-action {
-        padding: 8px 16px;
-        border: none;
-        border-radius: 6px;
-        font-size: 0.9em;
-        font-weight: 600;
-        cursor: pointer;
-        transition: all 0.2s ease;
-        text-decoration: none;
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-    }
-
-    .btn-approve {
-        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
-        color: white;
-    }
-
-    .btn-approve:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
-    }
-
-    .btn-remove {
-        background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
-        color: white;
-    }
-
-    .btn-remove:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
-    }
-
-    /* USERS LIST */
-    .users-list {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-    }
-
-    .user-card {
-        background: linear-gradient(135deg, #f8f9fa 0%, #f0f2f5 100%);
-        border: 1px solid #e9ecef;
-        border-radius: 8px;
-        padding: 20px;
-        margin-bottom: 15px;
-        transition: all 0.3s ease;
-    }
-
-    .user-card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
-        border-color: #667eea;
-    }
-
-    .user-info {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .user-details h3 {
-        margin: 0 0 5px 0;
-        font-size: 1.1em;
-        color: #333;
-    }
-
-    .user-email {
-        color: #666;
-        font-size: 0.9em;
-    }
-
-    .user-status {
-        padding: 4px 12px;
-        border-radius: 12px;
-        font-size: 0.8em;
-        font-weight: 600;
-        text-transform: uppercase;
-    }
-
-    .status-active {
-        background: #d4edda;
-        color: #155724;
-    }
-
-    .status-suspended {
-        background: #f8d7da;
-        color: #721c24;
-    }
-
-    /* SEARCH SECTION */
-    .search-section {
-        grid-column: 1 / -1;
-        background: white;
-        border-radius: 12px;
-        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.08);
-        padding: 30px;
-        margin-top: 20px;
-    }
-
-    .search-form {
-        display: flex;
-        gap: 15px;
-        align-items: center;
-        margin-bottom: 20px;
-    }
-
-    .search-input {
-        flex: 1;
-        padding: 12px 16px;
-        border: 2px solid #e0e0e0;
-        border-radius: 8px;
-        font-size: 1em;
-        transition: border-color 0.3s ease;
-    }
-
-    .search-input:focus {
-        outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-    }
-
-    .btn-search {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-        color: white;
-        padding: 12px 24px;
-        border: none;
-        border-radius: 8px;
-        font-size: 1em;
-        font-weight: 600;
-        cursor: pointer;
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .btn-search:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
-    }
-
-    /* SEARCH RESULTS */
-    .search-result {
-        background: #f8f9fa;
-        border: 1px solid #e9ecef;
-        border-radius: 8px;
-        padding: 20px;
-        margin-top: 20px;
-    }
-
-    .search-result.success {
-        border-color: #28a745;
-        background: #d4edda;
-    }
-
-    .search-result.error {
-        border-color: #dc3545;
-        background: #f8d7da;
-    }
-
-    .search-result h3 {
-        margin: 0 0 10px 0;
-        font-size: 1.1em;
-    }
-
-    .search-result p {
-        margin: 5px 0;
-        font-size: 0.95em;
-    }
-
-    /* RESPONSIVE DESIGN */
-    @media (max-width: 1024px) {
-        .dashboard-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .page-header h1 {
-            font-size: 2.2em;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .admin-page-content {
-            padding: 0 15px;
-        }
-
-        .dashboard-section {
-            padding: 20px;
-        }
-
-        .section-header {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 10px;
-        }
-
-        .item-actions, .user-info {
-            flex-direction: column;
-            align-items: flex-start;
-            gap: 10px;
-        }
-
-        .search-form {
-            flex-direction: column;
-            align-items: stretch;
-        }
-
-        .btn-search {
-            align-self: flex-start;
-        }
-    }
-
-    /* EMPTY STATE */
-    .empty-state {
-        text-align: center;
-        padding: 40px 20px;
-        color: #999;
-    }
-
-    .empty-state p {
-        font-size: 1em;
-        font-style: italic;
-    }
-</style>
-{% endblock %}
-
-{% block content %}
-<div class="admin-page-content">
-    <div class="page-header">
-        <h1>Admin Dashboard</h1>
-        <p>Manage items, users, and platform moderation</p>
+    <div class="navbar">
+        <h1>🛡️ RentDao Admin Panel</h1>
+        <a href="/admin/logout" class="logout-btn">Log Out</a>
     </div>
 
-    <div class="dashboard-grid">
-        <!-- ITEMS MANAGEMENT -->
-        <div class="dashboard-section">
-            <div class="section-header">
-                <h2>📦 Item Management</h2>
-                <div class="section-stats">{{ items|length }} Total Items</div>
-            </div>
+    <div class="container">
 
-            {% if items %}
-                <ul class="items-list">
-                    {% for item in items %}
-                        <li class="item-card">
-                            <div class="item-header">
-                                <div>
-                                    <h3 class="item-name">{{ item.name }}</h3>
-                                    <div class="item-status {% if item.is_approved %}status-approved{% else %}status-pending{% endif %}">
-                                        {% if item.is_approved %}Approved{% else %}Pending{% endif %}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <p class="item-description">{{ item.description }}</p>
-                            <div class="item-meta">
-                                Posted by: {{ item.owner.name }} ({{ item.owner.email }})
-                            </div>
-
-                            <div class="item-actions">
-                                {% if not item.is_approved %}
-                                    <form method="post" action="/admin/items/{{ item.id }}/approve" style="display:inline">
-                                        <button type="submit" class="btn-action btn-approve">✅ Approve</button>
+        <div class="section-card" style="border-left: 5px solid #007bff;">
+            <h2>🚚 Deliveries Awaiting Approval</h2>
+            {% if pending_deliveries %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Delivery ID</th>
+                            <th>Item Name</th>
+                            <th>Pickup Location</th>
+                            <th>Dropoff Location</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for delivery in pending_deliveries %}
+                            <tr>
+                                <td>#{{ delivery.id }}</td>
+                                <td>{{ delivery.booking.item.name }}</td>
+                                <td>{{ delivery.pickup_location }}</td>
+                                <td>{{ delivery.dropoff_location }}</td>
+                                <td>
+                                    <form action="/admin/deliveries/{{ delivery.id }}/approve" method="POST" style="margin: 0;">
+                                        <button type="submit" class="btn btn-blue">Approve for Drivers</button>
                                     </form>
-                                {% endif %}
-                                <form method="post" action="/admin/items/{{ item.id }}/remove" style="display:inline">
-                                    <button type="submit" class="btn-action btn-remove" onclick="return confirm('Are you sure you want to remove this item?')">🗑️ Remove</button>
-                                </form>
-                            </div>
-                        </li>
-                    {% endfor %}
-                </ul>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             {% else %}
-                <div class="empty-state">
-                    <p>No items found in the system.</p>
-                </div>
+                <p style="color: gray;">All clear! There are no deliveries waiting for your approval right now.</p>
             {% endif %}
         </div>
 
-        <!-- USERS MANAGEMENT -->
-        <div class="dashboard-section">
-            <div class="section-header">
-                <h2>👥 User Management</h2>
-                <div class="section-stats">{{ users|length }} Total Users</div>
-            </div>
 
-            {% if users %}
-                <ul class="users-list">
-                    {% for user in users %}
-                        {% if user.email not in ["admin@rentdao.com", "saiberry@gmail.com", "a5hv1n@gmail.com"] %}
-                            <li class="user-card">
-                                <div class="user-info">
-                                    <div class="user-details">
-                                        <h3>{{ user.name }}</h3>
-                                        <p class="user-email">{{ user.email }}</p>
-                                    </div>
-
-                                    <div class="user-status {% if not user.is_suspended %}status-active{% else %}status-suspended{% endif %}">
-                                        {% if not user.is_suspended %}Active{% else %}Suspended{% endif %}
-                                    </div>
-                                </div>
-
-                                {% if not user.is_suspended %}
-                                    <div style="margin-top: 15px;">
-                                        <form method="post" action="/admin/users/{{ user.id }}/suspend" style="display:inline">
-                                            <button type="submit" class="btn-action btn-remove" onclick="return confirm('Are you sure you want to suspend this user?')">🚫 Suspend User</button>
-                                        </form>
-                                    </div>
-                                {% endif %}
-                            </li>
-                        {% endif %}
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <div class="empty-state">
-                    <p>No users found in the system.</p>
-                </div>
-            {% endif %}
-        </div>
-    </div>
-
-    <!-- SEARCH SECTION -->
-    <div class="search-section">
-        <h2>🔍 Search User by ID</h2>
-        <form method="get" action="/admin/users/search" class="search-form">
-            <input type="number" name="user_id" placeholder="Enter user ID" required class="search-input" />
-            <button type="submit" class="btn-search">Search User</button>
-        </form>
-
-        {% if searched_user %}
-            <div class="search-result success">
-                <h3>✅ User Found</h3>
-                <p><strong>Name:</strong> {{ searched_user.name }}</p>
-                <p><strong>Email:</strong> {{ searched_user.email }}</p>
-                <p><strong>Status:</strong>
-                    {% if not searched_user.is_suspended %}
-                        <span style="color: #28a745;">Active</span>
-                    {% else %}
-                        <span style="color: #dc3545;">Suspended</span>
-                    {% endif %}
-                </p>
-
-                {% if not searched_user.is_suspended %}
-                    <form method="post" action="/admin/users/{{ searched_user.id }}/suspend" style="display:inline; margin-top: 10px;">
-                        <button type="submit" class="btn-action btn-remove" onclick="return confirm('Are you sure you want to suspend this user?')">🚫 Suspend User</button>
-                    </form>
-                {% else %}
-                    <p><strong style="color: #dc3545;">This user is already suspended.</strong></p>
+        <div class="section-card">
+            <h2>👥 User Management</h2>
+            
+            <div class="search-box">
+                <form action="/admin/users/search" method="GET" style="display: flex; gap: 10px;">
+                    <input type="number" name="user_id" placeholder="Search by User ID..." required>
+                    <button type="submit" class="btn btn-gray">Search</button>
+                </form>
+                {% if search_id %}
+                    <a href="/admin" style="font-size: 0.9em; color: #007bff;">Clear Search</a>
                 {% endif %}
             </div>
-        {% elif search_id is defined %}
-            <div class="search-result error">
-                <h3>❌ User Not Found</h3>
-                <p>No user found with ID {{ search_id }}.</p>
-            </div>
-        {% endif %}
+
+            {% if search_id %}
+                <div style="background-color: #e9ecef; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+                    <h3 style="margin-top: 0; font-size: 1em;">Search Results for ID: {{ search_id }}</h3>
+                    {% if searched_user %}
+                        <p><strong>Name:</strong> {{ searched_user.name }} | <strong>Email:</strong> {{ searched_user.email }}</p>
+                        <form action="/admin/users/{{ searched_user.id }}/suspend" method="POST" style="margin: 0;">
+                            <button type="submit" class="btn btn-red" {% if searched_user.is_suspended %}disabled style="opacity: 0.5;"{% endif %}>
+                                {% if searched_user.is_suspended %}Already Suspended{% else %}Suspend User{% endif %}
+                            </button>
+                        </form>
+                    {% else %}
+                        <p style="color: red; margin: 0;">No user found with that ID.</p>
+                    {% endif %}
+                </div>
+            {% endif %}
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for u in users %}
+                        <tr>
+                            <td>{{ u.id }}</td>
+                            <td>{{ u.name }}</td>
+                            <td>{{ u.email }}</td>
+                            <td>
+                                {% if u.is_suspended %}
+                                    <span class="badge badge-suspended">Suspended</span>
+                                {% else %}
+                                    <span class="badge badge-active">Active</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <form action="/admin/users/{{ u.id }}/suspend" method="POST" style="margin: 0;">
+                                    <button type="submit" class="btn btn-red" {% if u.is_suspended %}disabled style="opacity: 0.5;"{% endif %}>Suspend</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+
+        <div class="section-card">
+            <h2>📦 Marketplace Item Moderation</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Item Name</th>
+                        <th>Owner Email</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in items %}
+                        <tr>
+                            <td>{{ item.id }}</td>
+                            <td><strong>{{ item.name }}</strong></td>
+                            <td>{{ item.owner.email }}</td>
+                            <td>
+                                {% if item.is_approved %}
+                                    <span class="badge badge-active">Approved</span>
+                                {% else %}
+                                    <span class="badge badge-pending">Needs Approval</span>
+                                {% endif %}
+                            </td>
+                            <td style="display: flex; gap: 10px;">
+                                {% if not item.is_approved %}
+                                    <form action="/admin/items/{{ item.id }}/approve" method="POST" style="margin: 0;">
+                                        <button type="submit" class="btn btn-green">Approve</button>
+                                    </form>
+                                {% endif %}
+                                
+                                <form action="/admin/items/{{ item.id }}/remove" method="POST" style="margin: 0;">
+                                    <button type="submit" class="btn btn-red">Remove Post</button>
+                                </form>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
     </div>
 
-    <div style="text-align: center; margin: 40px 0 0;">
-        <a href="/admin/logout" style="display: inline-block; background: linear-gradient(135deg, #711d25 0%, #c82333 100%); color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600;">🚪 Logout</a>
-    </div>
-</div>
-{% endblock %}
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Driver Registration - RentDao</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 40px 0; }
+        .auth-card { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 500px; }
+        .auth-card h2 { text-align: center; color: #333; margin-top: 0; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9em; color: #555; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        .btn { width: 100%; padding: 10px; background-color: #28a745; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 1em; margin-top: 10px; }
+        .btn:hover { background-color: #218838; }
+        .link { display: block; text-align: center; margin-top: 15px; font-size: 0.9em; color: #007bff; text-decoration: none; }
+        
+        .alert-banner { background-color: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #f5c6cb; text-align: center; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="auth-card">
+        <h2>Become a RentDao Driver</h2>
+        
+        {% if error %}
+            <div class="alert-banner">
+                ⚠️ {{ error }}
+            </div>
+        {% endif %}
+
+        <form action="/driver/register" method="POST">
+            <div class="form-group">
+                <label>Full Name:</label>
+                <input type="text" name="name" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Email Address:</label>
+                <input type="email" name="email" required>
+            </div>
+            
+            <div class="form-group">
+                <label>Password:</label>
+                <input type="password" name="password" required>
+            </div>
+
+            <div class="form-group">
+                <label>Phone Number:</label>
+                <input type="text" name="phone_no" required>
+            </div>
+
+            <div class="form-group">
+                <label>Driver's License Number:</label>
+                <input type="text" name="license" required>
+            </div>
+
+            <div class="form-group">
+                <label>Vehicle Type:</label>
+                <select name="vehicle_type" required>
+                    <option value="Motorcycle">Motorcycle</option>
+                    <option value="Car">Car</option>
+                    <option value="Van/Truck">Van / Truck</option>
+                    <option value="Bicycle">Bicycle</option>
+                </select>
+            </div>
+            
+            <button type="submit" class="btn">Submit Application</button>
+        </form>
+        
+        <a href="/driver/login" class="link">Already have a driver account? Log in.</a>
+    </div>
+
+</body>
+</html>

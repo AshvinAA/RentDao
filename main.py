@@ -6,7 +6,7 @@ from starlette.middleware.sessions import SessionMiddleware #if i put this taile
 import os
 import models
 from database import engine
-
+from routers import auth, items, admin, driver
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key="change-this-to-something-secret") #idk this
 
@@ -24,6 +24,7 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 app.include_router(items.router)
 app.include_router(auth.router)
 app.include_router(admin.router)
+app.include_router(driver.router)
 app.include_router(bookings.router)
 app.include_router(reviews.router)
 app.include_router(reports.router)

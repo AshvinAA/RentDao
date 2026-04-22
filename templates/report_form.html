@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Report User - RentDao{% endblock %}</title>
+</head>
+<body>
+    {% extends "base.html" %}
+
+    {% block content %}
+    <div class="container">
+        <h1>Report a User</h1>
+        <form action="/reports/create" method="post">
+            <input type="hidden" name="reported_user_id" value="{{ reported_user_id }}">
+            <input type="hidden" name="item_id" value="{{ item_id }}">
+
+            <label for="reason">Reason:</label>
+            <select name="reason" id="reason" required>
+                <option value="spam">Spam</option>
+                <option value="harassment">Harassment</option>
+                <option value="fraud">Fraud</option>
+                <option value="inappropriate_content">Inappropriate Content</option>
+                <option value="other">Other</option>
+            </select><br><br>
+
+            <label for="details">Details:</label><br>
+            <textarea name="details" id="details" rows="4" cols="50"></textarea><br><br>
+
+            <button type="submit">Submit Report</button>
+        </form>
+    </div>
+    {% endblock %}
+</body>
+</html>

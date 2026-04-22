@@ -26,3 +26,10 @@ class UserCreateForm:
         self.phone_no = phone_no
         self.payment_option = payment_option
         self.picture = picture
+        
+class TagForm:
+    def __init__(
+        self,
+        tag: str = Form(...)
+    ):
+        self.tag = tag

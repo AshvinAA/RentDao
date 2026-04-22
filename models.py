@@ -1,4 +1,4 @@
-from sqlalchemy import Column , Integer , String , Boolean , Float , ForeignKey
+from sqlalchemy import Column , Integer , String , Boolean , Float , ForeignKey , Date
 from sqlalchemy.orm import relationship 
 from database import Base
 
@@ -53,9 +53,9 @@ class Booking_details(Base):
     id=Column(Integer, primary_key=True, index=True)
     item_id=Column(Integer, ForeignKey("items.id"))
     user_id=Column(Integer, ForeignKey("users.id"))
-    items_booked = relationship("Item" , backref="history")    
-    start_date=Column(String(20))
-    end_date=Column(String(20))
+    item = relationship("Item")
+    start_date=Column(Date)
+    end_date=Column(Date)
     total_price=Column(Integer)
     status = Column(String(20), default="pending") #pending, approved, rejected, completed
     booking_status = Column(Boolean, default=False) #False means the booking is not yet completed, True means the booking is completed
@@ -65,7 +65,33 @@ class Booking_details(Base):
         if self.item and self.item.owner:
             return self.item.owner.location
         return None
+ 
+         
+class Delivery_drivers(Base):
+    __tablename__ = "delivery_drivers"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(100))
+    email = Column(String(100), unique=True, index=True)
+    hashed_password = Column(String(255))
+    phone_no = Column(String(20))
+    license = Column(String(255))
+    vehicle_type = Column(String(255))
+    is_available = Column(Boolean, default=True)
+    rating = Column(Float, default=0.0)
+    delivery_history = relationship("Delivery_history", back_populates="driver")      
     
+class Delivery_history(Base):
+    __tablename__ = "delivery_history"
+
+    id = Column(Integer, primary_key=True, index=True)
+    booking_id = Column(Integer, ForeignKey("booking_details.id"))
+    driver_id = Column(Integer, ForeignKey("delivery_drivers.id"))
+    delivery_status = Column(String(20), default="pending") #pending, in_transit, delivered
+    delivery_date = Column(Date)
+    driver = relationship("Delivery_drivers", foreign_keys=[driver_id], back_populates="delivery_history") 
+    pickup_location = Column(String(100))
+    dropoff_location = Column(String(100))
     
 class Item_Tags(Base):
     __tablename__="item_tags"

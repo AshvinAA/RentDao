@@ -128,10 +128,34 @@ def show_profile(
     # If they DO have the cookie, load their data
     user = db.query(models.User).filter(models.User.email == user_email).first()
     
+    # Get rental history (completed bookings where user is the renter)
+    rental_history = (
+        db.query(models.Booking_details)
+        .filter(
+            models.Booking_details.user_id == user.id,
+            models.Booking_details.status == "completed"
+        )
+        .order_by(models.Booking_details.end_date.desc())
+        .all()
+    )
+    
+    # Get cancelled rentals
+    cancelled_rentals = (
+        db.query(models.Booking_details)
+        .filter(
+            models.Booking_details.user_id == user.id,
+            models.Booking_details.status == "cancelled"
+        )
+        .order_by(models.Booking_details.end_date.desc())
+        .all()
+    )
+    
     return templates.TemplateResponse("profile.html", {
         "request": request, 
         "user": user,
-        "is_admin": user_email in ADMIN_EMAILS 
+        "is_admin": user_email in ADMIN_EMAILS,
+        "rental_history": rental_history,
+        "cancelled_rentals": cancelled_rentals
     })
 
 @router.post("/profile/edit")

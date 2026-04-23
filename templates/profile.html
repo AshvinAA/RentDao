@@ -505,6 +505,10 @@
                                         <p class="item-description">{{ item.description }}</p>
                                         <span class="pending-badge">⏳ Awaiting Approval</span>
                                     </div>
+                                    
+                                    <form action="/items/delete/{{ item.id }}" method="POST" style="margin: 0;">
+                                        <button type="submit" class="btn-delete">Delete</button>
+                                    </form>
                                 </div>
                             </li>
                         {% endfor %}
@@ -520,9 +524,57 @@
             <!-- RENTAL HISTORY SECTION -->
             <div class="section-box">
                 <h2>Rental History</h2>
-                <div class="empty-state">
-                    <p>Your past rentals will appear here once the rental feature is active.</p>
-                </div>
+                {% if rental_history %}
+                    <ul class="item-list">
+                        {% for rental in rental_history %}
+                            <li>
+                                <div class="item-header">
+                                    <div>
+                                        <div class="item-name">Item ID: {{ rental.item_id }}</div>
+                                        <p class="item-description">
+                                            <strong>Dates:</strong> {{ rental.start_date }} to {{ rental.end_date }}<br>
+                                            <strong>Total Price:</strong> ${{ rental.total_price }}<br>
+                                            <strong>Owner:</strong> {{ rental.rentor.email }}<br>
+                                            <strong>Status:</strong> <span style="color: green; font-weight: 600;">{{ rental.status }}</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="empty-state">
+                        <p>No completed rentals yet. Start renting items from the marketplace!</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- CANCELLED RENTALS SECTION -->
+            <div class="section-box">
+                <h2>Cancelled Rentals</h2>
+                {% if cancelled_rentals %}
+                    <ul class="item-list">
+                        {% for rental in cancelled_rentals %}
+                            <li style="border-left-color: #dc3545; background: linear-gradient(135deg, #ffe5e5 0%, #ffd9d9 100%);">
+                                <div class="item-header">
+                                    <div>
+                                        <div class="item-name">Item ID: {{ rental.item_id }}</div>
+                                        <p class="item-description">
+                                            <strong>Dates:</strong> {{ rental.start_date }} to {{ rental.end_date }}<br>
+                                            <strong>Total Price:</strong> ${{ rental.total_price }}<br>
+                                            <strong>Owner:</strong> {{ rental.rentor.email }}<br>
+                                            <strong>Status:</strong> <span style="color: #dc3545; font-weight: 600;">{{ rental.status }}</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                {% else %}
+                    <div class="empty-state">
+                        <p>No cancelled rentals.</p>
+                    </div>
+                {% endif %}
             </div>
 
         </div>

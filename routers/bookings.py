@@ -81,17 +81,27 @@ def approve_booking(booking_id: int, current_user: models.User = Depends(get_cur
     booking = db.query(models.Booking_details).filter(models.Booking_details.id == booking_id).first()
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found")
- 
-    # Only the item owner can approve
+
     if booking.item.owner_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized")
- 
+
     if booking.status != "pending":
         return RedirectResponse(url="/bookings", status_code=303)
- 
+
     booking.status = "approved"
+    
+    #Creating the delivery history entry when the booking is approved
+    new_delivery = models.Delivery_history(
+        booking_id=booking.id,
+        delivery_status="awaiting_admin", 
+        pickup_location=booking.item.owner.location, # Where the owner lives
+        dropoff_location=booking.user.location,      # Where the renter lives
+        delivery_date=booking.start_date
+    )
+    db.add(new_delivery)
+    
     db.commit()
- 
+
     return RedirectResponse(url="/bookings", status_code=303)
 
 @router.post("/{booking_id}/reject")

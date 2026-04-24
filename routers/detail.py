@@ -20,21 +20,14 @@ def detail(
 ):
     
     item = (
-        db.query(models.Item)
-        .join(models.User, models.Item.owner_id == models.User.id)          
-        .outerjoin(models.Item_Tags, models.Item_Tags.item_id == models.Item.id)     
-        .outerjoin(models.Item_Images, models.Item_Images.item_id == models.Item.id) 
-        .outerjoin(models.Reviews, models.Reviews.item_id == models.Item.id)         
-        .outerjoin(models.Insurance, models.Insurance.item_id == models.Item.id)     
-        .filter(models.Item.id == item_id)
-        .options(
-            joinedload(models.Item.owner),
-            joinedload(models.Item.tags),
-            joinedload(models.Item.images),
-            joinedload(models.Item.reviews),
-            joinedload(models.Item.insurance_records),
-        )
-        .first()
+        db.query(models.Item) #in the items table
+        .join(models.User, models.Item.owner_id == models.User.id)     #inner join the items to the users, ie the owners must exist for the item to be valid     
+        .outerjoin(models.Item_Tags, models.Item_Tags.item_id == models.Item.id)     #left join to get all the tags for the item, this currently doesnt work
+        .outerjoin(models.Item_Images, models.Item_Images.item_id == models.Item.id) #left join to get all the images of the item same logic as tags but this works 
+        .outerjoin(models.Reviews, models.Reviews.item_id == models.Item.id) #left join to get all the reviews of the item, same as above but also doesnt work(?)         
+        .outerjoin(models.Insurance, models.Insurance.item_id == models.Item.id) #last left join to get the insurance info, works  
+        #we do left join to ensure that an item is always returned regardless of if it has tags, images, insurance, reviews. although it should be changed so that it wont be displayed if it doesnt have an image  
+        .filter(models.Item.id == item_id).first()
     )
 
     if not item:
@@ -42,21 +35,23 @@ def detail(
 
     today = date.today()
 
-    active_booking_ids = (                          # ← inner / nested query
+    #subquery to find all the active bookings in the db
+    active_booking_ids = (
         db.query(models.Booking_details.id)
-        .filter(models.Booking_details.end_date >= today)
+        .filter(models.Booking_details.end_date >= today)  # Only bookings ending today or later
         .subquery()
     )
 
-    existing_booking = (                            # ← outer query uses subquery
+    #query using the subquery to check if the specific user has a booking open for a specific item
+    existing_booking = (
         db.query(models.Booking_details)
         .filter(
-            models.Booking_details.item_id == item_id,
-            models.Booking_details.user_id == current_user.id,
-            models.Booking_details.status.in_(["pending", "approved"]),
-            models.Booking_details.id.in_(active_booking_ids),
+            models.Booking_details.item_id == item_id,  # Booking must be for this item
+            models.Booking_details.user_id == current_user.id,  # Booking must be by current user
+            models.Booking_details.status.in_(["pending", "approved"]),  # Status must be pending or approved (not declined/cancelled)
+            models.Booking_details.id.in_(active_booking_ids),  # Booking must not be expired (use the subquery)
         )
-        .first()
+        .first() 
     )
 
     stats = (

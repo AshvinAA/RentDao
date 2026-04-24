@@ -24,7 +24,7 @@ def get_current_user(user_email: str = Cookie(None), db: Session = Depends(get_d
         raise HTTPException(status_code=302, headers={"Location": "/login?error=Account is suspended."})
     return user
 
-# --- REGISTRATION ROUTES ---
+
 @router.get("/register")
 def show_register_page(request: Request , error: str = None):
     return templates.TemplateResponse("register.html", {"request": request})
@@ -72,7 +72,6 @@ def register_user(
     return RedirectResponse(url='/', status_code=303)
 
 
-# --- LOGIN ROUTES ---
 @router.get("/login")
 def show_login_page(request: Request):
     error = request.query_params.get("error")
@@ -113,7 +112,6 @@ def logout():
     response.delete_cookie("user_email") #Delete the cookie
     return response
 
-# --- PROFILE ROUTES ---
 
 @router.get("/profile")
 def show_profile(

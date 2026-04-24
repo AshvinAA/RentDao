@@ -20,14 +20,14 @@ def view_insurance(
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    item = db.query(models.Item).filter(models.Item.id == item_id).first()
+    item = db.query(models.Item).filter(models.Item.id == item_id).first() #finding item in db as per usual
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
 
     # Only the item owner can view insurance details
     if item.owner_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized")
-
+#finds the insurance of the specific item
     records = (
         db.query(models.Insurance)
         .filter(models.Insurance.item_id == item_id)
@@ -54,7 +54,7 @@ def add_insurance(
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
 
-    if item.owner_id != current_user.id:
+    if item.owner_id != current_user.id: #only owner can add insurance details of the item
         raise HTTPException(status_code=403, detail="Not authorized")
 
     new_record = models.Insurance(

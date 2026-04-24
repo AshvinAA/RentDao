@@ -16,6 +16,7 @@ def show_report_form(
     reported_user_id: int = None,
     item_id: int = None,
     current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),  # FIX: was missing, get_current_user needs db to look up the user
 ):
     return templates.TemplateResponse("report_form.html", {
         "request": request,
@@ -59,8 +60,7 @@ def submit_report(
     db.add(new_report)
     db.commit()
 
-    return RedirectResponse(url="/items", status_code=303)
-
+    return RedirectResponse(url="/profile", status_code=303)  # FIX: was /items, better to go back to profile
 
 
 @router.get("/mine")

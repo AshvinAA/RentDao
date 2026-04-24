@@ -10,7 +10,8 @@ from routers.auth import get_current_user
 router = APIRouter(prefix="/reviews")
 templates = Jinja2Templates(directory="templates")
 
-@router.get("")  # matches /reviews exactly (because prefix is already "/reviews")
+
+@router.get("")  # matches /reviews exactly
 def all_reviews(
     request: Request,
     db: Session = Depends(get_db),
@@ -25,6 +26,78 @@ def all_reviews(
         "reviews": reviews,
     })
 
+
+@router.get("/booking/{booking_id}")  # view/manage the review for a specific booking
+def booking_review(
+    booking_id: int,
+    request: Request,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    booking = db.query(models.Booking_details).filter(
+        models.Booking_details.id == booking_id
+    ).first()
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+
+    if booking.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    review = (
+        db.query(models.Reviews)
+        .filter(
+            models.Reviews.booking_id == booking_id,
+            models.Reviews.reviewer_id == current_user.id,
+        )
+        .first()
+    )
+    # if no review exists yet, redirect straight to the create page
+    if not review:
+        return RedirectResponse(url=f"/reviews/create?booking_id={booking_id}", status_code=302)
+
+    return templates.TemplateResponse("booking_review.html", {
+        "request": request,
+        "booking": booking,
+        "review": review,
+        "user": current_user,
+    })
+
+
+@router.get("/create")  # /reviews/create?booking_id=1
+def create_review_page(
+    request: Request,
+    booking_id: int,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    booking = db.query(models.Booking_details).filter(
+        models.Booking_details.id == booking_id
+    ).first()
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+
+    if booking.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # if already reviewed, send them to the review management page instead
+    existing = (
+        db.query(models.Reviews)
+        .filter(
+            models.Reviews.booking_id == booking_id,
+            models.Reviews.reviewer_id == current_user.id,
+        )
+        .first()
+    )
+    if existing:
+        return RedirectResponse(url=f"/reviews/booking/{booking_id}", status_code=302)
+
+    return templates.TemplateResponse("create_review.html", {
+        "request": request,
+        "booking": booking,
+        "user": current_user,
+    })
+
+
 @router.post("/create")
 def create_review(
     booking_id: int = Form(...),
@@ -33,11 +106,9 @@ def create_review(
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    # Validate rating
     if rating < 1 or rating > 5:
         raise HTTPException(status_code=400, detail="Rating must be between 1 and 5")
 
-    # Find the booking
     booking = (
         db.query(models.Booking_details)
         .filter(models.Booking_details.id == booking_id)
@@ -46,15 +117,12 @@ def create_review(
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found")
 
-    # Only completed bookings can be reviewed
     if booking.status != "completed":
         raise HTTPException(status_code=400, detail="Can only review completed bookings")
 
-    # Only the renter can leave a review
     if booking.user_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    # Check if this booking was already reviewed by this user
     existing = (
         db.query(models.Reviews)
         .filter(
@@ -70,43 +138,75 @@ def create_review(
         item_id=booking.item_id,
         booking_id=booking_id,
         reviewer_id=current_user.id,
-        reviewee_id=booking.rentor_id,  # the item owner gets reviewed
+        reviewee_id=booking.rentor_id,
         rating=rating,
         comment=comment,
     )
     db.add(new_review)
 
-    # Update item's average rating
     _update_item_rating(db, booking.item_id)
-
-    # Update owner's average rating
     _update_user_rating(db, booking.rentor_id)
 
     db.commit()
 
-    return RedirectResponse(url="/bookings", status_code=303)
+    # redirect to the review management page after submitting
+    return RedirectResponse(url=f"/reviews/booking/{booking_id}", status_code=303)
 
-@router.get("/create")
-def create_review_page(
-    request: Request,
-    booking_id: None,  # pass as query param e.g. /reviews/create?booking_id=1
+
+@router.post("/{review_id}/edit")
+def edit_review(
+    review_id: int,
+    rating: int = Form(...),
+    comment: str = Form(""),
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    if not booking_id:
-        return RedirectResponse(url="/bookings", status_code=303)  # redirect if no booking specified
+    review = db.query(models.Reviews).filter(models.Reviews.review_id == review_id).first()
+    if not review:
+        raise HTTPException(status_code=404, detail="Review not found")
 
-    booking = db.query(models.Booking_details).filter(
-        models.Booking_details.id == booking_id
-    ).first()
-    if not booking:
-        raise HTTPException(status_code=404, detail="Booking not found")
+    if review.reviewer_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
 
-    return templates.TemplateResponse("create_review.html", {
-        "request": request,
-        "booking": booking,
-        "user": current_user,
-    })
+    if rating < 1 or rating > 5:
+        raise HTTPException(status_code=400, detail="Rating must be between 1 and 5")
+
+    review.rating = rating
+    review.comment = comment
+
+    # recalculate averages since rating may have changed
+    _update_item_rating(db, review.item_id)
+    _update_user_rating(db, review.reviewee_id)
+
+    db.commit()
+
+    return RedirectResponse(url=f"/reviews/booking/{review.booking_id}", status_code=303)
+
+
+@router.post("/{review_id}/delete")
+def delete_review(
+    review_id: int,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    review = db.query(models.Reviews).filter(models.Reviews.review_id == review_id).first()
+    if not review:
+        raise HTTPException(status_code=404, detail="Review not found")
+
+    if review.reviewer_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    # store these before deleting so we can update averages after
+    item_id = review.item_id
+    reviewee_id = review.reviewee_id
+
+    db.delete(review)
+    db.commit()
+
+    _update_item_rating(db, item_id)
+    _update_user_rating(db, reviewee_id)
+
+    return RedirectResponse(url="/profile", status_code=303)
 
 
 @router.get("/item/{item_id}")
@@ -155,6 +255,7 @@ def user_reviews(
     })
 
 
+# --- Rating helpers ---
 
 def _update_item_rating(db: Session, item_id: int):
     avg = (
@@ -165,7 +266,6 @@ def _update_item_rating(db: Session, item_id: int):
     item = db.query(models.Item).filter(models.Item.id == item_id).first()
     if item:
         item.rating = round(float(avg), 1) if avg else 0.0
-
 
 
 def _update_user_rating(db: Session, user_id: int):

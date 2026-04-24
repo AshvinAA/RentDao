@@ -57,7 +57,14 @@ def adminDash(request: Request, db: Session = Depends(get_db)):
     ADMIN_EMAILS = {"admin@rentdao.com", "saiberry@gmail.com", "a5hv1n@gmail.com"}
     all_users = db.query(models.User).all()
     non_admin_users = [u for u in all_users if u.email not in ADMIN_EMAILS]
-    
+    # NESTED QUERY: find users who have never posted an item
+    users_with_items = db.query(models.Item.owner_id).distinct().subquery()
+
+    inactive_users = (
+        db.query(models.User)
+        .filter(~models.User.id.in_(users_with_items))
+        .all()
+    )
     # 1. NEW: Fetch deliveries waiting for admin approval
     pending_deliveries = db.query(models.Delivery_history).filter(
         models.Delivery_history.delivery_status == "awaiting_admin"
@@ -67,6 +74,7 @@ def adminDash(request: Request, db: Session = Depends(get_db)):
         "request": request, 
         "items": db.query(models.Item).all(), 
         "users": non_admin_users,
+        "inactive_users": inactive_users,
         "pending_deliveries": pending_deliveries # Pass them to the HTML
     })
 

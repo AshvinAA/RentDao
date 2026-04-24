@@ -149,7 +149,39 @@
             </table>
         </div>
 
-
+        <div class="section-card" style="border-left: 5px solid #ffc107;">
+            <h2>⚠️ Inactive Users (Never Posted an Item)</h2>
+            {% if inactive_users %}
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in inactive_users %}
+                            <tr>
+                                <td>{{ u.id }}</td>
+                                <td>{{ u.name }}</td>
+                                <td>{{ u.email }}</td>
+                                <td>
+                                    {% if u.is_suspended %}
+                                        <span class="badge badge-suspended">Suspended</span>
+                                    {% else %}
+                                        <span class="badge badge-active">Active</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p style="color: gray;">All users have posted at least one item.</p>
+            {% endif %}
+        </div>
         <div class="section-card">
             <h2>📦 Marketplace Item Moderation</h2>
             <table>

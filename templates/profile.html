@@ -261,6 +261,56 @@
         transform: translateY(0);
     }
 
+    /* ACTION BUTTONS FOR RENTAL PANELS */
+    .rental-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 12px;
+        flex-wrap: wrap;
+    }
+
+    .btn-review {
+        background: linear-gradient(135deg, #19662b 0%, #1c8968 100%);
+        color: white;
+        border: none;
+        padding: 8px 14px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 0.85em;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-review:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(28, 137, 104, 0.4);
+    }
+
+    .btn-report {
+        background: linear-gradient(135deg, #c57701 0%, #c4441d 100%);
+        color: white;
+        border: none;
+        padding: 8px 14px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 0.85em;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .btn-report:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(197, 119, 1, 0.4);
+    }
+
     /* EDIT FORM STYLES */
     .edit-toggle {
         cursor: pointer;
@@ -364,6 +414,15 @@
         .btn-delete {
             margin-top: 10px;
             width: 100%;
+        }
+
+        .rental-actions {
+            flex-direction: column;
+        }
+
+        .btn-review, .btn-report {
+            width: 100%;
+            justify-content: center;
         }
     }
 </style>
@@ -539,6 +598,11 @@
                                         </p>
                                     </div>
                                 </div>
+                                <!-- Actions for completed rentals -->
+                                <div class="rental-actions">
+                                    <a href="/reviews/booking/{{ rental.id }}" class="btn-review">⭐ Leave a Review</a>
+                                    <a href="/reports/create?reported_user_id={{ rental.rentor_id }}&item_id={{ rental.item_id }}" class="btn-report">🚩 Report Owner</a>
+                                </div>
                             </li>
                         {% endfor %}
                     </ul>
@@ -566,6 +630,10 @@
                                             <strong>Status:</strong> <span style="color: #dc3545; font-weight: 600;">{{ rental.status }}</span>
                                         </p>
                                     </div>
+                                </div>
+                                <!-- Report the owner of the cancelled rental -->
+                                <div class="rental-actions">
+                                    <a href="/reports/create?reported_user_id={{ rental.rentor_id }}&item_id={{ rental.item_id }}" class="btn-report">🚩 Report Owner</a>
                                 </div>
                             </li>
                         {% endfor %}

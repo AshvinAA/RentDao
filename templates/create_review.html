@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Leave a Review - RentDao{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width: 600px; margin: 40px auto; padding: 0 20px;">
+    <h1 style="color: #333; margin-bottom: 5px;">Leave a Review</h1>
+    <p style="color: #666; margin-bottom: 30px;">
+        Booking #{{ booking.id }} — 
+        {{ booking.start_date }} to {{ booking.end_date }}
+    </p>
+
+    <div style="background: white; padding: 35px; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.08);">
+        <form action="/reviews/create" method="post">
+            <!-- hidden so the POST handler knows which booking this is for -->
+            <input type="hidden" name="booking_id" value="{{ booking.id }}">
+
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #333;">Rating</label>
+                <select name="rating" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 0.95em;">
+                    <option value="">-- Select a rating --</option>
+                    <option value="5">⭐⭐⭐⭐⭐ — Excellent</option>
+                    <option value="4">⭐⭐⭐⭐ — Very Good</option>
+                    <option value="3">⭐⭐⭐ — Good</option>
+                    <option value="2">⭐⭐ — Fair</option>
+                    <option value="1">⭐ — Poor</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom: 25px;">
+                <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #333;">Comment <span style="color: #999; font-weight: 400;">(optional)</span></label>
+                <textarea name="comment" rows="4" placeholder="Share your experience..." 
+                    style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 0.95em; box-sizing: border-box; resize: vertical;"></textarea>
+            </div>
+
+            <button type="submit" 
+                style="background: linear-gradient(135deg, #19662b 0%, #1c8968 100%); color: white; padding: 12px 20px; border: none; border-radius: 6px; cursor: pointer; width: 100%; font-weight: 600; font-size: 1em;">
+                ⭐ Submit Review
+            </button>
+        </form>
+    </div>
+
+    <a href="/profile" style="display: inline-block; margin-top: 20px; color: #667eea; font-weight: 600; text-decoration: none;">← Back to Profile</a>
+</div>
+{% endblock %}

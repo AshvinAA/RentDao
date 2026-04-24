@@ -40,7 +40,7 @@
             </button>
         {% endif %}
 
-        <!-- Page Numbers -->
+        <!-- page no -->
         <div style="display: flex; gap: 5px; flex-wrap: wrap; justify-content: center;">
             {% for page_num in range(1, total_pages + 1) %}
                 {% if page_num == page %}
@@ -73,7 +73,7 @@
             {% endfor %}
         </div>
 
-        <!-- Next Button -->
+        <!-- next but -->
         {% if page < total_pages %}
             <a href="/items?page={{ page + 1 }}" class="btn btn-secondary" style="padding: 8px 16px;">
                 Next →
@@ -88,8 +88,8 @@
 {% else %}
     <div class="card">
         <div style="text-align: center; padding: 40px;">
-            <h3 style="color: #666; margin-bottom: 10px;">No Items Available</h3>
-            <p style="color: #999; margin-bottom: 20px;">There are currently no rental items listed.</p>
+            <h3 style="color: #666; margin-bottom: 10px;">no items</h3>
+            <p style="color: #999; margin-bottom: 20px;">no items</p>
             <a href="/" class="btn btn-primary">← Back to Home</a>
         </div>
     </div>

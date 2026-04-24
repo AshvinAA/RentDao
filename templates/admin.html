@@ -5,7 +5,7 @@
     <title>Admin Dashboard - RentDao</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background-color: #f4f7f6; color: #333; }
-        
+
         /* Navbar */
         .navbar { background-color: #343a40; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
         .navbar h1 { margin: 0; font-size: 1.5em; }
@@ -14,32 +14,49 @@
 
         /* Main Container */
         .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
-        
+
         /* Cards & Sections */
         .section-card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 30px; }
-        .section-card h2 { margin-top: 0; color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px;}
-        
+        .section-card h2 { margin-top: 0; color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
+
         /* Tables */
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #dee2e6; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #dee2e6; vertical-align: top; }
         th { background-color: #f8f9fa; font-weight: 600; color: #495057; }
-        
+
         /* Buttons */
-        .btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.85em; text-decoration: none; display: inline-block;}
+        .btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.85em; text-decoration: none; display: inline-block; }
         .btn-blue { background-color: #007bff; color: white; }
         .btn-green { background-color: #28a745; color: white; }
         .btn-red { background-color: #dc3545; color: white; }
         .btn-gray { background-color: #6c757d; color: white; }
-        
+        .btn-orange { background-color: #fd7e14; color: white; }
+
         /* Search Box */
         .search-box { margin-bottom: 20px; display: flex; gap: 10px; align-items: center; }
         .search-box input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 200px; }
-        
+
         /* Status Badges */
         .badge { padding: 4px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold; }
         .badge-active { background-color: #d4edda; color: #155724; }
         .badge-suspended { background-color: #f8d7da; color: #721c24; }
         .badge-pending { background-color: #fff3cd; color: #856404; }
+        .badge-reason { background-color: #e2d9f3; color: #4a235a; text-transform: capitalize; }
+
+        /* Report details cell */
+        .report-details-cell {
+            max-width: 280px;
+            color: #555;
+            font-size: 0.92em;
+            line-height: 1.5;
+            word-break: break-word;
+        }
+
+        .report-count {
+            font-size: 0.85em;
+            color: #888;
+            margin-bottom: 15px;
+        }
     </style>
 </head>
 <body>
@@ -51,6 +68,7 @@
 
     <div class="container">
 
+        <!-- delivery -->
         <div class="section-card" style="border-left: 5px solid #007bff;">
             <h2>🚚 Deliveries Awaiting Approval</h2>
             {% if pending_deliveries %}
@@ -85,10 +103,10 @@
             {% endif %}
         </div>
 
-
+        <!-- manage users -->
         <div class="section-card">
             <h2>👥 User Management</h2>
-            
+
             <div class="search-box">
                 <form action="/admin/users/search" method="GET" style="display: flex; gap: 10px;">
                     <input type="number" name="user_id" placeholder="Search by User ID..." required>
@@ -149,6 +167,7 @@
             </table>
         </div>
 
+        <!-- inactive ppl -->
         <div class="section-card" style="border-left: 5px solid #ffc107;">
             <h2>⚠️ Inactive Users (Never Posted an Item)</h2>
             {% if inactive_users %}
@@ -182,6 +201,8 @@
                 <p style="color: gray;">All users have posted at least one item.</p>
             {% endif %}
         </div>
+
+        <!-- item moderation -->
         <div class="section-card">
             <h2>📦 Marketplace Item Moderation</h2>
             <table>
@@ -213,7 +234,6 @@
                                         <button type="submit" class="btn btn-green">Approve</button>
                                     </form>
                                 {% endif %}
-                                
                                 <form action="/admin/items/{{ item.id }}/remove" method="POST" style="margin: 0;">
                                     <button type="submit" class="btn btn-red">Remove Post</button>
                                 </form>
@@ -222,6 +242,77 @@
                     {% endfor %}
                 </tbody>
             </table>
+        </div>
+
+        <!-- user reports -->
+        <div class="section-card" style="border-left: 5px solid #dc3545;">
+            <h2>🚩 User Reports</h2>
+            {% if all_reports %}
+                <p class="report-count">
+                    <strong>{{ all_reports | length }}</strong> report{{ 's' if all_reports | length != 1 else '' }} submitted across all users.
+                </p>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Report ID</th>
+                            <th>Reporter</th>
+                            <th>Reported User</th>
+                            <th>Item ID</th>
+                            <th>Reason</th>
+                            <th>Details</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for report in all_reports %}
+                            <tr>
+                                <td>#{{ report.id }}</td>
+                                <td>
+                                    <strong>{{ report.reporter.name }}</strong><br>
+                                    <span style="font-size: 0.85em; color: #888;">ID {{ report.reporter_id }}</span>
+                                </td>
+                                <td>
+                                    <strong>{{ report.reported_user.name }}</strong><br>
+                                    <span style="font-size: 0.85em; color: #888;">ID {{ report.reported_user_id }}</span>
+                                </td>
+                                <td>
+                                    {% if report.item_id %}
+                                        #{{ report.item_id }}
+                                    {% else %}
+                                        <span style="color: #ccc;">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <span class="badge badge-reason">{{ report.reason.replace('_', ' ') }}</span>
+                                </td>
+                                <td class="report-details-cell">
+                                    {% if report.details %}
+                                        {{ report.details }}
+                                    {% else %}
+                                        <span style="color: #ccc; font-style: italic;">No details</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <!-- suspend the reported user directly from here -->
+                                    <form action="/admin/users/{{ report.reported_user_id }}/suspend" method="POST" style="margin: 0 0 6px 0;">
+                                        <button type="submit" class="btn btn-red"
+                                            {% if report.reported_user.is_suspended %}disabled style="opacity: 0.5;"{% endif %}>
+                                            {% if report.reported_user.is_suspended %}Suspended{% else %}Suspend User{% endif %}
+                                        </button>
+                                    </form>
+                                    <!-- dismiss the report once reviewed -->
+                                    <form action="/admin/reports/{{ report.id }}/dismiss" method="POST" style="margin: 0;"
+                                        onsubmit="return confirm('Dismiss this report?');">
+                                        <button type="submit" class="btn btn-orange">Dismiss</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <p style="color: gray;">No reports have been submitted yet.</p>
+            {% endif %}
         </div>
 
     </div>

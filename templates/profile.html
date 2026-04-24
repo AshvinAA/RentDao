@@ -438,6 +438,7 @@
         <a href="/items" class="nav-btn marketplace">🛒 Go to Marketplace</a>
         <a href="/add-item" class="nav-btn post-item">➕ Post an Item</a>
         <a href="/bookings" class="nav-btn">📋 My Bookings</a>
+        <a href="/reports/mine" class="nav-btn">🚩 My Reports</a>
         {% if is_admin %}
         <a href="/admin" class="nav-btn admin">⚙️ Admin Panel</a>
         {% endif %}
@@ -445,6 +446,7 @@
     </div>
 
     <div class="dashboard-container">
+        <!-- LEFT COLUMN: PROFILE CARD -->
         <div class="profile-card">
             <div class="profile-header">
                 {% if user.picture %}
@@ -495,8 +497,10 @@
             </form>
         </div>
 
+        <!-- RIGHT COLUMN: CONTENT CARDS -->
         <div class="content-card">
             
+            <!-- MY POSTED ITEMS SECTION -->
             <div class="section-box">
                 <h2>My Posted Items</h2>
                 
@@ -519,7 +523,7 @@
                                 <details>
                                     <summary class="edit-toggle">✏️ Edit Item</summary>
                                     
-                                    <form action="/items/edit/{{ item.id }}" method="POST" class="edit-form" enctype="multipart/form-data">
+                                    <form action="/items/edit/{{ item.id }}" method="POST" class="edit-form">
                                         
                                         <div class="form-group">
                                             <label>Item Name</label>
@@ -530,28 +534,13 @@
                                             <label>Description</label>
                                             <input type="text" name="description" value="{{ item.description }}" required>
                                         </div>
-
-                                        <div class="form-group">
-                                            <label>Price Per Day</label>
-                                            <input type="number" name="price_per_day" value="{{ item.price_per_day }}" required>
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label>Discount %</label>
-                                            <input type="number" name="discount" value="{{ item.discount or 0 }}">
-                                        </div>
-
-                                        <div class="form-group">
-                                            <label>Add More Pictures (Optional)</label>
-                                            <input type="file" name="pictures" accept="image/*" multiple style="padding: 4px; border: none;">
-                                        </div>
                                         
                                         <button type="submit" class="btn-save">Save Updates</button>
                                     </form>
                                 </details>
 
-                            </li>
-                           
+                                </li>
+                               
                         {% endfor %}
                     </ul>
                 {% else %}
@@ -561,6 +550,7 @@
                 {% endif %}
             </div>
 
+            <!-- PENDING APPROVAL SECTION -->
             <div class="section-box">
                 <h2>Pending Approval</h2>
                 
@@ -592,6 +582,7 @@
             </div>
             
 
+            <!-- RENTAL HISTORY SECTION -->
             <div class="section-box">
                 <h2>Rental History</h2>
                 {% if rental_history %}
@@ -600,7 +591,7 @@
                             <li>
                                 <div class="item-header">
                                     <div>
-                                        <div class="item-name">Item ID: {{ rental.item_id }}</div>
+                                        <div class="item-name">{{ rental.item.name }} <span style="color:#999; font-weight:400; font-size:0.85em;">#{{ rental.item_id }}</span></div>
                                         <p class="item-description">
                                             <strong>Dates:</strong> {{ rental.start_date }} to {{ rental.end_date }}<br>
                                             <strong>Total Price:</strong> ${{ rental.total_price }}<br>
@@ -624,6 +615,7 @@
                 {% endif %}
             </div>
 
+            <!-- CANCELLED RENTALS SECTION -->
             <div class="section-box">
                 <h2>Cancelled Rentals</h2>
                 {% if cancelled_rentals %}
@@ -632,7 +624,7 @@
                             <li style="border-left-color: #dc3545; background: linear-gradient(135deg, #ffe5e5 0%, #ffd9d9 100%);">
                                 <div class="item-header">
                                     <div>
-                                        <div class="item-name">Item ID: {{ rental.item_id }}</div>
+                                        <div class="item-name">{{ rental.item.name }} <span style="color:#999; font-weight:400; font-size:0.85em;">#{{ rental.item_id }}</span></div>
                                         <p class="item-description">
                                             <strong>Dates:</strong> {{ rental.start_date }} to {{ rental.end_date }}<br>
                                             <strong>Total Price:</strong> ${{ rental.total_price }}<br>

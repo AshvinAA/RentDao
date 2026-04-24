@@ -1,13 +1,13 @@
 {% extends "base.html" %}
 
-{% block title %}Your Review - RentDao{% endblock %}
+{% block title %}My Review - RentDao{% endblock %}
 
 {% block content %}
 <div class="container" style="max-width: 600px; margin: 40px auto; padding: 0 20px;">
 
-    <h1 style="color: #333; margin-bottom: 5px;">Your Review</h1>
+    <h1 style="color: #333; margin-bottom: 5px;">My Review</h1>
     <p style="color: #666; margin-bottom: 30px;">
-        Booking #{{ booking.id }} —
+        <strong>{{ booking.item.name }}</strong> <span style="color:#bbb;">#{{ booking.item_id }}</span> —
         {{ booking.start_date }} to {{ booking.end_date }}
     </p>
 

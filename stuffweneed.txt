@@ -18,3 +18,4 @@ admin ke parle ektu cripple korte hobe ong
 payment functionalities
 kijani ekta chilo mone thakle dibone
 nothing else i think
+wishlist, tags, payments not implemented yet

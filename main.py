@@ -33,6 +33,7 @@ app.include_router(insurance.router)
 app.include_router(item_tags.router)
 app.include_router(cart.router)
 app.include_router(wishlist.router)
+app.include_router(detail.router)
 
 
 @app.get("/")

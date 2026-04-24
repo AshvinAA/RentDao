@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}{{ item.name }} - RentDao{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1>{{ item.name }}</h1>
+
+    <div class="item-details">
+        <p><strong>Description:</strong> {{ item.description }}</p>
+        <p><strong>Price per Day:</strong> ${{ item.price_per_day }}</p>
+        <p><strong>Discount:</strong> {{ item.discount }}%</p>
+        <p><strong>Category:</strong> {{ item.category }}</p>
+        <p><strong>Owner:</strong> {{ owner.email }}</p>
+        <p><strong>Rating:</strong> {{ avg_rating }}/5 ({{ total_bookings }} bookings)</p>
+    </div>
+
+    <h2>Images</h2>
+    {% if images %}
+    <div class="images-gallery">
+        {% for image in images %}
+        <img src="{{ image.image_url }}" alt="Item image" style="max-width: 200px; margin: 10px;">
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>No images available.</p>
+    {% endif %}
+
+    <h2>Tags</h2>
+    {% if tags %}
+    <div class="tags">
+        {% for tag in tags %}
+        <span class="tag">{{ tag.tag_name }}</span>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>No tags.</p>
+    {% endif %}
+
+    <h2>Insurance Records</h2>
+    {% if insurance_records %}
+    <ul>
+        {% for record in insurance_records %}
+        <li>{{ record.insurance_provider }} - Policy: {{ record.policy_number }}</li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>No insurance records.</p>
+    {% endif %}
+
+    <h2>Reviews</h2>
+    {% if reviews %}
+    <div class="reviews">
+        {% for review in reviews %}
+        <div class="review">
+            <strong>{{ review.reviewer.email }}</strong> - Rating: {{ review.rating }}/5
+            <p>{{ review.comment }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>No reviews yet.</p>
+    {% endif %}
+
+    <h2>Booking</h2>
+    {% if is_owner %}
+    <p>This is your item. You cannot book it.</p>
+    {% elif existing_booking %}
+    <p>You already have an active booking for this item.</p>
+    {% else %}
+    <form action="/bookings/create/{{ item.id }}" method="post">
+        <label for="start_date">Start Date:</label>
+        <input type="date" name="start_date" id="start_date" min="{{ today }}" required><br><br>
+
+        <label for="end_date">End Date:</label>
+        <input type="date" name="end_date" id="end_date" min="{{ today }}" required><br><br>
+
+        <button type="submit">Book Item</button>
+    </form>
+    {% endif %}
+
+    <a href="/items">Back to Items</a>
+</div>
+{% endblock %}

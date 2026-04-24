@@ -2,6 +2,7 @@ from fastapi import APIRouter, Request, Depends ,Form, Cookie, HTTPException
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
+from datetime import date
 import models, math
 from database import get_db
 from forms import ItemCreateForm
@@ -15,10 +16,44 @@ templates = Jinja2Templates(directory="templates")
 def read_items(request: Request , db: Session = Depends(get_db), page: int =1, limit: int=5): #calculating how many items to show on the page
     #how many items per page
     offset = (page - 1) * limit #which item to start from on the page
-    # Get the total number of items in the database 
-    total = db.query(models.Item).filter(models.Item.is_approved == True).count()
-    #items on the current page
-    items = db.query(models.Item).filter(models.Item.is_approved == True).offset(offset).limit(limit).all()
+    
+    today = date.today()
+    
+    # Subquery: Find item IDs that have active/pending bookings
+    booked_item_ids = (
+        db.query(models.Booking_details.item_id)
+        .filter(
+            models.Booking_details.status.in_(["pending", "approved"]),
+            models.Booking_details.end_date >= today
+        )
+        .subquery()
+    )
+    
+    # Get the total number of approved items that are NOT currently booked
+    total = (
+        db.query(models.Item)
+        .filter(
+            models.Item.is_approved == True,
+            ~models.Item.id.in_(db.query(models.Booking_details.item_id).filter(
+                models.Booking_details.status.in_(["pending", "approved"]),
+                models.Booking_details.end_date >= today
+            ))
+        )
+        .count()
+    )
+    
+    # Get items on the current page that are NOT currently booked
+    items = (
+        db.query(models.Item)
+        .filter(
+            models.Item.is_approved == True,
+            ~models.Item.id.in_(booked_item_ids)
+        )
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
+    
     # Round up so partial pages still get their own page number
     total_pages = math.ceil(total / limit)
     return templates.TemplateResponse("browse.html", {

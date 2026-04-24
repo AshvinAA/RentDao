@@ -10,7 +10,7 @@
         <h3 class="card-title">Add a New Rental Item</h3>
     </div>
 
-    <form action="/items" method="POST">
+    <form action="/items" method="POST" enctype="multipart/form-data">
         <div class="form-group">
             <label for="name">Item Name:</label>
             <input type="text" id="name" name="name" required placeholder="Enter item name">
@@ -19,6 +19,22 @@
         <div class="form-group">
             <label for="description">Description:</label>
             <input type="text" id="description" name="description" required placeholder="Enter item description">
+        </div>
+
+        <div class="form-group">
+            <label for="price_per_day">Price Per Day (in BDT):</label>
+            <input type="number" id="price_per_day" name="price_per_day" required placeholder="e.g. 500">
+        </div>
+
+        <div class="form-group">
+            <label for="discount">Discount Percentage (%):</label>
+            <input type="number" id="discount" name="discount" value="0" placeholder="Optional (e.g. 10)">
+        </div>
+
+        <div class="form-group" style="margin-bottom: 20px;">
+            <label for="pictures">Upload Item Pictures:</label>
+            <input type="file" id="pictures" name="pictures" accept="image/*" multiple style="padding: 5px;">
+            <small style="color: gray; display: block; margin-top: 5px;">Hold CTRL (or CMD) to select multiple pictures.</small>
         </div>
 
         <button type="submit" class="btn btn-primary">Add Item</button>

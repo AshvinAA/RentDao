@@ -385,7 +385,6 @@
     </div>
 
     <div class="dashboard-container">
-        <!-- LEFT COLUMN: PROFILE CARD -->
         <div class="profile-card">
             <div class="profile-header">
                 {% if user.picture %}
@@ -436,10 +435,8 @@
             </form>
         </div>
 
-        <!-- RIGHT COLUMN: CONTENT CARDS -->
         <div class="content-card">
             
-            <!-- MY POSTED ITEMS SECTION -->
             <div class="section-box">
                 <h2>My Posted Items</h2>
                 
@@ -462,7 +459,7 @@
                                 <details>
                                     <summary class="edit-toggle">✏️ Edit Item</summary>
                                     
-                                    <form action="/items/edit/{{ item.id }}" method="POST" class="edit-form">
+                                    <form action="/items/edit/{{ item.id }}" method="POST" class="edit-form" enctype="multipart/form-data">
                                         
                                         <div class="form-group">
                                             <label>Item Name</label>
@@ -473,13 +470,28 @@
                                             <label>Description</label>
                                             <input type="text" name="description" value="{{ item.description }}" required>
                                         </div>
+
+                                        <div class="form-group">
+                                            <label>Price Per Day</label>
+                                            <input type="number" name="price_per_day" value="{{ item.price_per_day }}" required>
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label>Discount %</label>
+                                            <input type="number" name="discount" value="{{ item.discount or 0 }}">
+                                        </div>
+
+                                        <div class="form-group">
+                                            <label>Add More Pictures (Optional)</label>
+                                            <input type="file" name="pictures" accept="image/*" multiple style="padding: 4px; border: none;">
+                                        </div>
                                         
                                         <button type="submit" class="btn-save">Save Updates</button>
                                     </form>
                                 </details>
 
-                                </li>
-                               
+                            </li>
+                           
                         {% endfor %}
                     </ul>
                 {% else %}
@@ -489,7 +501,6 @@
                 {% endif %}
             </div>
 
-            <!-- PENDING APPROVAL SECTION -->
             <div class="section-box">
                 <h2>Pending Approval</h2>
                 
@@ -521,7 +532,6 @@
             </div>
             
 
-            <!-- RENTAL HISTORY SECTION -->
             <div class="section-box">
                 <h2>Rental History</h2>
                 {% if rental_history %}
@@ -549,7 +559,6 @@
                 {% endif %}
             </div>
 
-            <!-- CANCELLED RENTALS SECTION -->
             <div class="section-box">
                 <h2>Cancelled Rentals</h2>
                 {% if cancelled_rentals %}

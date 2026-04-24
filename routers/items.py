@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Depends ,Form, Cookie, HTTPException
+from fastapi import APIRouter, Request, Depends ,Form, Cookie, HTTPException , File, UploadFile
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
@@ -6,6 +6,8 @@ from datetime import date
 import models, math
 from database import get_db
 from forms import ItemCreateForm
+import os ,uuid ,shutil 
+from typing import List
 
 # Create the router
 router = APIRouter()
@@ -65,45 +67,89 @@ def read_items(request: Request , db: Session = Depends(get_db), page: int =1, l
 
 @router.post("/items")
 def create_item(
-    form_data: ItemCreateForm = Depends(), #catching the whole form at once
-    user_email: str=Cookie(None),#user email used to make post
-    db: Session = Depends(get_db)
-    ):
-    
-    if not user_email:
-        return RedirectResponse(url="/login?error=You aren't logged in.", status_code=303)
-    user=db.query(models.User).filter(models.User.email==user_email).first()#matching the user to the email used to crreate the item post
-    
-    new_item = models.Item(name=form_data.name, description=form_data.description, owner_id=user.id)#last one links the post to the owner
-    
-    db.add(new_item)
-    db.commit()
-    
-    return RedirectResponse(url = "/items" , status_code=303)
-
-@router.post("/items/delete/{item_id}")
-def delete_item(
-    item_id: int , #The id that would be deleted
-    user_email: str=Cookie(None),#email of the owner
+    name: str = Form(...),
+    description: str = Form(...),
+    price_per_day: int = Form(0), # New field!
+    discount: int = Form(0),      # New field!
+    pictures: List[UploadFile] = File(None), # Accepts multiple files!
+    user_email: str = Cookie(None),
     db: Session = Depends(get_db)
 ):
     if not user_email:
         return RedirectResponse(url="/login?error=You aren't logged in.", status_code=303)
-    user=db.query(models.User).filter(models.User.email==user_email).first()#matching the user to the email used to crreate the item so that only they can delete the post
+    user = db.query(models.User).filter(models.User.email == user_email).first()
     
-    #Finding that item
-    item= db.query(models.Item).filter(models.Item.id== item_id).first()
-    if not item:
-        return RedirectResponse(url="/items", status_code=303)
-    
-    if item.owner_id!=user.id and not user.is_admin:
-        raise HTTPException(status_code=403, detail="You are not authorized to delete this item") #only the owner can delete their own posts, not anyone and the admin can delete any post
-    
-    if item: #checking if the item really exists
-        db.delete(item)
+    # 1. Create the core item
+    new_item = models.Item(
+        name=name, 
+        description=description, 
+        price_per_day=price_per_day,
+        discount=discount,
+        owner_id=user.id
+    )
+    db.add(new_item)
+    db.flush() # Saves to DB to generate the item ID, but doesn't finalize yet
+
+    # 2. Handle Multiple Images
+    if pictures and pictures[0].filename: # Make sure they actually uploaded something
+        os.makedirs("static/items", exist_ok=True)
+        for pic in pictures:
+            if pic.filename:
+                # Generate unique filename and save to hard drive
+                file_extension = pic.filename.split(".")[-1]
+                unique_filename = f"{uuid.uuid4()}.{file_extension}"
+                file_location = f"static/items/{unique_filename}"
+                
+                with open(file_location, "wb+") as file_object:
+                    shutil.copyfileobj(pic.file, file_object)
+                
+                # Link the image to the Item in the database
+                new_image = models.Item_Images(item_id=new_item.id, image_url=f"/{file_location}")
+                db.add(new_image)
+
+    db.commit() # Finalize everything!
+    return RedirectResponse(url="/items", status_code=303)
+
+@router.post("/items/edit/{item_id}")
+def edit_item(
+    item_id: int,
+    name: str = Form(...),
+    description: str = Form(...),
+    price_per_day: int = Form(...), 
+    discount: int = Form(...),
+    pictures: List[UploadFile] = File(None), # For adding MORE pictures later
+    user_email: str = Cookie(None),
+    db: Session = Depends(get_db)
+):
+    if not user_email:
+        return RedirectResponse(url="/login?error=You aren't logged in.", status_code=303)
+        
+    user = db.query(models.User).filter(models.User.email == user_email).first()
+    item = db.query(models.Item).filter(models.Item.id == item_id).first()
+
+    if item and item.owner_id == user.id:
+        # Update text fields
+        item.name = name 
+        item.description = description
+        item.price_per_day = price_per_day
+        item.discount = discount
+        
+        # Add new pictures if they uploaded more
+        if pictures and pictures[0].filename:
+            os.makedirs("static/items", exist_ok=True)
+            for pic in pictures:
+                if pic.filename:
+                    ext = pic.filename.split(".")[-1]
+                    file_location = f"static/items/{uuid.uuid4()}.{ext}"
+                    with open(file_location, "wb+") as file_object:
+                        shutil.copyfileobj(pic.file, file_object)
+                    
+                    new_image = models.Item_Images(item_id=item.id, image_url=f"/{file_location}")
+                    db.add(new_image)
+
         db.commit()
-    
-    return RedirectResponse(url = "/items" , status_code=303)
+
+    return RedirectResponse(url="/profile", status_code=303)
 
 @router.post("/items/edit/{item_id}")
 def edit_item(

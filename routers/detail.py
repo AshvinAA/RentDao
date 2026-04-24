@@ -18,10 +18,7 @@ def detail(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    # joinedload is used here because we want the full item object and all its
-    # related collections (tags, images, reviews, insurance) in one DB trip.
-    # owner uses an INNER JOIN equivalent (every item has an owner).
-    # everything else uses a LEFT JOIN equivalent (may have none of these).
+    
     item = (
         db.query(models.Item) #in the items table
         .join(models.User, models.Item.owner_id == models.User.id)     #inner join the items to the users, ie the owners must exist for the item to be valid     

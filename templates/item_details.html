@@ -3,82 +3,252 @@
 {% block title %}{{ item.name }} - RentDao{% endblock %}
 
 {% block content %}
-<div class="container">
-    <h1>{{ item.name }}</h1>
 
-    <div class="item-details">
-        <p><strong>Description:</strong> {{ item.description }}</p>
-        <p><strong>Price per Day:</strong> ${{ item.price_per_day }}</p>
-        <p><strong>Discount:</strong> {{ item.discount }}%</p>
-        <p><strong>Category:</strong> {{ item.category }}</p>
-        <p><strong>Owner:</strong> {{ owner.email }}</p>
-        <p><strong>Rating:</strong> {{ avg_rating }}/5 ({{ total_bookings }} bookings)</p>
+<a href="/items" style="color: #667eea; text-decoration: none; margin-bottom: 20px;">← Back to listings</a>
+
+<div class="card" style="max-width: 1000px;">
+    <div style="position: relative; margin-bottom: 20px; background: #f0f0f0; border-radius: 8px; overflow: hidden; aspect-ratio: 4/3; display: flex; align-items: center; justify-content: center;">
+        {% if images %}
+            <div id="carousel-main" style="position: relative; width: 100%; height: 100%;">
+                {% for image in images %}
+                <img src="{{ image.image_url }}" alt="Image {{ loop.index }}" class="carousel-img {% if loop.first %}active{% endif %}" style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.3s;">
+                {% endfor %}
+                
+                <button onclick="carouselShift(-1)" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; transition: background 0.2s;">
+                    <span style="font-size: 18px; color: #333;">❮</span>
+                </button>
+                <button onclick="carouselShift(1)" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.9); border: none; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; z-index: 10; transition: background 0.2s;">
+                    <span style="font-size: 18px; color: #333;">❯</span>
+                </button>
+                
+                <span id="c-counter" style="position: absolute; bottom: 12px; right: 14px; background: rgba(0,0,0,0.6); color: white; font-size: 12px; border-radius: 20px; padding: 3px 10px;">1 / {{ images|length }}</span>
+            </div>
+        {% else %}
+            <div style="text-align: center; color: #999;">
+                <p style="margin: 0;">No images uploaded</p>
+            </div>
+        {% endif %}
     </div>
 
-    <h2>Images</h2>
-    {% if images %}
-    <div class="images-gallery">
+    {% if images and images|length > 1 %}
+    <div id="thumb-strip" style="display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 4px;">
         {% for image in images %}
-        <img src="{{ image.image_url }}" alt="Item image" style="max-width: 200px; margin: 10px;">
-        {% endfor %}
-    </div>
-    {% else %}
-    <p>No images available.</p>
-    {% endif %}
-
-    <h2>Tags</h2>
-    {% if tags %}
-    <div class="tags">
-        {% for tag in tags %}
-        <span class="tag">{{ tag.tag_name }}</span>
-        {% endfor %}
-    </div>
-    {% else %}
-    <p>No tags.</p>
-    {% endif %}
-
-    <h2>Insurance Records</h2>
-    {% if insurance_records %}
-    <ul>
-        {% for record in insurance_records %}
-        <li>{{ record.insurance_provider }} - Policy: {{ record.policy_number }}</li>
-        {% endfor %}
-    </ul>
-    {% else %}
-    <p>No insurance records.</p>
-    {% endif %}
-
-    <h2>Reviews</h2>
-    {% if reviews %}
-    <div class="reviews">
-        {% for review in reviews %}
-        <div class="review">
-            <strong>{{ review.reviewer.email }}</strong> - Rating: {{ review.rating }}/5
-            <p>{{ review.comment }}</p>
+        <div class="thumb-item {% if loop.first %}active{% endif %}" onclick="carouselGoTo({{ loop.index0 }})" style="flex-shrink: 0; width: 68px; height: 52px; border-radius: 3px; overflow: hidden; cursor: pointer; border: 2px solid transparent; opacity: 0.55; transition: opacity 0.2s, border-color 0.2s;">
+            <img src="{{ image.image_url }}" alt="Thumb {{ loop.index }}" style="width: 100%; height: 100%; object-fit: cover; display: block;">
         </div>
         {% endfor %}
     </div>
-    {% else %}
-    <p>No reviews yet.</p>
     {% endif %}
 
-    <h2>Booking</h2>
+    <div class="card-header">
+        <h2>{{ item.name }}</h2>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <p><strong>Description:</strong></p>
+        <p>{{ item.description }}</p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+        <div>
+            <p><strong>Price per day:</strong> ${{ item.price_per_day }}</p>
+            {% if item.discount and item.discount > 0 %}
+            <p style="color: #28a745;"><strong>Discount:</strong> {{ item.discount }}%</p>
+            {% endif %}
+        </div>
+        <div>
+            <p><strong>Owner:</strong> {{ owner.email }}</p>
+            <p><strong>Total Rentals:</strong> {{ total_bookings }}</p>
+            {% if avg_rating %}
+            <p><strong>Rating:</strong> {{ avg_rating }}/5</p>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if item.category %}
+    <p><strong>Category:</strong> {{ item.category }}</p>
+    {% endif %}
+
+    {% if tags %}
+    <div style="margin-bottom: 20px;">
+        <p><strong>Tags:</strong></p>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+            {% for tag in tags %}
+            <span style="background: #e1e8ed; padding: 5px 12px; border-radius: 20px; font-size: 0.9rem;">{{ tag.tag_name }}</span>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <hr style="margin: 20px 0; border: none; border-top: 1px solid #e1e8ed;">
+
+    <!-- Booking Form -->
     {% if is_owner %}
-    <p>This is your item. You cannot book it.</p>
+    <div class="message message-info" style="margin-bottom: 20px;">
+        This is your listing — you can't book your own item.
+    </div>
     {% elif existing_booking %}
-    <p>You already have an active booking for this item.</p>
+    <div class="message message-info" style="margin-bottom: 20px;">
+        You already have an active booking for this item.
+    </div>
     {% else %}
-    <form action="/bookings/create/{{ item.id }}" method="post">
-        <label for="start_date">Start Date:</label>
-        <input type="date" name="start_date" id="start_date" min="{{ today }}" required><br><br>
+    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+        <h3 style="margin-top: 0;">Reserve this item</h3>
+        <form action="/bookings/create/{{ item.id }}" method="post" id="booking-form">
+            <div class="form-group">
+                <label for="start_date">Start date</label>
+                <input type="date" name="start_date" id="start_date" min="{{ today }}" required>
+            </div>
+            <div class="form-group">
+                <label for="end_date">End date</label>
+                <input type="date" name="end_date" id="end_date" min="{{ today }}" required>
+            </div>
 
-        <label for="end_date">End Date:</label>
-        <input type="date" name="end_date" id="end_date" min="{{ today }}" required><br><br>
+            <div id="price-summary" style="background: white; padding: 15px; border-radius: 5px; margin-bottom: 15px; display: none;">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span>Daily rate</span>
+                    <span>${{ item.price_per_day }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                    <span id="days-label">Days</span>
+                    <span id="days-count">—</span>
+                </div>
+                {% if item.discount and item.discount > 0 %}
+                <div style="display: flex; justify-content: space-between; margin-bottom: 8px; color: #28a745;">
+                    <span>Discount ({{ item.discount }}%)</span>
+                    <span id="discount-val">—</span>
+                </div>
+                {% endif %}
+                <div style="display: flex; justify-content: space-between; padding-top: 10px; border-top: 1px solid #e1e8ed; font-weight: 600;">
+                    <span>Total</span>
+                    <span id="total-val">—</span>
+                </div>
+            </div>
 
-        <button type="submit">Book Item</button>
-    </form>
+            <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px;">Book now</button>
+        </form>
+    </div>
     {% endif %}
-
-    <a href="/items">Back to Items</a>
 </div>
+
+<!-- Insurance Section -->
+{% if insurance_records %}
+<div class="card" style="max-width: 1000px;">
+    <div class="card-header">
+        <h3 style="margin: 0;">Insurance</h3>
+    </div>
+    <ul class="item-list">
+        {% for record in insurance_records %}
+        <li>
+            <strong>{{ record.insurance_provider }}</strong>
+            <p style="margin: 5px 0 0; color: #666;">Policy #{{ record.policy_number }}</p>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% endif %}
+
+<!-- Reviews Section -->
+{% if reviews %}
+<div class="card" style="max-width: 1000px;">
+    <div class="card-header">
+        <h3 style="margin: 0;">Reviews</h3>
+    </div>
+    <ul class="item-list">
+        {% for review in reviews %}
+        <li>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                <strong>{{ review.reviewer.email }}</strong>
+                <span style="color: #d4872a;">★ {{ review.rating }}/5</span>
+            </div>
+            <p style="margin: 0; color: #666;">{{ review.comment }}</p>
+        </li>
+        {% endfor %}
+    </ul>
+</div>
+{% else %}
+<div class="card" style="max-width: 1000px;">
+    <p style="text-align: center; color: #999;">No reviews yet — be the first to rent!</p>
+</div>
+{% endif %}
+
+<script>
+(function() {
+  let current = 0;
+  const imgs = document.querySelectorAll('.carousel-img');
+  const thumbs = document.querySelectorAll('.thumb-item');
+  const counter = document.getElementById('c-counter');
+
+  window.carouselGoTo = function(idx) {
+    if (!imgs.length) return;
+    imgs[current].classList.remove('active');
+    imgs[current].style.opacity = '0';
+    if (thumbs[current]) {
+      thumbs[current].classList.remove('active');
+      thumbs[current].style.opacity = '0.55';
+      thumbs[current].style.borderColor = 'transparent';
+    }
+    current = (idx + imgs.length) % imgs.length;
+    imgs[current].classList.add('active');
+    imgs[current].style.opacity = '1';
+    if (thumbs[current]) {
+      thumbs[current].classList.add('active');
+      thumbs[current].style.opacity = '1';
+      thumbs[current].style.borderColor = '#667eea';
+      thumbs[current].scrollIntoView({ behavior: 'smooth', inline: 'nearest', block: 'nearest' });
+    }
+    if (counter) counter.textContent = `${current + 1} / ${imgs.length}`;
+  };
+
+  window.carouselShift = function(dir) { carouselGoTo(current + dir); };
+
+  // Keyboard navigation
+  document.addEventListener('keydown', function(e) {
+    if (imgs.length > 1) {
+      if (e.key === 'ArrowLeft') carouselShift(-1);
+      if (e.key === 'ArrowRight') carouselShift(1);
+    }
+  });
+
+  // Price calculator
+  const startInput = document.getElementById('start_date');
+  const endInput = document.getElementById('end_date');
+  const summary = document.getElementById('price-summary');
+  const daysLabel = document.getElementById('days-label');
+  const daysCount = document.getElementById('days-count');
+  const discountVal = document.getElementById('discount-val');
+  const totalVal = document.getElementById('total-val');
+  const pricePerDay = {{ item.price_per_day }};
+  const discount = {{ item.discount if item.discount else 0 }};
+
+  function calcPrice() {
+    if (!startInput || !endInput || !summary) return;
+    const s = new Date(startInput.value);
+    const e = new Date(endInput.value);
+    if (!startInput.value || !endInput.value || e <= s) {
+      summary.style.display = 'none'; return;
+    }
+    const days = Math.ceil((e - s) / 86400000);
+    const subtotal = days * pricePerDay;
+    const discountAmt = Math.round(subtotal * discount / 100);
+    const total = subtotal - discountAmt;
+    if (daysLabel) daysLabel.textContent = `${days} day${days !== 1 ? 's' : ''}`;
+    if (daysCount) daysCount.textContent = `$${subtotal}`;
+    if (discountVal) discountVal.textContent = `-$${discountAmt}`;
+    if (totalVal) totalVal.textContent = `$${total}`;
+    summary.style.display = 'block';
+  }
+
+  if (startInput) startInput.addEventListener('change', calcPrice);
+  if (endInput) endInput.addEventListener('change', calcPrice);
+
+  if (startInput && endInput) {
+    startInput.addEventListener('change', function() {
+      endInput.min = startInput.value;
+      if (endInput.value && endInput.value < startInput.value) endInput.value = '';
+    });
+  }
+})();
+</script>
+
 {% endblock %}

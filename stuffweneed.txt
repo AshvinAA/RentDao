@@ -3,3 +3,17 @@ pip install itsdangerous
 pip install passlib
 
 #use ts or it will not work holy shit
+
+
+
+
+
+
+
+reviews ashtese na browse.html e
+tags ashe na
+search engine implementation
+remove admin je delivery approval dite hoi because its fuckass
+admin ke parle ektu cripple korte hobe ong
+kijani ekta chilo mone thakle dibone
+nothing else i think

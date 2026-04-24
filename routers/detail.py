@@ -18,7 +18,10 @@ def detail(
     db: Session = Depends(get_db),
     current_user: models.User = Depends(get_current_user),
 ):
-    
+    # joinedload is used here because we want the full item object and all its
+    # related collections (tags, images, reviews, insurance) in one DB trip.
+    # owner uses an INNER JOIN equivalent (every item has an owner).
+    # everything else uses a LEFT JOIN equivalent (may have none of these).
     item = (
         db.query(models.Item) #in the items table
         .join(models.User, models.Item.owner_id == models.User.id)     #inner join the items to the users, ie the owners must exist for the item to be valid     
@@ -29,7 +32,7 @@ def detail(
         #we do left join to ensure that an item is always returned regardless of if it has tags, images, insurance, reviews. although it should be changed so that it wont be displayed if it doesnt have an image  
         .filter(models.Item.id == item_id).first()
     )
-
+#btw this may cause issues if the database is hella populated or sth. idk the fix but it exists. have to implement this later maybe(?)
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
 
@@ -45,6 +48,7 @@ def detail(
     #query using the subquery to check if the specific user has a booking open for a specific item
     existing_booking = (
         db.query(models.Booking_details)
+        .join(models.Item, models.Booking_details.item_id == models.Item.id)  # INNER JOIN
         .filter(
             models.Booking_details.item_id == item_id,  # Booking must be for this item
             models.Booking_details.user_id == current_user.id,  # Booking must be by current user
@@ -54,12 +58,14 @@ def detail(
         .first() 
     )
 
+    # LEFT JOIN (outerjoin): items with no reviews should still return a booking count,
+    # so we can't use an inner join here — that would drop items with 0 reviews.
     stats = (
         db.query(
             func.count(models.Booking_details.id).label("total_bookings"),
             func.avg(models.Reviews.rating).label("avg_rating"),
         )
-        .outerjoin(models.Reviews, models.Reviews.item_id == models.Booking_details.item_id)
+        .outerjoin(models.Reviews, models.Reviews.item_id == models.Booking_details.item_id)  # LEFT JOIN
         .filter(
             models.Booking_details.item_id == item_id,
             models.Booking_details.status == "completed",
@@ -77,7 +83,7 @@ def detail(
         "images": item.images,
         "reviews": item.reviews,
         "insurance_records": item.insurance_records,
-        "existing_booking": existing_booking,   # None if no active booking
+        "existing_booking": existing_booking,
         "total_bookings": stats.total_bookings or 0,
         "avg_rating": round(float(stats.avg_rating), 1) if stats.avg_rating else 0.0,
         "user": current_user,

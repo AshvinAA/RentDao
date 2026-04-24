@@ -50,35 +50,28 @@ def logout(request: Request):
     return RedirectResponse(url="/admin/login", status_code =302)
 
 
-# --- DASHBOARD & OPERATIONS ---
-
 @router.get("/", dependencies=[Depends(require_admin)])
 def adminDash(request: Request, db: Session = Depends(get_db)):
     ADMIN_EMAILS = {"admin@rentdao.com", "saiberry@gmail.com", "a5hv1n@gmail.com"}
     all_users = db.query(models.User).all()
     non_admin_users = [u for u in all_users if u.email not in ADMIN_EMAILS]
-    # NESTED QUERY: find users who have never posted an item
-    users_with_items = db.query(models.Item.owner_id).distinct().subquery()
-
-    inactive_users = (
-        db.query(models.User)
-        .filter(~models.User.id.in_(users_with_items))
-        .all()
-    )
-    # 1. NEW: Fetch deliveries waiting for admin approval
-    pending_deliveries = db.query(models.Delivery_history).filter(
-        models.Delivery_history.delivery_status == "awaiting_admin"
-    ).all()
+    #subquery to heklp find users who have never posted an item(inactive users)
+    users_with_items = db.query(models.Item.owner_id).distinct().subquery() #users who have posted items
+    # actually showing the inactive users
+    inactive_users = (db.query(models.User).filter(~models.User.id.in_(users_with_items)).all())
+    # deliveries waiting for admin approval {REMOVE TS}
+    pending_deliveries = db.query(models.Delivery_history).filter(models.Delivery_history.delivery_status == "awaiting_admin").all()
 
     return templates.TemplateResponse("admin.html", {
         "request": request, 
         "items": db.query(models.Item).all(), 
         "users": non_admin_users,
         "inactive_users": inactive_users,
-        "pending_deliveries": pending_deliveries # Pass them to the HTML
+        "pending_deliveries": pending_deliveries 
     })
+# next 4 functions do the same things essentially just approve/susupend/search/remove based on the item/userid
 
-
+# approve item post
 @router.post("/items/{item_id}/approve", dependencies=[Depends(require_admin)])
 def approve(item_id: int, db: Session = Depends(get_db)):
     item = db.query(models.Item).filter(models.Item.id==item_id).first()
@@ -87,7 +80,7 @@ def approve(item_id: int, db: Session = Depends(get_db)):
         db.commit() 
     return RedirectResponse(url="/admin", status_code=303)
 
-
+# remove an item from the market
 @router.post("/items/{item_id}/remove", dependencies=[Depends(require_admin)])
 def delete(item_id: int, db: Session = Depends(get_db)):
     item = db.query(models.Item).filter(models.Item.id==item_id).first()
@@ -96,7 +89,7 @@ def delete(item_id: int, db: Session = Depends(get_db)):
         db.commit()
     return RedirectResponse(url="/admin", status_code=303)
 
-
+# suspend user
 @router.post("/users/{user_id}/suspend", dependencies=[Depends(require_admin)])
 def suspend(user_id: int, db: Session=Depends(get_db)):
     user = db.query(models.User).filter(models.User.id==user_id).first()
@@ -105,7 +98,7 @@ def suspend(user_id: int, db: Session=Depends(get_db)):
         db.commit()
     return RedirectResponse(url="/admin",status_code=303)
 
-
+# search based on uid
 @router.get("/users/search", dependencies=[Depends(require_admin)])
 def search_user(request: Request, user_id: int, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.id == user_id).first()
@@ -118,14 +111,12 @@ def search_user(request: Request, user_id: int, db: Session = Depends(get_db)):
     })
 
 
-# 2. NEW: Route to approve a delivery job
+# approve delivery {REMOVE TS}
 @router.post("/deliveries/{delivery_id}/approve", dependencies=[Depends(require_admin)])
 def approve_delivery(delivery_id: int, db: Session = Depends(get_db)):
     delivery = db.query(models.Delivery_history).filter(models.Delivery_history.id == delivery_id).first()
     
-    # Check if it exists and is actually waiting for admin approval
     if delivery and delivery.delivery_status == "awaiting_admin":
-        # Unlocks it for the drivers!
         delivery.delivery_status = "pending"
         db.commit()
         

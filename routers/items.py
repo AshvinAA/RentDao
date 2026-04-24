@@ -18,27 +18,25 @@ templates = Jinja2Templates(directory="templates")
 def read_items(request: Request , db: Session = Depends(get_db), page: int =1, limit: int=5): #calculating how many items to show on the page
     #how many items per page
     offset = (page - 1) * limit #which item to start from on the page
-    
     today = date.today()
-    
-    # Subquery: Find item IDs that have active/pending bookings
+    #subquery to find all the items that have pending or approved status in the db
     booked_item_ids = (
         db.query(models.Booking_details.item_id)
         .filter(
             models.Booking_details.status.in_(["pending", "approved"]),
-            models.Booking_details.end_date >= today
+            models.Booking_details.end_date >= today #bookings that are ending after today
         )
         .subquery()
     )
-    
-    # Get the total number of approved items that are NOT currently booked
+    # get the total number of approved items that arent currently booked for the pagination
+    #only approved items
     total = (
         db.query(models.Item)
         .filter(
             models.Item.is_approved == True,
             ~models.Item.id.in_(db.query(models.Booking_details.item_id).filter(
-                models.Booking_details.status.in_(["pending", "approved"]),
-                models.Booking_details.end_date >= today
+                models.Booking_details.status.in_(["pending", "approved"]), #basically uporer subquery
+                models.Booking_details.end_date >= today 
             ))
         )
         .count()
@@ -49,7 +47,7 @@ def read_items(request: Request , db: Session = Depends(get_db), page: int =1, l
         db.query(models.Item)
         .filter(
             models.Item.is_approved == True,
-            ~models.Item.id.in_(booked_item_ids)
+            ~models.Item.id.in_(booked_item_ids) #approved items in the list of items that are pending or approved from the subquery above
         )
         .offset(offset)
         .limit(limit)
@@ -75,7 +73,7 @@ def create_item(
     user_email: str = Cookie(None),
     db: Session = Depends(get_db)
 ):
-    if not user_email:
+    if not user_email: #chcek if the user is logegd in 
         return RedirectResponse(url="/login?error=You aren't logged in.", status_code=303)
     user = db.query(models.User).filter(models.User.email == user_email).first()
     
@@ -127,7 +125,7 @@ def edit_item(
     user = db.query(models.User).filter(models.User.email == user_email).first()
     item = db.query(models.Item).filter(models.Item.id == item_id).first()
 
-    if item and item.owner_id == user.id:
+    if item and item.owner_id == user.id: #only owner can edit
         # Update text fields
         item.name = name 
         item.description = description
@@ -186,7 +184,7 @@ def approve_booking(
     user_email: str = Cookie(None),
     db: Session = Depends(get_db)
 ):
-    # CHANGED: models.Booking to models.Booking_details
+    #the booking id in question
     booking = db.query(models.Booking_details).filter(models.Booking_details.id == booking_id).first()
     
     if booking:
@@ -194,7 +192,7 @@ def approve_booking(
 
         new_delivery = models.Delivery_history(
             booking_id=booking.id,
-            delivery_status="awaiting_admin", 
+            delivery_status="awaiting_admin", #REMOVE TS
             pickup_location=booking.item.owner.location, 
             dropoff_location=booking.rentor.location,
             delivery_date=booking.start_date

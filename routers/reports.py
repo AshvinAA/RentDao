@@ -16,7 +16,7 @@ def show_report_form(
     reported_user_id: int = None,
     item_id: int = None,
     current_user: models.User = Depends(get_current_user),
-    db: Session = Depends(get_db),  # FIX: was missing, get_current_user needs db to look up the user
+    db: Session = Depends(get_db),  
 ):
     return templates.TemplateResponse("report_form.html", {
         "request": request,
@@ -39,12 +39,10 @@ def submit_report(
     if reported_user_id == current_user.id:
         raise HTTPException(status_code=400, detail="You cannot report yourself")
 
-    # Make sure the reported user exists
     reported_user = db.query(models.User).filter(models.User.id == reported_user_id).first()
     if not reported_user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    # If an item_id was provided, make sure it exists
     if item_id:
         item = db.query(models.Item).filter(models.Item.id == item_id).first()
         if not item:
@@ -60,7 +58,7 @@ def submit_report(
     db.add(new_report)
     db.commit()
 
-    return RedirectResponse(url="/profile", status_code=303)  # FIX: was /items, better to go back to profile
+    return RedirectResponse(url="/profile", status_code=303)  
 
 
 @router.get("/mine")
@@ -69,9 +67,10 @@ def my_reports(
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
+    # finds all reports made by the user against other users
     reports = (
         db.query(models.Reports)
-        .filter(models.Reports.reporter_id == current_user.id)
+        .filter(models.Reports.reporter_id == current_user.id)  # Only reports this user created
         .all()
     )
     return templates.TemplateResponse("my_reports.html", {

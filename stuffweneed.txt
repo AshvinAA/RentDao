@@ -19,3 +19,8 @@ payment functionalities
 kijani ekta chilo mone thakle dibone
 nothing else i think
 wishlist, tags, payments not implemented yet
+
+
+make the frontend nicer
+change the queries into raw mysql queries (at the top of every single file we have to add from sqlalchemy import text) DO THIS ASAP PLEASE PLEASSEEEEEEEEEEEE
+implement the last 3 features

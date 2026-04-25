@@ -5,6 +5,7 @@ from sqlalchemy.orm import Session
 import bcrypt
 import models
 from database import get_db
+from sqlalchemy import text
 
 router=APIRouter(prefix="/admin")
 templates=Jinja2Templates(directory="templates")

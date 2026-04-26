@@ -2,6 +2,7 @@ from fastapi import APIRouter, Request, Depends, Form, HTTPException
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 import models
 from database import get_db
 from routers.auth import get_current_user
@@ -38,23 +39,38 @@ def submit_report(
     if reported_user_id == current_user.id:
         raise HTTPException(status_code=400, detail="You cannot report yourself")
 
-    reported_user = db.query(models.User).filter(models.User.id == reported_user_id).first()
+    # reported_user = db.query(models.User).filter(models.User.id == reported_user_id).first()
+    reported_user=db.execute(text("select id from users where id=:uid"),{"uid": reported_user_id}).fetchone()
     if not reported_user:
         raise HTTPException(status_code=404, detail="User not found")
 
     if item_id:
-        item = db.query(models.Item).filter(models.Item.id == item_id).first()
+        # item = db.query(models.Item).filter(models.Item.id == item_id).first()
+        item=db.execute(text("select id from items where id=:item_id"),{"item_id":item_id}).fetchone
         if not item:
             item_id = None
 
-    new_report = models.Reports(
-        reporter_id=current_user.id,
-        reported_user_id=reported_user_id,
-        item_id=item_id,
-        reason=reason,
-        details=details,
+    # new_report = models.Reports(
+    #     reporter_id=current_user.id,
+    #     reported_user_id=reported_user_id,
+    #     item_id=item_id,
+    #     reason=reason,
+    #     details=details,
+    # )
+    # db.add(new_report)
+    db.execute(
+        text("""
+            insert into reports (reporter_id, reported_user_id, item_id, reason, details)
+            values (:reporter_id, :reported_user_id, :item_id, :reason, :details)
+        """),
+        {
+            "reporter_id": current_user.id,
+            "reported_user_id": reported_user_id,
+            "item_id": item_id,
+            "reason": reason,
+            "details": details,
+        }
     )
-    db.add(new_report)
     db.commit()
 
     return RedirectResponse(url="/reports/mine", status_code=303)

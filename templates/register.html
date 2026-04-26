@@ -1,73 +1,64 @@
 {% extends "base.html" %}
-
 {% block title %}Register - RentDao{% endblock %}
-
 {% block content %}
-<div class="form-container">
-    <h2>Create your RentDao Account</h2>
+<div class="container" style="max-width: 520px;">
+    <div class="section-card" style="border-left: 5px solid #28a745;">
+        <h2>✨ Create Your RentDao Account</h2>
 
-    {% if error %}
-        {% if error == 'email_taken' %}
+        {% if error %}
+            {% if error == 'email_taken' %}
             <div class="modal-overlay" id="errorPopup">
                 <div class="modal-box">
                     <h2>⚠️ Email Already Taken</h2>
-                    <p>An account with that email address is already registered in RentDao.</p>
-
-                    <a href="/login" class="btn btn-primary">Go to Login</a>
-                    <button class="btn btn-secondary" onclick="document.getElementById('errorPopup').style.display='none'">Try Different Email</button>
+                    <p>An account with that email is already registered.</p>
+                    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+                        <a href="/login" class="btn btn-blue">Go to Login</a>
+                        <button class="btn btn-gray" onclick="document.getElementById('errorPopup').style.display='none'">Try Different Email</button>
+                    </div>
                 </div>
             </div>
-        {% else %}
-            <div class="message message-error">
-                ⚠️ {{ error }}
-            </div>
+            {% else %}
+            <div class="message message-error">⚠️ {{ error }}</div>
+            {% endif %}
         {% endif %}
-    {% endif %}
 
-    <form action="/register" method="POST" enctype="multipart/form-data">
-        <div class="form-group">
-            <label for="email">Email Address:</label>
-            <input type="email" id="email" name="email" required placeholder="Enter your email">
-        </div>
-
-        <div class="form-group">
-            <label for="name">Full Name:</label>
-            <input type="text" id="name" name="name" required placeholder="Enter your full name">
-        </div>
-
-        <div class="form-group">
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required placeholder="Create a password">
-        </div>
-
-        <div class="form-group">
-            <label for="location">Location:</label>
-            <input type="text" id="location" name="location" required placeholder="Enter your location">
-        </div>
-
-        <div class="form-group">
-            <label for="phone_no">Phone Number:</label>
-            <input type="text" id="phone_no" name="phone_no" required placeholder="Enter your phone number">
-        </div>
-
-        <div class="form-group">
-            <label for="picture">Profile Picture:</label>
-            <input type="file" id="picture" name="picture" accept="image/*">
-        </div>
-
-        <div class="form-group">
-            <label for="payment_option">Preferred Payment Option:</label>
-            <select id="payment_option" name="payment_option">
-                <option value="Card">Card</option>
-                <option value="Cash On Delivery">Cash On Delivery</option>
-            </select>
-        </div>
-
-        <button type="submit" class="btn btn-primary">Sign Up</button>
-    </form>
-
-    <div class="links">
-        <p>Already have an account? <a href="/login">Log in here</a>.</p>
+        <form action="/register" method="POST" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required placeholder="Enter your email">
+            </div>
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" name="name" required placeholder="Enter your full name">
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required placeholder="Create a password">
+            </div>
+            <div class="form-group">
+                <label for="location">Location</label>
+                <input type="text" id="location" name="location" required placeholder="Enter your location">
+            </div>
+            <div class="form-group">
+                <label for="phone_no">Phone Number</label>
+                <input type="text" id="phone_no" name="phone_no" required placeholder="Enter your phone number">
+            </div>
+            <div class="form-group">
+                <label for="picture">Profile Picture <span style="color:#aaa; font-weight:400;">(optional)</span></label>
+                <input type="file" id="picture" name="picture" accept="image/*">
+            </div>
+            <div class="form-group">
+                <label for="payment_option">Preferred Payment</label>
+                <select id="payment_option" name="payment_option">
+                    <option value="Card">Card</option>
+                    <option value="Cash On Delivery">Cash On Delivery</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-green" style="width: 100%; padding: 10px;">Sign Up</button>
+        </form>
+        <p style="margin-top: 18px; font-size: 0.88em; color: #888; text-align: center;">
+            Already have an account? <a href="/login" style="color: #007bff;">Log in here</a>.
+        </p>
     </div>
 </div>
 {% endblock %}

@@ -134,7 +134,7 @@ def approve_booking(booking_id: int, current_user: models.User = Depends(get_cur
     ).fetchone()
     if item.owner_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized")
-
+ 
     if booking.status != "pending":
         return RedirectResponse(url="/bookings", status_code=303)
 
@@ -174,7 +174,7 @@ def approve_booking(booking_id: int, current_user: models.User = Depends(get_cur
         }
     )
     db.commit()
-
+ 
     return RedirectResponse(url="/bookings", status_code=303)
 
 @router.post("/{booking_id}/reject")
@@ -257,4 +257,26 @@ def complete_booking(booking_id: int, current_user: models.User = Depends(get_cu
     )
     db.commit()
  
+    return RedirectResponse(url="/bookings", status_code=303)
+
+@router.post("/{booking_id}/delete")
+def delete_booking(booking_id: int, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    booking = db.query(models.Booking_details).filter(models.Booking_details.id == booking_id).first()
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found")
+
+    # only completed, cancelled or rejected bookings can be deleted
+    if booking.status not in ["completed", "cancelled", "rejected"]:
+        raise HTTPException(status_code=400, detail="Only completed, cancelled or rejected bookings can be deleted")
+
+    # renter can delete from their rentals list, owner can delete from their incoming requests list
+    is_renter = booking.user_id == current_user.id
+    is_owner = booking.item.owner_id == current_user.id
+
+    if not is_renter and not is_owner:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    db.delete(booking)
+    db.commit()
+
     return RedirectResponse(url="/bookings", status_code=303)

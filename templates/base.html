@@ -2,37 +2,134 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.5">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}RentDao{% endblock %}</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; color: #333; min-height: 100vh; display: flex; flex-direction: column; }
+
+        .navbar { background-color: #343a40; color: white; padding: 14px 30px; display: flex; justify-content: space-between; align-items: center; position: fixed; top: 0; left: 0; width: 100%; z-index: 1000; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+        .nav-brand { font-size: 1.35em; font-weight: bold; color: white; text-decoration: none; letter-spacing: 0.5px; }
+        .nav-brand:hover { color: #adb5bd; }
+        .nav-right { position: relative; }
+        .nav-hamburger { background: none; border: 1px solid #6c757d; border-radius: 4px; padding: 6px 10px; cursor: pointer; display: flex; flex-direction: column; gap: 4px; }
+        .nav-hamburger .bar { display: block; width: 20px; height: 2px; background: white; border-radius: 2px; transition: all 0.25s ease; }
+        .nav-hamburger.open .bar:nth-child(1) { transform: translateY(6px) rotate(45deg); }
+        .nav-hamburger.open .bar:nth-child(2) { opacity: 0; }
+        .nav-hamburger.open .bar:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
+        .nav-dropdown { position: absolute; top: calc(100% + 8px); right: 0; background: #343a40; border: 1px solid #495057; border-radius: 4px; min-width: 170px; overflow: hidden; opacity: 0; transform: translateY(-6px); pointer-events: none; transition: opacity 0.2s, transform 0.2s; }
+        .nav-dropdown.open { opacity: 1; transform: translateY(0); pointer-events: all; }
+        .nav-links { display: flex; flex-direction: column; }
+        .nav-links a { color: #adb5bd; text-decoration: none; padding: 11px 18px; font-size: 0.9em; border-bottom: 1px solid #495057; transition: background 0.2s, color 0.2s; }
+        .nav-links a:last-child { border-bottom: none; }
+        .nav-links a:hover { background: #495057; color: white; }
+
+        main { flex-grow: 1; margin-top: 60px; padding: 30px 20px; }
+
+        .container { max-width: 1100px; margin: 0 auto; }
+
+        .section-card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 30px; }
+        .section-card h2 { margin-top: 0; color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; font-size: 1.25em; }
+        .section-card h3 { color: #2c3e50; margin-bottom: 15px; font-size: 1.05em; }
+
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #dee2e6; vertical-align: middle; }
+        th { background-color: #f8f9fa; font-weight: 600; color: #495057; font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.4px; }
+        tbody tr:hover { background-color: #f8f9fa; }
+
+        .btn { padding: 7px 14px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 0.85em; text-decoration: none; display: inline-block; transition: opacity 0.15s, transform 0.15s; }
+        .btn:hover { opacity: 0.85; transform: translateY(-1px); }
+        .btn-blue   { background-color: #007bff; color: white; }
+        .btn-green  { background-color: #28a745; color: white; }
+        .btn-red    { background-color: #dc3545; color: white; }
+        .btn-gray   { background-color: #6c757d; color: white; }
+        .btn-orange { background-color: #fd7e14; color: white; }
+        .btn-dark   { background-color: #343a40; color: white; }
+
+        .form-group { margin-bottom: 16px; }
+        label { display: block; font-weight: 600; margin-bottom: 6px; color: #495057; font-size: 0.9em; }
+        input, select, textarea { width: 100%; padding: 9px 12px; border: 1px solid #ced4da; border-radius: 4px; font-size: 0.92em; font-family: inherit; transition: border-color 0.2s, box-shadow 0.2s; }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #007bff; box-shadow: 0 0 0 3px rgba(0,123,255,0.1); }
+
+        .badge { padding: 4px 9px; border-radius: 12px; font-size: 0.78em; font-weight: 700; }
+        .badge-active    { background: #d4edda; color: #155724; }
+        .badge-suspended { background: #f8d7da; color: #721c24; }
+        .badge-pending   { background: #fff3cd; color: #856404; }
+        .badge-approved  { background: #d4edda; color: #155724; }
+        .badge-completed { background: #d1ecf1; color: #0c5460; }
+        .badge-cancelled { background: #f8d7da; color: #721c24; }
+        .badge-rejected  { background: #f8d7da; color: #721c24; }
+        .badge-reason    { background: #e2d9f3; color: #4a235a; text-transform: capitalize; }
+
+        .message { padding: 12px 16px; border-radius: 4px; margin-bottom: 16px; font-size: 0.9em; }
+        .message-success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .message-error   { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .message-info    { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+
+        .empty-msg { color: #888; font-style: italic; font-size: 0.92em; }
+
+        .back-link { color: #007bff; text-decoration: none; font-weight: 600; font-size: 0.9em; display: inline-block; margin-bottom: 20px; }
+        .back-link:hover { text-decoration: underline; }
+
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; justify-content: center; align-items: center; z-index: 2000; }
+        .modal-box { background: white; padding: 28px; border-radius: 8px; max-width: 380px; width: 90%; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .modal-box h2 { color: #dc3545; margin-bottom: 12px; font-size: 1.15em; }
+        .modal-box p { color: #555; margin-bottom: 20px; font-size: 0.9em; }
+
+        .search-box { margin-bottom: 18px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+        .search-box input { width: 220px; }
+
+        footer { background-color: #343a40; color: #adb5bd; text-align: center; padding: 14px; font-size: 0.84em; margin-top: auto; }
+
+        @media (max-width: 768px) {
+            .navbar { padding: 12px 16px; }
+            main { padding: 20px 12px; }
+            .section-card { padding: 18px; }
+            th, td { padding: 9px; font-size: 0.82em; }
+        }
+    </style>
     {% block extra_head %}{% endblock %}
 </head>
 <body>
     <nav class="navbar">
-        <div class="nav-container">
-            <a href="/" class="nav-brand">RentDao</a>
-            <div class="nav-links">
-                <a href="/items">Items</a>
-                {% if not current_user %}
-                <a href="/login">Login</a>
-                <a href="/register">Register</a>
-                {% else %}
-                <a href="/logout">Logout</a>
-                {% endif %}
+        <a href="/" class="nav-brand">🏠 RentDao</a>
+        <div class="nav-right">
+            <button class="nav-hamburger" id="navHamburger" aria-label="Menu" aria-expanded="false">
+                <span class="bar"></span><span class="bar"></span><span class="bar"></span>
+            </button>
+            <div class="nav-dropdown" id="navDropdown">
+                <div class="nav-links">
+                    <a href="/items">📦 Items</a>
+                    {% if not current_user %}
+                    <a href="/login">🔑 Login</a>
+                    <a href="/register">✨ Register</a>
+                    {% else %}
+                    <a href="/profile">👤 Profile</a>
+                    <a href="/logout">🚪 Logout</a>
+                    {% endif %}
+                </div>
             </div>
         </div>
     </nav>
 
-    <main class="main-content">
-        {% block content %}{% endblock %}
-    </main>
+    <main>{% block content %}{% endblock %}</main>
 
-    <footer class="footer">
-        <div class="footer-container">
-            <p>&copy; RentDao 370 Project 2026.</p>
-        </div>
-    </footer>
+    <footer><p>&copy; RentDao 370 Project 2026</p></footer>
 
+    <script>
+        const hb = document.getElementById('navHamburger');
+        const dd = document.getElementById('navDropdown');
+        hb.addEventListener('click', () => {
+            const o = dd.classList.toggle('open');
+            hb.classList.toggle('open', o);
+            hb.setAttribute('aria-expanded', o);
+        });
+        document.addEventListener('click', e => {
+            if (!hb.contains(e.target) && !dd.contains(e.target)) {
+                dd.classList.remove('open'); hb.classList.remove('open'); hb.setAttribute('aria-expanded', false);
+            }
+        });
+    </script>
     {% block extra_scripts %}{% endblock %}
 </body>
 </html>

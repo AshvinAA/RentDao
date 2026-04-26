@@ -1,28 +1,93 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}My Reports - RentDao{% endblock %}</title>
-</head>
-<body>
-    {% extends "base.html" %}
-
-    {% block content %}
-    <div class="container">
-        <h1>My Reports</h1>
+{% extends "base.html" %}
+{% block title %}My Reports - RentDao{% endblock %}
+{% block content %}
+<div class="container">
+    <div class="section-card" style="border-left: 5px solid #dc3545;">
+        <h2>🚩 My Reports
+            {% if reports %}<span style="font-size:0.7em; background:#e9ecef; color:#6c757d; padding:3px 10px; border-radius:12px; font-weight:700; margin-left:10px;">{{ reports|length }}</span>{% endif %}
+        </h2>
         {% if reports %}
-        <ul>
-            {% for report in reports %}
-            <li>
-                Reported User ID: {{ report.reported_user_id }} - Reason: {{ report.reason }} - Details: {{ report.details }}
-            </li>
-            {% endfor %}
-        </ul>
+        <p style="color:#888; font-size:0.88em; margin-top:-10px; margin-bottom:18px;">
+            You have submitted <strong>{{ reports|length }}</strong> report{{ 's' if reports|length != 1 else '' }}.
+        </p>
+        <table>
+            <thead>
+                <tr><th>Report #</th><th>Reported User</th><th>Item</th><th>Reason</th><th>Details</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for report in reports %}
+                <tr>
+                    <td style="color:#aaa; font-size:0.85em;">#{{ report.id }}</td>
+                    <td>
+                        <strong>{{ report.reported_user.name }}</strong><br>
+                        <span style="font-size:0.82em; color:#aaa;">ID {{ report.reported_user_id }}</span>
+                    </td>
+                    <td>
+                        {% if report.item_id %}
+                        {{ report.item.name }}<br>
+                        <span style="font-size:0.82em; color:#aaa;">#{{ report.item_id }}</span>
+                        {% else %}
+                        <span style="color:#ccc;">—</span>
+                        {% endif %}
+                    </td>
+                    <td><span class="badge badge-reason">{{ report.reason.replace('_', ' ') }}</span></td>
+                    <td style="max-width:220px; color:#555; font-size:0.9em; word-break:break-word;">
+                        {% if report.details %}{{ report.details }}{% else %}<em style="color:#ccc;">No details</em>{% endif %}
+                    </td>
+                    <td>
+                        <div style="display:flex; flex-direction:column; gap:6px;">
+                            <button type="button" class="btn btn-blue" onclick="toggleEdit('edit-{{ report.id }}', this)">✏️ Edit</button>
+                            <form action="/reports/{{ report.id }}/delete" method="post" style="margin:0;" onsubmit="return confirm('Delete this report?');">
+                                <button type="submit" class="btn btn-red">🗑 Delete</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                <!-- Edit row -->
+                <tr id="edit-{{ report.id }}" style="display:none; background:#f8f9fa;">
+                    <td colspan="6" style="padding: 20px 16px;">
+                        <form action="/reports/{{ report.id }}/edit" method="post">
+                            <div style="display:flex; gap:20px; flex-wrap:wrap; align-items:flex-end;">
+                                <div style="flex:1; min-width:180px;">
+                                    <label style="font-size:0.85em; color:#495057; font-weight:600; display:block; margin-bottom:6px;">Reason</label>
+                                    <select name="reason" required style="padding:8px 10px; border:1px solid #ced4da; border-radius:4px; font-size:0.9em; width:100%;">
+                                        <option value="spam"                  {% if report.reason=='spam' %}selected{% endif %}>Spam</option>
+                                        <option value="harassment"            {% if report.reason=='harassment' %}selected{% endif %}>Harassment</option>
+                                        <option value="fraud"                 {% if report.reason=='fraud' %}selected{% endif %}>Fraud</option>
+                                        <option value="inappropriate_content" {% if report.reason=='inappropriate_content' %}selected{% endif %}>Inappropriate Content</option>
+                                        <option value="other"                 {% if report.reason=='other' %}selected{% endif %}>Other</option>
+                                    </select>
+                                </div>
+                                <div style="flex:2; min-width:220px;">
+                                    <label style="font-size:0.85em; color:#495057; font-weight:600; display:block; margin-bottom:6px;">Details</label>
+                                    <textarea name="details" rows="2" style="padding:8px 10px; border:1px solid #ced4da; border-radius:4px; font-size:0.9em; width:100%; resize:vertical;">{{ report.details }}</textarea>
+                                </div>
+                                <div>
+                                    <button type="submit" class="btn btn-green">💾 Save</button>
+                                </div>
+                            </div>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
         {% else %}
-        <p>You have not submitted any reports.</p>
+        <p class="empty-msg">You have not submitted any reports yet.</p>
         {% endif %}
     </div>
-    {% endblock %}
-</body>
-</html>
+
+    <a href="/profile" class="btn btn-gray">← Back to Profile</a>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function toggleEdit(id, btn) {
+        const row = document.getElementById(id);
+        const hidden = row.style.display === 'none' || row.style.display === '';
+        row.style.display = hidden ? 'table-row' : 'none';
+        btn.textContent = hidden ? '✖ Close' : '✏️ Edit';
+    }
+</script>
+{% endblock %}

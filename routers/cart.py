@@ -4,6 +4,7 @@ from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
 import models
 from database import get_db
+from sqlalchemy import text
 
 router = APIRouter()
 templates = Jinja2Templates(directory="templates")
@@ -14,7 +15,12 @@ def get_cart(request: Request, user_email: str = Cookie(None), db: Session = Dep
     if not user_email:
         return RedirectResponse(url="/login?error=You aren't logged in.", status_code=303)
 
-    user = db.query(models.User).filter(models.User.email == user_email).first()
+    # user = db.query(models.User).filter(models.User.email == user_email).first()
+    # placeholder query for now
+    raw_query = text("SELECT * FROM users WHERE email = :email LIMIT 1")
+    # main mapping of the placeholder to the actual user_email we have above
+    result = db.execute(raw_query, {"email": user_email})
+    user = result.fetchone()
     cart_entries = db.query(models.Cart).filter(models.Cart.user_id == user.id).all()
 
     total_price_per_day = sum(

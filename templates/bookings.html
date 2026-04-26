@@ -1,90 +1,82 @@
 {% extends "base.html" %}
-
-{% block title %}Bookings - RentDao{% endblock %}
-
+{% block title %}My Bookings - RentDao{% endblock %}
 {% block content %}
 <div class="container">
-    <h1>My Bookings</h1>
+    <div class="section-card" style="border-left: 5px solid #007bff;">
+        <h2>🛒 My Rentals
+            {% if my_rentals %}<span style="font-size: 0.7em; background:#e9ecef; color:#6c757d; padding:3px 10px; border-radius:12px; font-weight:700; margin-left:10px;">{{ my_rentals|length }}</span>{% endif %}
+        </h2>
+        {% if my_rentals %}
+        <table>
+            <thead>
+                <tr><th>Item</th><th>Dates</th><th>Price</th><th>Owner</th><th>Status</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+                {% for rental in my_rentals %}
+                <tr>
+                    <td><strong>{{ rental.item.name }}</strong><br><span style="font-size:0.82em; color:#aaa;">#{{ rental.item_id }}</span></td>
+                    <td style="font-size:0.88em;">{{ rental.start_date }}<br>→ {{ rental.end_date }}</td>
+                    <td>${{ rental.total_price }}</td>
+                    <td style="font-size:0.88em;">{{ rental.rentor.email }}</td>
+                    <td><span class="badge badge-{{ rental.status }}">{{ rental.status }}</span></td>
+                    <td>
+                        {% if rental.status in ["pending", "approved"] %}
+                        <form action="/bookings/{{ rental.id }}/cancel" method="post" style="margin:0;">
+                            <button type="submit" class="btn btn-orange">Cancel</button>
+                        </form>
+                        {% endif %}
+                        {% if rental.status in ["completed", "cancelled", "rejected"] %}
+                        <form action="/bookings/{{ rental.id }}/delete" method="post" style="margin:0;" onsubmit="return confirm('Remove this booking?');">
+                            <button type="submit" class="btn btn-gray">🗑 Remove</button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="empty-msg">You haven't rented any items yet.</p>
+        {% endif %}
+    </div>
 
-    <h2>My Rentals</h2>
-    {% if my_rentals %}
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Item ID</th>
-                <th>Start Date</th>
-                <th>End Date</th>
-                <th>Total Price</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for rental in my_rentals %}
-            <tr>
-                <td>{{ rental.item_id }}</td>
-                <td>{{ rental.start_date }}</td>
-                <td>{{ rental.end_date }}</td>
-                <td>${{ rental.total_price }}</td>
-                <td>{{ rental.status }}</td>
-                <td>
-                    {% if rental.status in ["pending", "approved"] %}
-                    <form action="/bookings/{{ rental.id }}/cancel" method="post" style="display:inline;">
-                        <button type="submit">Cancel</button>
-                    </form>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <p>No rentals yet.</p>
-    {% endif %}
+    <div class="section-card" style="border-left: 5px solid #fd7e14;">
+        <h2>📥 Incoming Booking Requests
+            {% if incoming_requests %}<span style="font-size: 0.7em; background:#e9ecef; color:#6c757d; padding:3px 10px; border-radius:12px; font-weight:700; margin-left:10px;">{{ incoming_requests|length }}</span>{% endif %}
+        </h2>
+        {% if incoming_requests %}
+        <table>
+            <thead>
+                <tr><th>Item</th><th>Renter</th><th>Dates</th><th>Price</th><th>Status</th><th>Actions</th></tr>
+            </thead>
+            <tbody>
+                {% for req in incoming_requests %}
+                <tr>
+                    <td><strong>{{ req.item.name }}</strong><br><span style="font-size:0.82em;color:#aaa;">#{{ req.item_id }}</span></td>
+                    <td style="font-size:0.88em;">{{ req.user.email }}</td>
+                    <td style="font-size:0.88em;">{{ req.start_date }}<br>→ {{ req.end_date }}</td>
+                    <td>${{ req.total_price }}</td>
+                    <td><span class="badge badge-{{ req.status }}">{{ req.status }}</span></td>
+                    <td style="display:flex; flex-direction:column; gap:6px;">
+                        {% if req.status == "pending" %}
+                        <form action="/bookings/{{ req.id }}/approve" method="post" style="margin:0;"><button type="submit" class="btn btn-green">Approve</button></form>
+                        <form action="/bookings/{{ req.id }}/reject"  method="post" style="margin:0;"><button type="submit" class="btn btn-red">Reject</button></form>
+                        {% elif req.status == "approved" %}
+                        <form action="/bookings/{{ req.id }}/complete" method="post" style="margin:0;"><button type="submit" class="btn btn-blue">Complete</button></form>
+                        {% endif %}
+                        {% if req.status in ["completed", "cancelled", "rejected"] %}
+                        <form action="/bookings/{{ req.id }}/delete" method="post" style="margin:0;" onsubmit="return confirm('Remove?');"><button type="submit" class="btn btn-gray">🗑 Remove</button></form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="empty-msg">No incoming booking requests yet.</p>
+        {% endif %}
+    </div>
 
-    <h2>Incoming Booking Requests</h2>
-    {% if incoming_requests %}
-    <table border="1">
-        <thead>
-            <tr>
-                <th>Item ID</th>
-                <th>Renter ID</th>
-                <th>Start Date</th>
-                <th>End Date</th>
-                <th>Total Price</th>
-                <th>Status</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for request in incoming_requests %}
-            <tr>
-                <td>{{ request.item_id }}</td>
-                <td>{{ request.user_id }}</td>
-                <td>{{ request.start_date }}</td>
-                <td>{{ request.end_date }}</td>
-                <td>${{ request.total_price }}</td>
-                <td>{{ request.status }}</td>
-                <td>
-                    {% if request.status == "pending" %}
-                    <form action="/bookings/{{ request.id }}/approve" method="post" style="display:inline;">
-                        <button type="submit">Approve</button>
-                    </form>
-                    <form action="/bookings/{{ request.id }}/reject" method="post" style="display:inline;">
-                        <button type="submit">Reject</button>
-                    </form>
-                    {% elif request.status == "approved" %}
-                    <form action="/bookings/{{ request.id }}/complete" method="post" style="display:inline;">
-                        <button type="submit">Complete</button>
-                    </form>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    {% else %}
-    <p>No incoming booking requests.</p>
-    {% endif %}
+    <a href="/profile" class="btn btn-gray">← Back to Profile</a>
 </div>
 {% endblock %}

@@ -1,97 +1,57 @@
 {% extends "base.html" %}
-
 {% block title %}Browse Items - RentDao{% endblock %}
-
 {% block content %}
-<h1 class="browse-header">Browse Available Items</h1>
+<div class="container">
+    <div class="section-card" style="border-left: 5px solid #007bff;">
+        <h2>📦 Browse Available Items</h2>
+        <p style="color: #888; font-size: 0.88em; margin-top: -10px; margin-bottom: 18px;">Page {{ page }} of {{ total_pages }}</p>
 
-{% if items %}
-    <div class="card browse-items-card">
-        <div class="card-header">
-            <h2 class="card-title">Items in Marketplace</h2>
-            <p style="margin: 5px 0 0; color: #666; font-size: 0.9rem;">
-                Page {{ page }} of {{ total_pages }}
-            </p>
-        </div>
+        {% if items %}
+        <table>
+            <thead>
+                <tr>
+                    <th>Item Name</th>
+                    <th>Description</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in items %}
+                <tr>
+                    <td><strong>{{ item.name }}</strong></td>
+                    <td style="color: #666;">{{ item.description }}</td>
+                    <td><a href="/items/{{ item.id }}" class="btn btn-blue">View Details</a></td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
 
-        <ul class="item-list">
-            {% for item in items %}
-                <li>
-                    <div class="item-title">{{ item.name }}</div>
-                    <div class="item-description">{{ item.description }}</div>
-                    <div style="margin-top: 15px;">
-                        <a href="/items/{{ item.id }}" class="btn btn-primary" style="font-size: 0.9rem; padding: 6px 12px;">View Details</a>
-                    </div>
-                </li>
-            {% endfor %}
-        </ul>
-    </div>
+        <div style="display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 25px; flex-wrap: wrap;">
+            {% if page > 1 %}
+            <a href="/items?page={{ page - 1 }}" class="btn btn-gray">← Previous</a>
+            {% else %}
+            <button disabled class="btn btn-gray" style="opacity: 0.4; cursor: not-allowed;">← Previous</button>
+            {% endif %}
 
-    <!-- Pagination Controls -->
-    <div style="display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 30px; flex-wrap: wrap;">
-        <!-- Previous Button -->
-        {% if page > 1 %}
-            <a href="/items?page={{ page - 1 }}" class="btn btn-secondary" style="padding: 8px 16px;">
-                ← Previous
-            </a>
-        {% else %}
-            <button disabled class="btn btn-secondary" style="padding: 8px 16px; opacity: 0.5; cursor: not-allowed;">
-                ← Previous
-            </button>
-        {% endif %}
-
-        <!-- Page Numbers -->
-        <div style="display: flex; gap: 5px; flex-wrap: wrap; justify-content: center;">
             {% for page_num in range(1, total_pages + 1) %}
                 {% if page_num == page %}
-                    <button disabled style="
-                        padding: 8px 12px;
-                        border: none;
-                        border-radius: 5px;
-                        background-color: #667eea;
-                        color: white;
-                        font-weight: 600;
-                        cursor: default;
-                    ">
-                        {{ page_num }}
-                    </button>
+                <button disabled style="padding: 7px 13px; border: none; border-radius: 4px; background: #007bff; color: white; font-weight: 700; cursor: default;">{{ page_num }}</button>
                 {% else %}
-                    <a href="/items?page={{ page_num }}" style="
-                        padding: 8px 12px;
-                        border: 2px solid #667eea;
-                        border-radius: 5px;
-                        background-color: white;
-                        color: #667eea;
-                        text-decoration: none;
-                        font-weight: 600;
-                        transition: all 0.3s ease;
-                        display: inline-block;
-                    " onmouseover="this.style.backgroundColor='#667eea'; this.style.color='white';" onmouseout="this.style.backgroundColor='white'; this.style.color='#667eea';">
-                        {{ page_num }}
-                    </a>
+                <a href="/items?page={{ page_num }}" style="padding: 7px 13px; border: 1px solid #007bff; border-radius: 4px; color: #007bff; text-decoration: none; font-weight: 600; transition: all 0.2s;" onmouseover="this.style.background='#007bff';this.style.color='white';" onmouseout="this.style.background='';this.style.color='#007bff';">{{ page_num }}</a>
                 {% endif %}
             {% endfor %}
+
+            {% if page < total_pages %}
+            <a href="/items?page={{ page + 1 }}" class="btn btn-gray">Next →</a>
+            {% else %}
+            <button disabled class="btn btn-gray" style="opacity: 0.4; cursor: not-allowed;">Next →</button>
+            {% endif %}
         </div>
 
-        <!-- Next Button -->
-        {% if page < total_pages %}
-            <a href="/items?page={{ page + 1 }}" class="btn btn-secondary" style="padding: 8px 16px;">
-                Next →
-            </a>
         {% else %}
-            <button disabled class="btn btn-secondary" style="padding: 8px 16px; opacity: 0.5; cursor: not-allowed;">
-                Next →
-            </button>
+        <p class="empty-msg">No items available in the marketplace right now.</p>
+        <a href="/" class="btn btn-gray" style="margin-top: 12px;">← Back to Home</a>
         {% endif %}
     </div>
-
-{% else %}
-    <div class="card">
-        <div style="text-align: center; padding: 40px;">
-            <h3 style="color: #666; margin-bottom: 10px;">No Items Available</h3>
-            <p style="color: #999; margin-bottom: 20px;">There are currently no rental items listed.</p>
-            <a href="/" class="btn btn-primary">← Back to Home</a>
-        </div>
-    </div>
-{% endif %}
+</div>
 {% endblock %}

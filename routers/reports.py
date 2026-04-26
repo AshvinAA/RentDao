@@ -17,7 +17,7 @@ def show_report_form(
     reported_user_id: int = None,
     item_id: int = None,
     current_user: models.User = Depends(get_current_user),
-    db: Session = Depends(get_db),  
+    db: Session = Depends(get_db),
 ):
     return templates.TemplateResponse("report_form.html", {
         "request": request,
@@ -36,7 +36,6 @@ def submit_report(
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    # Can't report yourself
     if reported_user_id == current_user.id:
         raise HTTPException(status_code=400, detail="You cannot report yourself")
 
@@ -49,7 +48,7 @@ def submit_report(
         # item = db.query(models.Item).filter(models.Item.id == item_id).first()
         item=db.execute(text("select id from items where id=:item_id"),{"item_id":item_id}).fetchone
         if not item:
-            item_id = None  # silently drop invalid item reference
+            item_id = None
 
     # new_report = models.Reports(
     #     reporter_id=current_user.id,
@@ -74,7 +73,7 @@ def submit_report(
     )
     db.commit()
 
-    return RedirectResponse(url="/profile", status_code=303)  
+    return RedirectResponse(url="/reports/mine", status_code=303)
 
 
 @router.get("/mine")
@@ -83,10 +82,9 @@ def my_reports(
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    # finds all reports made by the user against other users
     reports = (
         db.query(models.Reports)
-        .filter(models.Reports.reporter_id == current_user.id)  # Only reports this user created
+        .filter(models.Reports.reporter_id == current_user.id)
         .all()
     )
     return templates.TemplateResponse("my_reports.html", {
@@ -94,3 +92,45 @@ def my_reports(
         "user": current_user,
         "reports": reports,
     })
+
+
+@router.post("/{report_id}/edit")
+def edit_report(
+    report_id: int,
+    reason: str = Form(...),
+    details: str = Form(""),
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    report = db.query(models.Reports).filter(models.Reports.id == report_id).first()
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found")
+
+    # only the person who filed the report can edit it
+    if report.reporter_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    report.reason = reason
+    report.details = details
+    db.commit()
+
+    return RedirectResponse(url="/reports/mine", status_code=303)
+
+
+@router.post("/{report_id}/delete")
+def delete_report(
+    report_id: int,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    report = db.query(models.Reports).filter(models.Reports.id == report_id).first()
+    if not report:
+        raise HTTPException(status_code=404, detail="Report not found")
+
+    if report.reporter_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Not authorized")
+
+    db.delete(report)
+    db.commit()
+
+    return RedirectResponse(url="/reports/mine", status_code=303)

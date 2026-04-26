@@ -2,6 +2,7 @@ from fastapi import APIRouter, Request, Depends, Form, HTTPException
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 import bcrypt
 import models
 from database import get_db
@@ -30,15 +31,24 @@ def login(request: Request, email: str = Form(...), password: str = Form(...), d
             return templates.TemplateResponse("admin_login.html", {"request": request, "error": "Invalid credentials"})
         request.session["admin_logged_in"] = True
         return RedirectResponse(url="/admin", status_code=303)
-    
-    user=db.query(models.User).filter(models.User.email==email).first()
-    
+
+    # user=db.query(models.User).filter(models.User.email==email).first()
+    user = db.execute(
+        text("SELECT * FROM users WHERE email = :email"),
+        {"email": email}
+    ).fetchone()
+
     if not user or not bcrypt.checkpw(password.encode(), user.hashed_password.encode()):
         return templates.TemplateResponse("admin_login.html", {"request": request, "error": "Invalid credentials"})
     if email not in ADMIN_EMAILS:
         return templates.TemplateResponse("admin_login.html", {"request": request, "error": "You are not an admin"})
+
     if not user.is_admin:
-        user.is_admin=True 
+        # user.is_admin=True 
+        db.execute(
+            text("UPDATE users SET is_admin = 1 WHERE id = :uid"),
+            {"uid": user.id}
+        )
         db.commit()
         
     request.session["admin_logged_in"] = True
@@ -47,65 +57,130 @@ def login(request: Request, email: str = Form(...), password: str = Form(...), d
 @router.get("/logout")
 def logout(request: Request):
     request.session.clear()
-    return RedirectResponse(url="/admin/login", status_code =302)
+    return RedirectResponse(url="/admin/login", status_code=302)
 
 
 @router.get("/", dependencies=[Depends(require_admin)])
 def adminDash(request: Request, db: Session = Depends(get_db)):
     ADMIN_EMAILS = {"admin@rentdao.com", "saiberry@gmail.com", "a5hv1n@gmail.com"}
-    all_users = db.query(models.User).all()
+
+    # all_users = db.query(models.User).all()
+    all_users = db.execute(
+        text("SELECT * FROM users")
+    ).fetchall()
     non_admin_users = [u for u in all_users if u.email not in ADMIN_EMAILS]
-    #subquery to heklp find users who have never posted an item(inactive users)
-    users_with_items = db.query(models.Item.owner_id).distinct().subquery() #users who have posted items
+
+    #subquery to help find users who have never posted an item(inactive users)
+    # users_with_items = db.query(models.Item.owner_id).distinct().subquery() #users who have posted items
     # actually showing the inactive users
-    inactive_users = (db.query(models.User).filter(~models.User.id.in_(users_with_items)).all())
+    # inactive_users = (db.query(models.User).filter(~models.User.id.in_(users_with_items)).all())
+    inactive_users = db.execute(
+        text("""
+            SELECT * FROM users
+            WHERE id NOT IN (SELECT DISTINCT owner_id FROM items)
+        """)
+    ).fetchall()
+
     # deliveries waiting for admin approval {REMOVE TS}
-    pending_deliveries = db.query(models.Delivery_history).filter(models.Delivery_history.delivery_status == "awaiting_admin").all()
+    # pending_deliveries = db.query(models.Delivery_history).filter(models.Delivery_history.delivery_status == "awaiting_admin").all()
+    pending_deliveries = db.execute(
+        text("SELECT * FROM delivery_history WHERE delivery_status = 'awaiting_admin'")
+    ).fetchall()
+
+    # items": db.query(models.Item).all()
+    items = db.execute(
+        text("SELECT * FROM items")
+    ).fetchall()
 
     return templates.TemplateResponse("admin.html", {
         "request": request, 
-        "items": db.query(models.Item).all(), 
+        "items": items,
         "users": non_admin_users,
         "inactive_users": inactive_users,
         "pending_deliveries": pending_deliveries 
     })
-# next 4 functions do the same things essentially just approve/susupend/search/remove based on the item/userid
+
+# next 4 functions do the same things essentially just approve/suspend/search/remove based on the item/userid
 
 # approve item post
 @router.post("/items/{item_id}/approve", dependencies=[Depends(require_admin)])
 def approve(item_id: int, db: Session = Depends(get_db)):
-    item = db.query(models.Item).filter(models.Item.id==item_id).first()
+    # item = db.query(models.Item).filter(models.Item.id==item_id).first()
+    # if item:
+    #     item.is_approved=True 
+    #     db.commit()
+    item = db.execute(
+        text("SELECT id FROM items WHERE id = :iid"),
+        {"iid": item_id}
+    ).fetchone()
     if item:
-        item.is_approved=True 
-        db.commit() 
+        db.execute(
+            text("UPDATE items SET is_approved = 1 WHERE id = :iid"),
+            {"iid": item_id}
+        )
+        db.commit()
     return RedirectResponse(url="/admin", status_code=303)
 
 # remove an item from the market
 @router.post("/items/{item_id}/remove", dependencies=[Depends(require_admin)])
 def delete(item_id: int, db: Session = Depends(get_db)):
-    item = db.query(models.Item).filter(models.Item.id==item_id).first()
+    # item = db.query(models.Item).filter(models.Item.id==item_id).first()
+    # if item:
+    #     db.delete(item)
+    #     db.commit()
+    item = db.execute(
+        text("SELECT id FROM items WHERE id = :iid"),
+        {"iid": item_id}
+    ).fetchone()
     if item:
-        db.delete(item)
+        db.execute(
+            text("DELETE FROM items WHERE id = :iid"),
+            {"iid": item_id}
+        )
         db.commit()
     return RedirectResponse(url="/admin", status_code=303)
 
 # suspend user
 @router.post("/users/{user_id}/suspend", dependencies=[Depends(require_admin)])
 def suspend(user_id: int, db: Session=Depends(get_db)):
-    user = db.query(models.User).filter(models.User.id==user_id).first()
+    # user = db.query(models.User).filter(models.User.id==user_id).first()
+    # if user:
+    #     user.is_suspended=True
+    #     db.commit()
+    user = db.execute(
+        text("SELECT id FROM users WHERE id = :uid"),
+        {"uid": user_id}
+    ).fetchone()
     if user:
-        user.is_suspended=True
+        db.execute(
+            text("UPDATE users SET is_suspended = 1 WHERE id = :uid"),
+            {"uid": user_id}
+        )
         db.commit()
-    return RedirectResponse(url="/admin",status_code=303)
+    return RedirectResponse(url="/admin", status_code=303)
 
 # search based on uid
 @router.get("/users/search", dependencies=[Depends(require_admin)])
 def search_user(request: Request, user_id: int, db: Session = Depends(get_db)):
-    user = db.query(models.User).filter(models.User.id == user_id).first()
+    # user = db.query(models.User).filter(models.User.id == user_id).first()
+    user = db.execute(
+        text("SELECT * FROM users WHERE id = :uid"),
+        {"uid": user_id}
+    ).fetchone()
+
+    # items": db.query(models.Item).all()
+    # "users": db.query(models.User).all()
+    items = db.execute(
+        text("SELECT * FROM items")
+    ).fetchall()
+    users = db.execute(
+        text("SELECT * FROM users")
+    ).fetchall()
+
     return templates.TemplateResponse("admin.html", {
         "request": request,
-        "items": db.query(models.Item).all(),
-        "users": db.query(models.User).all(),
+        "items": items,
+        "users": users,
         "searched_user": user,  
         "search_id": user_id
     })
@@ -114,10 +189,19 @@ def search_user(request: Request, user_id: int, db: Session = Depends(get_db)):
 # approve delivery {REMOVE TS}
 @router.post("/deliveries/{delivery_id}/approve", dependencies=[Depends(require_admin)])
 def approve_delivery(delivery_id: int, db: Session = Depends(get_db)):
-    delivery = db.query(models.Delivery_history).filter(models.Delivery_history.id == delivery_id).first()
-    
+    # delivery = db.query(models.Delivery_history).filter(models.Delivery_history.id == delivery_id).first()
+    # if delivery and delivery.delivery_status == "awaiting_admin":
+    #     delivery.delivery_status = "pending"
+    #     db.commit()
+    delivery = db.execute(
+        text("SELECT id, delivery_status FROM delivery_history WHERE id = :did"),
+        {"did": delivery_id}
+    ).fetchone()
     if delivery and delivery.delivery_status == "awaiting_admin":
-        delivery.delivery_status = "pending"
+        db.execute(
+            text("UPDATE delivery_history SET delivery_status = 'pending' WHERE id = :did"),
+            {"did": delivery_id}
+        )
         db.commit()
-        
+
     return RedirectResponse(url="/admin", status_code=303)

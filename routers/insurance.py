@@ -2,6 +2,7 @@ from fastapi import APIRouter, Request, Depends, Form, HTTPException
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 import models
 from database import get_db
 from routers.auth import get_current_user
@@ -20,7 +21,11 @@ def view_insurance(
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    item = db.query(models.Item).filter(models.Item.id == item_id).first() #finding item in db as per usual
+    # item = db.query(models.Item).filter(models.Item.id == item_id).first() #finding item in db as per usual
+    item = db.execute(
+        text("SELECT * FROM items WHERE id = :iid"),
+        {"iid": item_id}
+    ).fetchone()
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
 
@@ -28,11 +33,15 @@ def view_insurance(
     if item.owner_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized")
 #finds the insurance of the specific item
-    records = (
-        db.query(models.Insurance)
-        .filter(models.Insurance.item_id == item_id)
-        .all()
-    )
+    # records = (
+    #     db.query(models.Insurance)
+    #     .filter(models.Insurance.item_id == item_id)
+    #     .all()
+    # )
+    records = db.execute(
+        text("SELECT * FROM insurance WHERE item_id = :iid"),
+        {"iid": item_id}
+    ).fetchall()
     return templates.TemplateResponse("insurance.html", {
         "request": request,
         "user": current_user,
@@ -50,20 +59,36 @@ def add_insurance(
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    item = db.query(models.Item).filter(models.Item.id == item_id).first()
+    # item = db.query(models.Item).filter(models.Item.id == item_id).first()
+    item = db.execute(
+        text("SELECT * FROM items WHERE id = :iid"),
+        {"iid": item_id}
+    ).fetchone()
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
 
     if item.owner_id != current_user.id: #only owner can add insurance details of the item
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    new_record = models.Insurance(
-        item_id=item_id,
-        insurance_provider=insurance_provider,
-        policy_number=policy_number,
-        coverage_details=coverage_details,
+    # new_record = models.Insurance(
+    #     item_id=item_id,
+    #     insurance_provider=insurance_provider,
+    #     policy_number=policy_number,
+    #     coverage_details=coverage_details,
+    # )
+    # db.add(new_record)
+    db.execute(
+        text("""
+            INSERT INTO insurance (item_id, insurance_provider, policy_number, coverage_details)
+            VALUES (:item_id, :insurance_provider, :policy_number, :coverage_details)
+        """),
+        {
+            "item_id": item_id,
+            "insurance_provider": insurance_provider,
+            "policy_number": policy_number,
+            "coverage_details": coverage_details,
+        }
     )
-    db.add(new_record)
     db.commit()
 
     return RedirectResponse(url=f"/insurance/item/{item_id}", status_code=303)
@@ -75,17 +100,29 @@ def remove_insurance(
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    record = db.query(models.Insurance).filter(models.Insurance.id == record_id).first()
+    # record = db.query(models.Insurance).filter(models.Insurance.id == record_id).first()
+    record = db.execute(
+        text("SELECT * FROM insurance WHERE id = :rid"),
+        {"rid": record_id}
+    ).fetchone()
     if not record:
         raise HTTPException(status_code=404, detail="Record not found")
 
     # Only the item owner can remove
-    item = db.query(models.Item).filter(models.Item.id == record.item_id).first()
+    # item = db.query(models.Item).filter(models.Item.id == record.item_id).first()
+    item = db.execute(
+        text("SELECT owner_id FROM items WHERE id = :iid"),
+        {"iid": record.item_id}
+    ).fetchone()
     if not item or item.owner_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized")
-
+    
     item_id = record.item_id
-    db.delete(record)
+    # db.delete(record)
+    db.execute(
+        text("DELETE FROM insurance WHERE id = :rid"),
+        {"rid": record_id}
+    )
     db.commit()
 
     return RedirectResponse(url=f"/insurance/item/{item_id}", status_code=303)

@@ -41,8 +41,14 @@ def booking_review(
     # booking = db.query(models.Booking_details).filter(
     #     models.Booking_details.id == booking_id
     # ).first()
+    # JOIN with items to get item_name since booking.item.name no longer works on raw rows
     booking = db.execute(
-        text("SELECT * FROM booking_details WHERE id = :bid"),
+        text("""
+            SELECT bd.*, i.name AS item_name
+            FROM booking_details bd
+            JOIN items i ON bd.item_id = i.id
+            WHERE bd.id = :bid
+        """),
         {"bid": booking_id}
     ).fetchone()
     if not booking:
@@ -298,8 +304,15 @@ def item_reviews(
     #     .order_by(models.Reviews.review_id.desc())
     #     .all()
     # )
+    # JOIN with users to get reviewer_email since review.reviewer.email no longer works on raw rows
     reviews = db.execute(
-        text("SELECT * FROM reviews WHERE item_id = :iid ORDER BY review_id DESC"),
+        text("""
+            SELECT r.*, u.email AS reviewer_email
+            FROM reviews r
+            JOIN users u ON r.reviewer_id = u.id
+            WHERE r.item_id = :iid
+            ORDER BY r.review_id DESC
+        """),
         {"iid": item_id}
     ).fetchall()
 
@@ -330,8 +343,15 @@ def user_reviews(
     #     .order_by(models.Reviews.review_id.desc())
     #     .all()
     # )
+    # JOIN with users to get reviewer_email since review.reviewer.email no longer works on raw rows
     reviews = db.execute(
-        text("SELECT * FROM reviews WHERE reviewee_id = :uid ORDER BY review_id DESC"),
+        text("""
+            SELECT r.*, u.email AS reviewer_email
+            FROM reviews r
+            JOIN users u ON r.reviewer_id = u.id
+            WHERE r.reviewee_id = :uid
+            ORDER BY r.review_id DESC
+        """),
         {"uid": user_id}
     ).fetchall()
 

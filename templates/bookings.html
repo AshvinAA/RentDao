@@ -14,10 +14,10 @@
             <tbody>
                 {% for rental in my_rentals %}
                 <tr>
-                    <td><strong>{{ rental.item.name }}</strong><br><span style="font-size:0.82em; color:#aaa;">#{{ rental.item_id }}</span></td>
+                    <td><strong>{{ rental.item_name }}</strong><br><span style="font-size:0.82em; color:#aaa;">#{{ rental.item_id }}</span></td>
                     <td style="font-size:0.88em;">{{ rental.start_date }}<br>→ {{ rental.end_date }}</td>
                     <td>${{ rental.total_price }}</td>
-                    <td style="font-size:0.88em;">{{ rental.rentor.email }}</td>
+                    <td style="font-size:0.88em;">{{ rental.rentor_email }}</td>
                     <td><span class="badge badge-{{ rental.status }}">{{ rental.status }}</span></td>
                     <td>
                         {% if rental.status in ["pending", "approved"] %}
@@ -52,8 +52,8 @@
             <tbody>
                 {% for req in incoming_requests %}
                 <tr>
-                    <td><strong>{{ req.item.name }}</strong><br><span style="font-size:0.82em;color:#aaa;">#{{ req.item_id }}</span></td>
-                    <td style="font-size:0.88em;">{{ req.user.email }}</td>
+                    <td><strong>{{ req.item_name }}</strong><br><span style="font-size:0.82em;color:#aaa;">#{{ req.item_id }}</span></td>
+                    <td style="font-size:0.88em;">{{ req.renter_email }}</td>
                     <td style="font-size:0.88em;">{{ req.start_date }}<br>→ {{ req.end_date }}</td>
                     <td>${{ req.total_price }}</td>
                     <td><span class="badge badge-{{ req.status }}">{{ req.status }}</span></td>

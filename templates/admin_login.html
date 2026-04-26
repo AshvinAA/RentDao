@@ -1,122 +1,22 @@
 {% extends "base.html" %}
-
 {% block title %}Admin Login - RentDao{% endblock %}
-
-{% block extra_head %}
-<style>
-.admin-login-shell {
-    min-height: calc(100vh - 80px);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 60px 20px;
-}
-
-.admin-login-panel {
-    max-width: 780px;
-    width: 100%;
-    padding: 52px 48px;
-    background: rgba(255, 255, 255, 0.96);
-    border-radius: 28px;
-    border: 1px solid rgba(124, 95, 188, 0.16);
-    box-shadow: 0 28px 92px rgba(79, 63, 141, 0.16);
-    position: relative;
-    overflow: hidden;
-}
-
-.admin-login-panel::before {
-    content: '';
-    position: absolute;
-    top: -40px;
-    right: -40px;
-    width: 180px;
-    height: 180px;
-    background: rgba(118, 75, 188, 0.14);
-    border-radius: 50%;
-    filter: blur(24px);
-}
-
-.admin-login-heading {
-    text-align: center;
-    margin-bottom: 32px;
-}
-
-.admin-login-heading h2 {
-    margin-bottom: 10px;
-    font-size: 2.4rem;
-    color: #3a2f57;
-}
-
-.admin-login-heading p {
-    color: #5f5a75;
-    font-size: 1rem;
-    letter-spacing: 0.2px;
-}
-
-.admin-login-form {
-    display: grid;
-    gap: 22px;
-}
-
-.admin-login-form label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: #4b3d6e;
-}
-
-.admin-login-form input {
-    width: 100%;
-    min-height: 56px;
-    padding: 16px 18px;
-    border-radius: 16px;
-    border: 1px solid rgba(124, 95, 188, 0.18);
-    background: #fcfcfe;
-    font-size: 1rem;
-}
-
-.admin-login-form input:focus {
-    outline: none;
-    border-color: #7d5fcd;
-    box-shadow: 0 0 0 4px rgba(124, 95, 188, 0.08);
-}
-
-.admin-login-form button {
-    width: 100%;
-    padding: 16px 20px;
-    border-radius: 16px;
-    font-size: 1rem;
-}
-
-.message {
-    margin-bottom: 20px;
-}
-</style>
-{% endblock %}
-
 {% block content %}
-<div class="admin-login-shell">
-    <div class="form-container admin-login-panel">
-        <div class="admin-login-heading">
-            <h2>Admin Login</h2>
-        </div>
-
+<div class="container" style="max-width: 480px;">
+    <div class="section-card" style="border-left: 5px solid #dc3545;">
+        <h2>🛡️ Admin Login</h2>
         {% if error %}
-            <div class="message message-error">
-                ⚠️ {{ error }}
-            </div>
+        <div class="message message-error">⚠️ {{ error }}</div>
         {% endif %}
-
-        <form class="admin-login-form" method="post" action="/admin/login">
-            <div>
+        <form action="/admin/login" method="post">
+            <div class="form-group">
                 <label for="email">Admin Email</label>
-                <input id="email" type="email" name="email" placeholder="Enter admin email" required />
+                <input id="email" type="email" name="email" placeholder="Enter admin email" required>
             </div>
-            <div>
+            <div class="form-group">
                 <label for="password">Password</label>
-                <input id="password" type="password" name="password" placeholder="Enter admin password" required />
+                <input id="password" type="password" name="password" placeholder="Enter admin password" required>
             </div>
-            <button type="submit" class="btn btn-primary">Login</button>
+            <button type="submit" class="btn btn-red" style="width: 100%; padding: 10px;">Login</button>
         </form>
     </div>
 </div>

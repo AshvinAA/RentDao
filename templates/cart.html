@@ -1,172 +1,59 @@
 {% extends "base.html" %}
-
+{% block title %}Shopping Cart - RentDao{% endblock %}
 {% block content %}
-<div class="container">
-    <h1>Shopping Cart</h1>
-    
-    {% if cart_entries %}
-        <div class="cart-items">
-            <table class="table">
-                <thead>
-                    <tr>
-                        <th>Item Name</th>
-                        <th>Price Per Day</th>
-                        <th>Description</th>
-                        <th>Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for entry in cart_entries %}
-                        <tr>
-                            <td>{{ entry.item.name }}</td>
-                            <td>${{ entry.item.price_per_day }}</td>
-                            <td>{{ entry.item.description[:50] }}...</td>
-                            <td>
-                                <form method="post" action="/cart/remove/{{ entry.item.id }}" style="display: inline;">
-                                    <button type="submit" class="btn btn-danger btn-sm">Remove</button>
-                                </form>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
+<div class="container" style="max-width: 900px;">
+    <div class="section-card" style="border-left: 5px solid #007bff;">
+        <h2>🛒 Shopping Cart</h2>
+        {% if cart_entries %}
+        <table>
+            <thead>
+                <tr><th>Item Name</th><th>Description</th><th>Price / Day</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+                {% for entry in cart_entries %}
+                <tr>
+                    <td><strong>{{ entry.item.name }}</strong></td>
+                    <td style="color:#666; font-size:0.9em;">{{ entry.item.description[:60] }}...</td>
+                    <td>${{ entry.item.price_per_day }}</td>
+                    <td>
+                        <form method="post" action="/cart/remove/{{ entry.item.id }}" style="margin:0;">
+                            <button type="submit" class="btn btn-red">Remove</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="empty-msg">Your cart is empty.</p>
+        <a href="/items" class="btn btn-blue" style="margin-top:14px;">Browse Items</a>
+        {% endif %}
+    </div>
 
-        <div class="cart-summary">
-            <h3>Cart Summary</h3>
-            <p>Total Items: <strong>{{ cart_entries|length }}</strong></p>
-            <p>Total Price Per Day: <strong>${{ total_price_per_day }}</strong></p>
-            
-            <div class="actions">
-                <form method="post" action="/checkout" style="display: inline;">
-                    <button type="submit" class="btn btn-primary">Proceed to Checkout</button>
-                </form>
-                
-                <form method="post" action="/cart/clear" style="display: inline;">
-                    <button type="submit" class="btn btn-warning" onclick="return confirm('Clear entire cart?');">Clear Cart</button>
-                </form>
-            </div>
+    {% if cart_entries %}
+    <div class="section-card" style="border-left: 5px solid #28a745;">
+        <h2>Order Summary</h2>
+        <table style="width:auto; min-width:280px;">
+            <tbody>
+                <tr>
+                    <td style="border:none; padding:6px 0; color:#495057; font-weight:600; padding-right:40px;">Total Items</td>
+                    <td style="border:none; padding:6px 0;"><strong>{{ cart_entries|length }}</strong></td>
+                </tr>
+                <tr>
+                    <td style="border:none; padding:6px 0; color:#495057; font-weight:600;">Total Per Day</td>
+                    <td style="border:none; padding:6px 0;"><strong>${{ total_price_per_day }}</strong></td>
+                </tr>
+            </tbody>
+        </table>
+        <div style="display:flex; gap:10px; margin-top:18px; flex-wrap:wrap;">
+            <form method="post" action="/checkout" style="margin:0;">
+                <button type="submit" class="btn btn-green" style="padding:10px 22px;">Proceed to Checkout →</button>
+            </form>
+            <form method="post" action="/cart/clear" style="margin:0;">
+                <button type="submit" class="btn btn-gray" onclick="return confirm('Clear entire cart?')">🗑 Clear Cart</button>
+            </form>
         </div>
-    {% else %}
-        <div class="empty-cart">
-            <p>Your cart is empty.</p>
-            <a href="/browse" class="btn btn-primary">Continue Shopping</a>
-        </div>
+    </div>
     {% endif %}
 </div>
-
-<style>
-    .container {
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 20px;
-    }
-
-    h1 {
-        text-align: center;
-        margin-bottom: 30px;
-    }
-
-    .cart-items {
-        margin-bottom: 30px;
-    }
-
-    .table {
-        width: 100%;
-        border-collapse: collapse;
-        margin-bottom: 20px;
-    }
-
-    .table th,
-    .table td {
-        padding: 12px;
-        text-align: left;
-        border-bottom: 1px solid #ddd;
-    }
-
-    .table th {
-        background-color: #f9f9f9;
-        font-weight: bold;
-    }
-
-    .table tr:hover {
-        background-color: #f5f5f5;
-    }
-
-    .cart-summary {
-        background-color: #f9f9f9;
-        padding: 20px;
-        border-radius: 5px;
-        border: 1px solid #ddd;
-    }
-
-    .cart-summary h3 {
-        margin-top: 0;
-    }
-
-    .cart-summary p {
-        font-size: 16px;
-        margin: 10px 0;
-    }
-
-    .actions {
-        margin-top: 20px;
-    }
-
-    .actions form {
-        margin-right: 10px;
-    }
-
-    .btn {
-        padding: 10px 20px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 14px;
-        text-decoration: none;
-        display: inline-block;
-    }
-
-    .btn-primary {
-        background-color: #007bff;
-        color: white;
-    }
-
-    .btn-primary:hover {
-        background-color: #0056b3;
-    }
-
-    .btn-danger {
-        background-color: #dc3545;
-        color: white;
-    }
-
-    .btn-danger:hover {
-        background-color: #c82333;
-    }
-
-    .btn-warning {
-        background-color: #ffc107;
-        color: black;
-    }
-
-    .btn-warning:hover {
-        background-color: #e0a800;
-    }
-
-    .btn-sm {
-        padding: 5px 10px;
-        font-size: 12px;
-    }
-
-    .empty-cart {
-        text-align: center;
-        padding: 50px 20px;
-    }
-
-    .empty-cart p {
-        font-size: 18px;
-        margin-bottom: 20px;
-    }
-</style>
 {% endblock %}

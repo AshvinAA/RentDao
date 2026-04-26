@@ -1,28 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Reviews for {{ item.name }} - RentDao{% endblock %}</title>
-</head>
-<body>
-    {% extends "base.html" %}
-
-    {% block content %}
-    <div class="container">
-        <h1>Reviews for {{ item.name }}</h1>
+{% extends "base.html" %}
+{% block title %}Reviews for {{ item.name }} - RentDao{% endblock %}
+{% block content %}
+<div class="container" style="max-width: 800px;">
+    <a href="/items/{{ item.id }}" class="back-link">← Back to Item</a>
+    <div class="section-card" style="border-left: 5px solid #ffc107;">
+        <h2>⭐ Reviews for {{ item.name }}</h2>
         {% if reviews %}
-        <ul>
-            {% for review in reviews %}
-            <li>
-                Rating: {{ review.rating }}/5 - Comment: {{ review.comment }} - By: {{ review.reviewer.email }}
-            </li>
-            {% endfor %}
-        </ul>
+        <table>
+            <thead>
+                <tr><th>Reviewer</th><th>Rating</th><th>Comment</th></tr>
+            </thead>
+            <tbody>
+                {% for review in reviews %}
+                <tr>
+                    <td>{{ review.reviewer.email }}</td>
+                    <td><span class="badge badge-approved">{{ review.rating }}/5</span></td>
+                    <td style="color:#555;">{{ review.comment }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
         {% else %}
-        <p>No reviews yet.</p>
+        <p class="empty-msg">No reviews yet.</p>
         {% endif %}
     </div>
-    {% endblock %}
-</body>
-</html>
+</div>
+{% endblock %}

@@ -1,47 +1,53 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Insurance for {{ item.name }} - RentDao{% endblock %}</title>
-</head>
-<body>
-    {% extends "base.html" %}
+{% extends "base.html" %}
+{% block title %}Insurance for {{ item.name }} - RentDao{% endblock %}
+{% block content %}
+<div class="container" style="max-width: 720px;">
+    <a href="/items/{{ item.id }}" class="back-link">← Back to Item</a>
 
-    {% block content %}
-    <div class="container">
-        <h1>Insurance for {{ item.name }}</h1>
-
-        <h2>Current Insurance Records</h2>
+    <div class="section-card" style="border-left: 5px solid #fd7e14;">
+        <h2>🛡️ Insurance Records for {{ item.name }}</h2>
         {% if records %}
-        <ul>
-            {% for record in records %}
-            <li>
-                Provider: {{ record.insurance_provider }} - Policy: {{ record.policy_number }} - Details: {{ record.coverage_details }}
-                <form action="/insurance/remove/{{ record.id }}" method="post" style="display:inline;">
-                    <button type="submit">Remove</button>
-                </form>
-            </li>
-            {% endfor %}
-        </ul>
+        <table>
+            <thead>
+                <tr><th>Provider</th><th>Policy #</th><th>Coverage Details</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+                {% for record in records %}
+                <tr>
+                    <td><strong>{{ record.insurance_provider }}</strong></td>
+                    <td>{{ record.policy_number }}</td>
+                    <td style="color:#555; font-size:0.9em;">{{ record.coverage_details }}</td>
+                    <td>
+                        <form action="/insurance/remove/{{ record.id }}" method="post" style="margin:0;">
+                            <button type="submit" class="btn btn-red">Remove</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
         {% else %}
-        <p>No insurance records.</p>
+        <p class="empty-msg">No insurance records yet.</p>
         {% endif %}
+    </div>
 
-        <h2>Add New Insurance</h2>
+    <div class="section-card" style="border-left: 5px solid #28a745;">
+        <h2>➕ Add New Insurance</h2>
         <form action="/insurance/add/{{ item.id }}" method="post">
-            <label for="insurance_provider">Provider:</label>
-            <input type="text" name="insurance_provider" id="insurance_provider" required><br><br>
-
-            <label for="policy_number">Policy Number:</label>
-            <input type="text" name="policy_number" id="policy_number" required><br><br>
-
-            <label for="coverage_details">Coverage Details:</label><br>
-            <textarea name="coverage_details" id="coverage_details" rows="4" cols="50"></textarea><br><br>
-
-            <button type="submit">Add Insurance</button>
+            <div class="form-group">
+                <label for="insurance_provider">Provider</label>
+                <input type="text" name="insurance_provider" id="insurance_provider" required placeholder="e.g. SafeRent Insurance">
+            </div>
+            <div class="form-group">
+                <label for="policy_number">Policy Number</label>
+                <input type="text" name="policy_number" id="policy_number" required placeholder="e.g. POL-2026-XXXX">
+            </div>
+            <div class="form-group">
+                <label for="coverage_details">Coverage Details <span style="color:#aaa; font-weight:400;">(optional)</span></label>
+                <textarea name="coverage_details" id="coverage_details" rows="4" placeholder="Describe the coverage..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-green">Add Insurance</button>
         </form>
     </div>
-    {% endblock %}
-</body>
-</html>
+</div>
+{% endblock %}

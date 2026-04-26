@@ -1,77 +1,62 @@
 {% extends "base.html" %}
-
 {% block title %}My Review - RentDao{% endblock %}
-
 {% block content %}
-<div class="container" style="max-width: 600px; margin: 40px auto; padding: 0 20px;">
+<div class="container" style="max-width: 640px;">
+    <a href="/profile" class="back-link">← Back to Profile</a>
 
-    <h1 style="color: #333; margin-bottom: 5px;">My Review</h1>
-    <p style="color: #666; margin-bottom: 30px;">
-        <strong>{{ booking.item.name }}</strong> <span style="color:#bbb;">#{{ booking.item_id }}</span> —
-        {{ booking.start_date }} to {{ booking.end_date }}
-    </p>
+    <div class="section-card" style="border-left: 5px solid #ffc107;">
+        <h2>⭐ My Review</h2>
+        <p style="color:#888; font-size:0.9em; margin-top:-10px; margin-bottom:18px;">
+            <strong>{{ booking.item.name }}</strong> <span style="color:#ccc;">#{{ booking.item_id }}</span>
+            — {{ booking.start_date }} to {{ booking.end_date }}
+        </p>
 
-    <!-- REVIEW DISPLAY CARD -->
-    <div style="background: white; padding: 35px; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.08); margin-bottom: 25px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <div style="font-size: 1.8em;">
-                {% for i in range(review.rating) %}⭐{% endfor %}
+        <table style="margin-bottom: 0;">
+            <tbody>
+                <tr>
+                    <td style="border:none; padding:8px 0; color:#495057; font-weight:600; width:100px;">Rating</td>
+                    <td style="border:none; padding:8px 0;">
+                        <span class="badge badge-approved">{{ review.rating }}/5</span>
+                        &nbsp;{% for i in range(review.rating) %}⭐{% endfor %}
+                    </td>
+                </tr>
+                <tr>
+                    <td style="border:none; padding:8px 0; color:#495057; font-weight:600;">Comment</td>
+                    <td style="border:none; padding:8px 0; color:#555;">
+                        {% if review.comment %}{{ review.comment }}{% else %}<em style="color:#aaa;">No comment left.</em>{% endif %}
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="section-card" style="border-left: 5px solid #007bff;">
+        <h2>✏️ Edit This Review</h2>
+        <form action="/reviews/{{ review.review_id }}/edit" method="post">
+            <div class="form-group">
+                <label>Rating</label>
+                <select name="rating" required>
+                    <option value="5" {% if review.rating==5 %}selected{% endif %}>⭐⭐⭐⭐⭐ — Excellent</option>
+                    <option value="4" {% if review.rating==4 %}selected{% endif %}>⭐⭐⭐⭐ — Very Good</option>
+                    <option value="3" {% if review.rating==3 %}selected{% endif %}>⭐⭐⭐ — Good</option>
+                    <option value="2" {% if review.rating==2 %}selected{% endif %}>⭐⭐ — Fair</option>
+                    <option value="1" {% if review.rating==1 %}selected{% endif %}>⭐ — Poor</option>
+                </select>
             </div>
-            <span style="color: #666; font-size: 0.9em;">{{ review.rating }}/5</span>
-        </div>
-
-        {% if review.comment %}
-            <p style="color: #444; font-size: 1em; line-height: 1.6; margin: 0;">{{ review.comment }}</p>
-        {% else %}
-            <p style="color: #999; font-style: italic; margin: 0;">No comment left.</p>
-        {% endif %}
+            <div class="form-group">
+                <label>Comment <span style="color:#aaa; font-weight:400;">(optional)</span></label>
+                <textarea name="comment" rows="4">{{ review.comment }}</textarea>
+            </div>
+            <button type="submit" class="btn btn-blue">Save Changes</button>
+        </form>
     </div>
 
-    <!-- EDIT FORM (collapsed by default) -->
-    <div style="background: white; padding: 35px; border-radius: 12px; box-shadow: 0 8px 16px rgba(0,0,0,0.08); margin-bottom: 25px;">
-        <details>
-            <summary style="cursor: pointer; font-weight: 600; font-size: 1.05em; color: #667eea; list-style: none;">
-                ✏️ Edit this Review
-            </summary>
-
-            <form action="/reviews/{{ review.review_id }}/edit" method="post" style="margin-top: 20px;">
-
-                <div style="margin-bottom: 20px;">
-                    <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #333;">Rating</label>
-                    <select name="rating" required style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 0.95em;">
-                        <option value="5" {% if review.rating == 5 %}selected{% endif %}>⭐⭐⭐⭐⭐ — Excellent</option>
-                        <option value="4" {% if review.rating == 4 %}selected{% endif %}>⭐⭐⭐⭐ — Very Good</option>
-                        <option value="3" {% if review.rating == 3 %}selected{% endif %}>⭐⭐⭐ — Good</option>
-                        <option value="2" {% if review.rating == 2 %}selected{% endif %}>⭐⭐ — Fair</option>
-                        <option value="1" {% if review.rating == 1 %}selected{% endif %}>⭐ — Poor</option>
-                    </select>
-                </div>
-
-                <div style="margin-bottom: 25px;">
-                    <label style="display: block; font-weight: 600; margin-bottom: 8px; color: #333;">
-                        Comment <span style="color: #999; font-weight: 400;">(optional)</span>
-                    </label>
-                    <textarea name="comment" rows="4"
-                        style="width: 100%; padding: 12px; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 0.95em; box-sizing: border-box; resize: vertical;">{{ review.comment }}</textarea>
-                </div>
-
-                <button type="submit"
-                    style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 12px 20px; border: none; border-radius: 6px; cursor: pointer; width: 100%; font-weight: 600; font-size: 1em;">
-                    Save Changes
-                </button>
-            </form>
-        </details>
+    <div class="section-card" style="border-left: 5px solid #dc3545;">
+        <h2>🗑️ Delete Review</h2>
+        <p style="color:#888; font-size:0.88em; margin-bottom:16px;">This action cannot be undone.</p>
+        <form action="/reviews/{{ review.review_id }}/delete" method="post" onsubmit="return confirm('Delete this review?');">
+            <button type="submit" class="btn btn-red">Delete Review</button>
+        </form>
     </div>
-
-    <!-- DELETE BUTTON -->
-    <form action="/reviews/{{ review.review_id }}/delete" method="post"
-        onsubmit="return confirm('Are you sure you want to delete this review? This cannot be undone.');">
-        <button type="submit"
-            style="background: linear-gradient(135deg, #711d25 0%, #c82333 100%); color: white; padding: 12px 20px; border: none; border-radius: 6px; cursor: pointer; width: 100%; font-weight: 600; font-size: 1em;">
-            🗑️ Delete Review
-        </button>
-    </form>
-
-    <a href="/profile" style="display: inline-block; margin-top: 20px; color: #667eea; font-weight: 600; text-decoration: none;">← Back to Profile</a>
 </div>
 {% endblock %}

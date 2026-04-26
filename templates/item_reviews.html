@@ -13,7 +13,7 @@
             <tbody>
                 {% for review in reviews %}
                 <tr>
-                    <td>{{ review.reviewer.email }}</td>
+                    <td>{{ review.reviewer_email }}</td>
                     <td><span class="badge badge-approved">{{ review.rating }}/5</span></td>
                     <td style="color:#555;">{{ review.comment }}</td>
                 </tr>

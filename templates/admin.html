@@ -86,7 +86,7 @@
                         {% for delivery in pending_deliveries %}
                             <tr>
                                 <td>#{{ delivery.id }}</td>
-                                <td>{{ delivery.booking.item.name }}</td>
+                                <td>{{ delivery.item_name }}</td>
                                 <td>{{ delivery.pickup_location }}</td>
                                 <td>{{ delivery.dropoff_location }}</td>
                                 <td>
@@ -220,7 +220,7 @@
                         <tr>
                             <td>{{ item.id }}</td>
                             <td><strong>{{ item.name }}</strong></td>
-                            <td>{{ item.owner.email }}</td>
+                            <td>{{ item.owner_email }}</td>
                             <td>
                                 {% if item.is_approved %}
                                     <span class="badge badge-active">Approved</span>
@@ -268,11 +268,11 @@
                             <tr>
                                 <td>#{{ report.id }}</td>
                                 <td>
-                                    <strong>{{ report.reporter.name }}</strong><br>
+                                    <strong>{{ report.reporter_name }}</strong><br>
                                     <span style="font-size: 0.85em; color: #888;">ID {{ report.reporter_id }}</span>
                                 </td>
                                 <td>
-                                    <strong>{{ report.reported_user.name }}</strong><br>
+                                    <strong>{{ report.reported_user_name }}</strong><br>
                                     <span style="font-size: 0.85em; color: #888;">ID {{ report.reported_user_id }}</span>
                                 </td>
                                 <td>
@@ -296,8 +296,8 @@
                                     <!-- suspend the reported user directly from here -->
                                     <form action="/admin/users/{{ report.reported_user_id }}/suspend" method="POST" style="margin: 0 0 6px 0;">
                                         <button type="submit" class="btn btn-red"
-                                            {% if report.reported_user.is_suspended %}disabled style="opacity: 0.5;"{% endif %}>
-                                            {% if report.reported_user.is_suspended %}Suspended{% else %}Suspend User{% endif %}
+                                            {% if report.reported_user_is_suspended %}disabled style="opacity: 0.5;"{% endif %}>
+                                            {% if report.reported_user_is_suspended %}Suspended{% else %}Suspend User{% endif %}
                                         </button>
                                     </form>
                                     <!-- dismiss the report once reviewed -->

@@ -15,20 +15,34 @@ templates = Jinja2Templates(directory="templates")
 def bookings(request: Request, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
     #items i am booking from other users
     # my_rentals = (db.query(models.Booking_details).filter(models.Booking_details.user_id == current_user.id).order_by(models.Booking_details.start_date.desc()).all())
+    # JOIN with items AND users to get item_name and rentor_email since rental.item.name and rental.rentor.email no longer work on raw rows
     my_rentals = db.execute(
-        text("select * from booking_details where user_id = :uid order by start_date DESC"),
-        {"uid": current_user.id}).fetchall()
-    #bookings on my items
-    # incoming_requests = (db.query(models.Booking_details).join(models.Item, models.Booking_details.item_id == models.Item.id).filter(models.Item.owner_id == current_user.id).order_by(models.Booking_details.start_date.desc()).all())
-    incoming_requests = db.execute(
         text("""
-            select bd.* from booking_details bd
-            join items i on bd.item_id = i.id
-            where i.owner_id = :uid
-            order by bd.start_date DESC
+            SELECT bd.*, i.name AS item_name, u.email AS rentor_email
+            FROM booking_details bd
+            JOIN items i ON bd.item_id = i.id
+            JOIN users u ON bd.rentor_id = u.id
+            WHERE bd.user_id = :uid
+            ORDER BY bd.start_date DESC
         """),
         {"uid": current_user.id}
     ).fetchall()
+
+    #bookings on my items
+    # incoming_requests = (db.query(models.Booking_details).join(models.Item, models.Booking_details.item_id == models.Item.id).filter(models.Item.owner_id == current_user.id).order_by(models.Booking_details.start_date.desc()).all())
+    # JOIN with items AND users to get item_name and renter_email since req.item.name and req.user.email no longer work on raw rows
+    incoming_requests = db.execute(
+        text("""
+            SELECT bd.*, i.name AS item_name, u.email AS renter_email
+            FROM booking_details bd
+            JOIN items i ON bd.item_id = i.id
+            JOIN users u ON bd.user_id = u.id
+            WHERE i.owner_id = :uid
+            ORDER BY bd.start_date DESC
+        """),
+        {"uid": current_user.id}
+    ).fetchall()
+
     return templates.TemplateResponse("bookings.html", {
         "request": request,
         "user": current_user,
@@ -63,8 +77,9 @@ def create_booking(
  
     if e_date <= s_date:
         raise HTTPException(status_code=400, detail="End date must be after start date")
-#overlap check just in case double booking occurs, but the item gets removed from the marketplace 
-#when the item is initially booked so its only for edge cases and stuff
+
+    #overlap check just in case double booking occurs, but the item gets removed from the marketplace 
+    #when the item is initially booked so its only for edge cases and stuff
     # overlap = (
     #     db.query(models.Booking_details)
     #     .filter(
@@ -143,6 +158,7 @@ def approve_booking(booking_id: int, current_user: models.User = Depends(get_cur
         text("UPDATE booking_details SET status = 'approved' WHERE id = :bid"),
         {"bid": booking_id}
     )
+
     #Creating the delivery history entry when the booking is approved
     # new_delivery = models.Delivery_history(
     #     booking_id=booking.id,
@@ -244,7 +260,7 @@ def complete_booking(booking_id: int, current_user: models.User = Depends(get_cu
         text("SELECT owner_id FROM items WHERE id = :iid"),
         {"iid": booking.item_id}
     ).fetchone()
-    if item.owner_id != current_user.id: #only the owener can mark a booking as complete after they are returned their item
+    if item.owner_id != current_user.id: #only the owner can mark a booking as complete after they are returned their item
         raise HTTPException(status_code=403, detail="Not authorized")
  
     if booking.status != "approved":
@@ -261,7 +277,11 @@ def complete_booking(booking_id: int, current_user: models.User = Depends(get_cu
 
 @router.post("/{booking_id}/delete")
 def delete_booking(booking_id: int, current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
-    booking = db.query(models.Booking_details).filter(models.Booking_details.id == booking_id).first()
+    # booking = db.query(models.Booking_details).filter(models.Booking_details.id == booking_id).first()
+    booking = db.execute(
+        text("SELECT * FROM booking_details WHERE id = :bid"),
+        {"bid": booking_id}
+    ).fetchone()
     if not booking:
         raise HTTPException(status_code=404, detail="Booking not found")
 
@@ -270,13 +290,22 @@ def delete_booking(booking_id: int, current_user: models.User = Depends(get_curr
         raise HTTPException(status_code=400, detail="Only completed, cancelled or rejected bookings can be deleted")
 
     # renter can delete from their rentals list, owner can delete from their incoming requests list
+    # item.owner_id fetched separately since booking.item.owner_id no longer works on raw rows
+    item = db.execute(
+        text("SELECT owner_id FROM items WHERE id = :iid"),
+        {"iid": booking.item_id}
+    ).fetchone()
     is_renter = booking.user_id == current_user.id
-    is_owner = booking.item.owner_id == current_user.id
+    is_owner = item.owner_id == current_user.id
 
     if not is_renter and not is_owner:
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    db.delete(booking)
+    # db.delete(booking)
+    db.execute(
+        text("DELETE FROM booking_details WHERE id = :bid"),
+        {"bid": booking_id}
+    )
     db.commit()
 
     return RedirectResponse(url="/bookings", status_code=303)

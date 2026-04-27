@@ -15,66 +15,55 @@ router = APIRouter()
 templates = Jinja2Templates(directory="templates")
 
 
-@router.get("/items") #only approved items will show up here, the ones pending approval can only be seen on the admin panel
-def read_items(request: Request , db: Session = Depends(get_db), page: int =1, limit: int=5): #calculating how many items to show on the page
+@router.get("/items") 
+def read_items(request: Request , db: Session = Depends(get_db), page: int =1, limit: int=5, search: Optional[str] = None): 
     #how many items per page
-    offset = (page - 1) * limit #which item to start from on the page
+    offset = (page - 1) * limit 
     today = date.today()
 
-    # get the total number of approved items that arent currently booked for the pagination
-    #only approved items
-    # total = (
-    #     db.query(models.Item)
-    #     .filter(
-    #         models.Item.is_approved == True,
-    #         ~models.Item.id.in_(db.query(models.Booking_details.item_id).filter(
-    #             models.Booking_details.status.in_(["pending", "approved"]), #basically uporer subquery
-    #             models.Booking_details.end_date >= today 
-    #         ))
-    #     )
-    #     .count()
-    # )
-    total_row = db.execute(
-        text("""
-            SELECT COUNT(*) AS cnt FROM items
-            WHERE is_approved = 1
-            AND id NOT IN (
-                SELECT item_id FROM booking_details
-                WHERE status IN ('pending', 'approved')
-                AND end_date >= :today
-            )
-        """),
-        {"today": today}
-    ).fetchone()
+    # 1. Base SQL queries
+    count_sql = """
+        SELECT COUNT(*) AS cnt FROM items
+        WHERE is_approved = 1
+        AND id NOT IN (
+            SELECT item_id FROM booking_details
+            WHERE status IN ('pending', 'approved')
+            AND end_date >= :today
+        )
+    """
+    
+    items_sql = """
+        SELECT * FROM items
+        WHERE is_approved = 1
+        AND id NOT IN (
+            SELECT item_id FROM booking_details
+            WHERE status IN ('pending', 'approved')
+            AND end_date >= :today
+        )
+    """
+
+    params = {"today": today, "limit": limit, "offset": offset}
+
+    # 2. THE SEARCH ENGINE: Dynamically add the tag filter if a search term exists
+    if search:
+        search_filter = " AND id IN (SELECT item_id FROM item_tags WHERE tag LIKE :search)"
+        count_sql += search_filter
+        items_sql += search_filter
+        # Wraps the search term in % so it matches partial tags (e.g. "elec" finds "electronics")
+        params["search"] = f"%{search.strip().lower()}%"
+
+    # Add the pagination limits to the very end of the items query
+    items_sql += " LIMIT :limit OFFSET :offset"
+
+    # Execute the count query
+    total_row = db.execute(text(count_sql), params).fetchone()
     total = total_row.cnt
 
-    # Get items on the current page that are NOT currently booked
-    # items = (
-    #     db.query(models.Item)
-    #     .filter(
-    #         models.Item.is_approved == True,
-    #         ~models.Item.id.in_(booked_item_ids) #approved items in the list of items that are pending or approved from the subquery above
-    #     )
-    #     .offset(offset)
-    #     .limit(limit)
-    #     .all()
-    # )
-    items = db.execute(
-        text("""
-            SELECT * FROM items
-            WHERE is_approved = 1
-            AND id NOT IN (
-                SELECT item_id FROM booking_details
-                WHERE status IN ('pending', 'approved')
-                AND end_date >= :today
-            )
-            LIMIT :limit OFFSET :offset
-        """),
-        {"today": today, "limit": limit, "offset": offset}
-    ).fetchall()
+    # Execute the items query
+    items = db.execute(text(items_sql), params).fetchall()
     
     # Round up so partial pages still get their own page number
-    total_pages = math.ceil(total / limit)
+    total_pages = math.ceil(total / limit) if limit else 1
 
     # Fetch the first image for each item on this page
     item_ids = [item.id for item in items]
@@ -100,7 +89,8 @@ def read_items(request: Request , db: Session = Depends(get_db), page: int =1, l
         "items": items,
         "item_images": item_images,
         "page": page,
-        "total_pages": total_pages
+        "total_pages": total_pages,
+        "search": search # Pass this back so the search bar Remembers what was typed
     })
 
 @router.post("/items")

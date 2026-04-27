@@ -9,7 +9,6 @@
         <table style="margin-bottom: 0;">
             <tbody>
                 <tr><td style="border:none; padding: 6px 0; color:#495057; font-weight:600; width:140px;">Item ID</td><td style="border:none; padding: 6px 0;">#{{ item.id }}</td></tr>
-                <tr><td style="border:none; padding: 6px 0; color:#495057; font-weight:600;">Owner</td><td style="border:none; padding: 6px 0;">{{ item.owner.name }}</td></tr>
                 <tr><td style="border:none; padding: 6px 0; color:#495057; font-weight:600;">Price/Day</td><td style="border:none; padding: 6px 0;">${{ item.price_per_day }}</td></tr>
             </tbody>
         </table>
@@ -21,7 +20,7 @@
         <div style="display: flex; flex-wrap: wrap; gap: 10px;">
             {% for tag in tags %}
             <div style="display: inline-flex; align-items: center; gap: 8px; background: #343a40; color: white; padding: 6px 14px; border-radius: 12px; font-size: 0.88em;">
-                <span>{{ tag.tag_name }}</span>
+                <span>{{ tag.tag }}</span>  {# was tag.tag_name — column is called tag #}
                 <form method="post" action="/items/{{ item.id }}/tags/{{ tag.id }}/remove" style="display:inline; margin:0;">
                     <button type="submit" style="background:none; border:none; color:white; cursor:pointer; font-size:16px; line-height:1; padding:0; opacity:0.75;">×</button>
                 </form>
@@ -37,8 +36,8 @@
         <h2>Add a New Tag</h2>
         <form method="post" action="/items/{{ item.id }}/tags/add">
             <div class="form-group">
-                <label for="tag_name">Tag Name</label>
-                <input type="text" id="tag_name" name="tag_name" required placeholder="e.g. New, Vintage, Portable">
+                <label for="tag">Tag Name</label>
+                <input type="text" id="tag" name="tag" required placeholder="e.g. New, Vintage, Portable">  {# was name="tag_name" — TagForm expects "tag" #}
             </div>
             <button type="submit" class="btn btn-green">Add Tag</button>
         </form>

@@ -75,9 +75,30 @@ def read_items(request: Request , db: Session = Depends(get_db), page: int =1, l
     
     # Round up so partial pages still get their own page number
     total_pages = math.ceil(total / limit)
+
+    # Fetch the first image for each item on this page
+    item_ids = [item.id for item in items]
+    item_images = {}
+    if item_ids:
+        placeholders = ",".join(str(i) for i in item_ids)
+        first_images = db.execute(
+            text(f"""
+                SELECT ii.item_id, ii.image_url
+                FROM item_images ii
+                INNER JOIN (
+                    SELECT item_id, MIN(id) AS min_id
+                    FROM item_images
+                    WHERE item_id IN ({placeholders})
+                    GROUP BY item_id
+                ) first ON ii.id = first.min_id
+            """)
+        ).fetchall()
+        item_images = {row.item_id: row.image_url for row in first_images}
+
     return templates.TemplateResponse("browse.html", {
         "request": request,
         "items": items,
+        "item_images": item_images,
         "page": page,
         "total_pages": total_pages
     })

@@ -46,7 +46,6 @@ class User(Base):
     items_posted = relationship("Item", back_populates="owner", foreign_keys="Item.owner_id")
     history = relationship("Booking_details", back_populates="user", foreign_keys="Booking_details.user_id")
     rented_bookings = relationship("Booking_details", back_populates="rentor", foreign_keys="Booking_details.rentor_id")
-    cart_items = relationship("Cart", back_populates="user", foreign_keys="Cart.user_id")
     wishlist_items = relationship("Wishlist", back_populates="user", foreign_keys="Wishlist.user_id")
     reviews_written = relationship("Reviews", back_populates="reviewer", foreign_keys="Reviews.reviewer_id")
     reviews_received = relationship("Reviews", back_populates="reviewee", foreign_keys="Reviews.reviewee_id")
@@ -111,14 +110,6 @@ class Item_Tags(Base):
     tag=Column(String(50), index=True)
     item = relationship("Item", back_populates="tags", foreign_keys=[item_id])
 
-class Cart(Base):
-    __tablename__="cart"
-
-    id=Column(Integer, primary_key=True, index=True)
-    user_id=Column(Integer, ForeignKey("users.id"))
-    item_id=Column(Integer, ForeignKey("items.id"))
-    item = relationship("Item", back_populates="cart_entries", foreign_keys=[item_id])
-    user = relationship("User", back_populates="cart_items", foreign_keys=[user_id])
 
 class Item_Images(Base):
     __tablename__="item_images"
@@ -193,7 +184,6 @@ class Payment(Base):
 
 Item.tags = relationship("Item_Tags", back_populates="item", foreign_keys="Item_Tags.item_id")
 Item.images = relationship("Item_Images", back_populates="item", foreign_keys="Item_Images.item_id")
-Item.cart_entries = relationship("Cart", back_populates="item", foreign_keys="Cart.item_id")
 Item.wishlist_entries = relationship("Wishlist", back_populates="item", foreign_keys="Wishlist.item_id")
 Item.reviews = relationship("Reviews", back_populates="item", foreign_keys="Reviews.item_id")
 Item.reports = relationship("Reports", back_populates="item", foreign_keys="Reports.item_id")

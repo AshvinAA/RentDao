@@ -301,6 +301,11 @@ def delete_booking(booking_id: int, current_user: models.User = Depends(get_curr
     if not is_renter and not is_owner:
         raise HTTPException(status_code=403, detail="Not authorized")
 
+    # delete child rows first to avoid FK constraint failures before deleting the parent booking row
+    # delivery_history.booking_id and reviews.booking_id both reference booking_details.id
+    db.execute(text("DELETE FROM delivery_history WHERE booking_id = :bid"), {"bid": booking_id})
+    db.execute(text("DELETE FROM reviews WHERE booking_id = :bid"), {"bid": booking_id})
+
     # db.delete(booking)
     db.execute(
         text("DELETE FROM booking_details WHERE id = :bid"),

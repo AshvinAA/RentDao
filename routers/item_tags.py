@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Request, Depends, HTTPException
+from fastapi import APIRouter, Request, Depends, HTTPException, Cookie
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
@@ -11,14 +11,16 @@ templates = Jinja2Templates(directory="templates")
 
 
 # --- Dependency: check that the logged-in user owns the item ---
-def require_owner(item_id: int, request: Request, db: Session = Depends(get_db)):
-    user_id = request.session.get("user_id")
-    if not user_id:
+def require_owner(item_id: int, request: Request, db: Session = Depends(get_db), user_email: str = Cookie(None)):
+    if not user_email:
+        raise HTTPException(status_code=302, headers={"Location": "/login"})
+    user = db.query(models.User).filter(models.User.email == user_email).first()
+    if not user:
         raise HTTPException(status_code=302, headers={"Location": "/login"})
     item = db.query(models.Item).filter(models.Item.id == item_id).first()
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
-    if item.owner_id != user_id:
+    if item.owner_id != user.id:
         raise HTTPException(status_code=403, detail="You do not own this item")
     return item  # reused by the route so no second DB hit needed
 

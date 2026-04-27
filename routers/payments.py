@@ -3,6 +3,7 @@ from fastapi import APIRouter, Request, Depends, Cookie, Form
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 import models
 from database import get_db
 
@@ -15,18 +16,34 @@ def get_payments(request: Request, user_email: str = Cookie(None), db: Session =
     if not user_email:
         return RedirectResponse(url="/login?error=You aren't logged in.", status_code=303)
 
-    user = db.query(models.User).filter(models.User.email == user_email).first()
-    
+    # user = db.query(models.User).filter(models.User.email == user_email).first()
+    user = db.execute(
+        text("SELECT * FROM users WHERE email = :email"),
+        {"email": user_email}
+    ).fetchone()
+
     #all the payments the user recieved from others renting their items
-    payments_received = db.query(models.Payment).filter(models.Payment.owner_id == user.id).all()
+    # payments_received = db.query(models.Payment).filter(models.Payment.owner_id == user.id).all()
+    payments_received = db.execute(
+        text("SELECT * FROM payments WHERE owner_id = :uid"),
+        {"uid": user.id}
+    ).fetchall()
 
     #all payments the user made while renting other ppls items
-    payments_made = (
-        db.query(models.Payment)
-        .join(models.Booking_details, models.Payment.booking_id == models.Booking_details.id) #join with booking_details to find payments where the user is the rentor
-        .filter(models.Booking_details.user_id == user.id)  # user_id is the renter's ID in Booking_details
-        .all()
-    )
+    # payments_made = (
+    #     db.query(models.Payment)
+    #     .join(models.Booking_details, models.Payment.booking_id == models.Booking_details.id) #join with booking_details to find payments where the user is the rentor
+    #     .filter(models.Booking_details.user_id == user.id)  # user_id is the renter's ID in Booking_details
+    #     .all()
+    # )
+    payments_made = db.execute(
+        text("""
+            SELECT p.* FROM payments p
+            JOIN booking_details bd ON p.booking_id = bd.id
+            WHERE bd.user_id = :uid
+        """),
+        {"uid": user.id}
+    ).fetchall()
 
     return templates.TemplateResponse("payments.html", {
         "request": request,
@@ -47,8 +64,17 @@ def create_payment(
     if not user_email:
         return RedirectResponse(url="/login?error=You aren't logged in.", status_code=303)
 
-    user = db.query(models.User).filter(models.User.email == user_email).first()
-    booking = db.query(models.Booking_details).filter(models.Booking_details.id == booking_id).first()
+    # user = db.query(models.User).filter(models.User.email == user_email).first()
+    user = db.execute(
+        text("SELECT * FROM users WHERE email = :email"),
+        {"email": user_email}
+    ).fetchone()
+
+    # booking = db.query(models.Booking_details).filter(models.Booking_details.id == booking_id).first()
+    booking = db.execute(
+        text("SELECT * FROM booking_details WHERE id = :bid"),
+        {"bid": booking_id}
+    ).fetchone()
 
     if not booking:
         return RedirectResponse(url="/payments?error=Booking not found.", status_code=303)
@@ -59,24 +85,49 @@ def create_payment(
     if booking.status != "approved":
         return RedirectResponse(url="/payments?error=Booking must be approved before payment.", status_code=303)
 
-    # Check if this booking has already been paid for (prevents duplicate payments)and reject the new attempt
-    already_paid = db.query(models.Payment).filter(
-        models.Payment.booking_id == booking_id,
-        models.Payment.payment_status == "completed"
-    ).first()
+    # Check if this booking has already been paid for (prevents duplicate payments) and reject the new attempt
+    # already_paid = db.query(models.Payment).filter(
+    #     models.Payment.booking_id == booking_id,
+    #     models.Payment.payment_status == "completed"
+    # ).first()
+    already_paid = db.execute(
+        text("""
+            SELECT id FROM payments
+            WHERE booking_id = :bid AND payment_status = 'completed'
+        """),
+        {"bid": booking_id}
+    ).fetchone()
     if already_paid:
         return RedirectResponse(url="/payments?error=This booking has already been paid for.", status_code=303)
 
-    new_payment = models.Payment(
-        booking_id=booking_id,
-        owner_id=booking.item.owner_id,  # The item owner (who receives payment)
-        amount=booking.total_price,  # Total rental cost
-        payment_method=payment_method,  # e.g., "credit_card", "bank_transfer"
-        payment_details=payment_details,  # Additional details like transaction ID
-        payment_status="pending"  # Starts as pending, can be completed or failed
+    # new_payment = models.Payment(
+    #     booking_id=booking_id,
+    #     owner_id=booking.item.owner_id,  # The item owner (who receives payment)
+    #     amount=booking.total_price,  # Total rental cost
+    #     payment_method=payment_method,  # e.g., "credit_card", "bank_transfer"
+    #     payment_details=payment_details,  # Additional details like transaction ID
+    #     payment_status="pending"  # Starts as pending, can be completed or failed
+    # )
+    # db.add(new_payment)
+    # fetch item to get owner_id since booking.item.owner_id no longer works on raw rows
+    item = db.execute(
+        text("SELECT owner_id FROM items WHERE id = :iid"),
+        {"iid": booking.item_id}
+    ).fetchone()
+    db.execute(
+        text("""
+            INSERT INTO payments (booking_id, owner_id, amount, payment_method, payment_details, payment_status)
+            VALUES (:booking_id, :owner_id, :amount, :payment_method, :payment_details, 'pending')
+        """),
+        {
+            "booking_id": booking_id,
+            "owner_id": item.owner_id,  # The item owner (who receives payment)
+            "amount": booking.total_price,  # Total rental cost
+            "payment_method": payment_method,  # e.g., "credit_card", "bank_transfer"
+            "payment_details": payment_details,  # Additional details like transaction ID
+        }
     )
-    db.add(new_payment) 
-    db.commit()  
+    db.commit()
 
     return RedirectResponse(url="/payments", status_code=303)
 
@@ -86,13 +137,28 @@ def complete_payment(payment_id: int, user_email: str = Cookie(None), db: Sessio
     if not user_email:
         return RedirectResponse(url="/login?error=You aren't logged in.", status_code=303)
 
-    user = db.query(models.User).filter(models.User.email == user_email).first()
-    payment = db.query(models.Payment).filter(models.Payment.id == payment_id).first()
+    # user = db.query(models.User).filter(models.User.email == user_email).first()
+    user = db.execute(
+        text("SELECT * FROM users WHERE email = :email"),
+        {"email": user_email}
+    ).fetchone()
+
+    # payment = db.query(models.Payment).filter(models.Payment.id == payment_id).first()
+    payment = db.execute(
+        text("SELECT * FROM payments WHERE id = :pid"),
+        {"pid": payment_id}
+    ).fetchone()
 
     if not payment:
         return RedirectResponse(url="/payments?error=Payment not found.", status_code=303)
 
-    if payment.booking.user_id != user.id:
+    # payment.booking.user_id no longer works on raw rows, fetch booking separately
+    # if payment.booking.user_id != user.id:
+    booking = db.execute(
+        text("SELECT user_id FROM booking_details WHERE id = :bid"),
+        {"bid": payment.booking_id}
+    ).fetchone()
+    if booking.user_id != user.id:
         return RedirectResponse(url="/payments?error=You are not authorized to complete this payment.", status_code=303)
 
     # Prevent completing an already-completed payment
@@ -100,7 +166,11 @@ def complete_payment(payment_id: int, user_email: str = Cookie(None), db: Sessio
         return RedirectResponse(url="/payments?error=Payment is already completed.", status_code=303)
 
     # Mark the payment as completed
-    payment.payment_status = "completed"
+    # payment.payment_status = "completed"
+    db.execute(
+        text("UPDATE payments SET payment_status = 'completed' WHERE id = :pid"),
+        {"pid": payment_id}
+    )
     db.commit()
 
     return RedirectResponse(url="/payments", status_code=303)
@@ -113,22 +183,42 @@ def fail_payment(payment_id: int, user_email: str = Cookie(None), db: Session = 
         return RedirectResponse(url="/login?error=You aren't logged in.", status_code=303)
 
     # Get current user from email
-    user = db.query(models.User).filter(models.User.email == user_email).first()
-    # Get the specific payemtn
-    payment = db.query(models.Payment).filter(models.Payment.id == payment_id).first()
+    # user = db.query(models.User).filter(models.User.email == user_email).first()
+    user = db.execute(
+        text("SELECT * FROM users WHERE email = :email"),
+        {"email": user_email}
+    ).fetchone()
+
+    # Get the specific payment
+    # payment = db.query(models.Payment).filter(models.Payment.id == payment_id).first()
+    payment = db.execute(
+        text("SELECT * FROM payments WHERE id = :pid"),
+        {"pid": payment_id}
+    ).fetchone()
 
     # Check if payment exists
     if not payment:
         return RedirectResponse(url="/payments?error=Payment not found.", status_code=303)
 
     # Only the renter (who made the payment) can mark it as failed
-    if payment.booking.user_id != user.id:
+    # payment.booking.user_id no longer works on raw rows, fetch booking separately
+    # if payment.booking.user_id != user.id:
+    booking = db.execute(
+        text("SELECT user_id FROM booking_details WHERE id = :bid"),
+        {"bid": payment.booking_id}
+    ).fetchone()
+    if booking.user_id != user.id:
         return RedirectResponse(url="/payments?error=You are not authorized to update this payment.", status_code=303)
 
-    # Cannot mark a completed payment as failed 
+    # Cannot mark a completed payment as failed
     if payment.payment_status == "completed":
         return RedirectResponse(url="/payments?error=Cannot mark a completed payment as failed.", status_code=303)
 
-    payment.payment_status = "failed"
-    db.commit()  
+    # payment.payment_status = "failed"
+    db.execute(
+        text("UPDATE payments SET payment_status = 'failed' WHERE id = :pid"),
+        {"pid": payment_id}
+    )
+    db.commit()
+
     return RedirectResponse(url="/payments", status_code=303)

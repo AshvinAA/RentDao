@@ -41,7 +41,7 @@
                 {% if item.discount and item.discount > 0 %}
                 <tr><td style="border: none; padding: 8px 0; color: #495057; font-weight: 600;">Discount</td><td style="border: none; padding: 8px 0; color: #28a745;">{{ item.discount }}%</td></tr>
                 {% endif %}
-                <tr><td style="border: none; padding: 8px 0; color: #495057; font-weight: 600;">Owner</td><td style="border: none; padding: 8px 0;">{{ owner.email }}</td></tr>
+                <tr><td style="border: none; padding: 8px 0; color: #495057; font-weight: 600;">Owner</td><td style="border: none; padding: 8px 0;">{{ owner.owner_email }}</td></tr>
                 <tr><td style="border: none; padding: 8px 0; color: #495057; font-weight: 600;">Total Rentals</td><td style="border: none; padding: 8px 0;">{{ total_bookings }}</td></tr>
                 {% if avg_rating %}
                 <tr><td style="border: none; padding: 8px 0; color: #495057; font-weight: 600;">Rating</td><td style="border: none; padding: 8px 0;">{{ avg_rating }}/5 ⭐</td></tr>
@@ -125,7 +125,7 @@
             <tbody>
                 {% for review in reviews %}
                 <tr>
-                    <td>{{ review.reviewer.email }}</td>
+                    <td>{{ review.reviewer_email }}</td>  {# was review.reviewer.email — now a direct column from the JOIN in detail.py #}
                     <td><span class="badge badge-approved">{{ review.rating }}/5</span></td>
                     <td style="color: #555;">{{ review.comment }}</td>
                 </tr>

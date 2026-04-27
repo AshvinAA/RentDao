@@ -67,7 +67,8 @@
             <!-- Posted Items -->
             <div class="section-card" style="border-left:5px solid #28a745;">
                 <h2>📦 My Posted Items</h2>
-                {% set approved_items = user.items_posted | selectattr("is_approved","equalto",true) | list %}
+                {# items_posted is now passed directly from auth.py instead of user.items_posted ORM relationship #}
+                {% set approved_items = items_posted | selectattr("is_approved","equalto",true) | list %}
                 {% if approved_items %}
                 <table>
                     <thead>
@@ -107,7 +108,8 @@
             <!-- Pending Approval -->
             <div class="section-card" style="border-left:5px solid #fd7e14;">
                 <h2>⏳ Pending Approval</h2>
-                {% set pending_items = user.items_posted | selectattr("is_approved","equalto",false) | list %}
+                {# same items_posted list, just filter for pending #}
+                {% set pending_items = items_posted | selectattr("is_approved","equalto",false) | list %}
                 {% if pending_items %}
                 <table>
                     <thead>
@@ -144,10 +146,10 @@
                     <tbody>
                         {% for rental in rental_history %}
                         <tr>
-                            <td><strong>{{ rental.item.name }}</strong><br><span style="color:#aaa; font-size:0.8em;">#{{ rental.item_id }}</span></td>
+                            <td><strong>{{ rental.item_name }}</strong><br><span style="color:#aaa; font-size:0.8em;">#{{ rental.item_id }}</span></td>  {# was rental.item.name #}
                             <td style="font-size:0.85em;">{{ rental.start_date }}<br>→ {{ rental.end_date }}</td>
                             <td>${{ rental.total_price }}</td>
-                            <td style="font-size:0.85em;">{{ rental.rentor.email }}</td>
+                            <td style="font-size:0.85em;">{{ rental.rentor_email }}</td>  {# was rental.rentor.email #}
                             <td><span class="badge badge-completed">{{ rental.status }}</span></td>
                             <td>
                                 <div style="display:flex; flex-direction:column; gap:6px;">
@@ -175,10 +177,10 @@
                     <tbody>
                         {% for rental in cancelled_rentals %}
                         <tr>
-                            <td><strong>{{ rental.item.name }}</strong><br><span style="color:#aaa; font-size:0.8em;">#{{ rental.item_id }}</span></td>
+                            <td><strong>{{ rental.item_name }}</strong><br><span style="color:#aaa; font-size:0.8em;">#{{ rental.item_id }}</span></td>  {# was rental.item.name #}
                             <td style="font-size:0.85em;">{{ rental.start_date }}<br>→ {{ rental.end_date }}</td>
                             <td>${{ rental.total_price }}</td>
-                            <td style="font-size:0.85em;">{{ rental.rentor.email }}</td>
+                            <td style="font-size:0.85em;">{{ rental.rentor_email }}</td>  {# was rental.rentor.email #}
                             <td><span class="badge badge-cancelled">{{ rental.status }}</span></td>
                             <td>
                                 <a href="/reports/create?reported_user_id={{ rental.rentor_id }}&item_id={{ rental.item_id }}" class="btn btn-orange">🚩 Report</a>

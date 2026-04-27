@@ -170,6 +170,19 @@ def show_profile(
         {"uid": user.id}
     ).fetchall()
 
+    # fetch tags for each item and build a dict {item_id: "tag1, tag2, tag3"}
+    # used to pre-fill the tags field in the edit form
+    item_tags_map = {}
+    if items_posted:
+        item_ids = [item.id for item in items_posted]
+        placeholders = ",".join(str(i) for i in item_ids)
+        all_tags = db.execute(
+            text(f"SELECT item_id, tag FROM item_tags WHERE item_id IN ({placeholders})")
+        ).fetchall()
+        for row in all_tags:
+            item_tags_map.setdefault(row.item_id, []).append(row.tag)
+        item_tags_map = {k: ", ".join(v) for k, v in item_tags_map.items()}
+
     # Get rental history (completed bookings where user is the renter)
     # rental_history = (
     #     db.query(models.Booking_details)
@@ -222,6 +235,7 @@ def show_profile(
         "request": request, 
         "user": user,
         "items_posted": items_posted,   # passed separately since user.items_posted ORM relationship no longer works
+        "item_tags_map": item_tags_map, # {item_id: "tag1, tag2"} for pre-filling edit forms
         "is_admin": user_email in ADMIN_EMAILS,
         "rental_history": rental_history,
         "cancelled_rentals": cancelled_rentals

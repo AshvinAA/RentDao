@@ -83,10 +83,14 @@
                                 <div style="display:flex; flex-direction:column; gap:6px;">
                                     <details>
                                         <summary style="cursor:pointer; color:#007bff; font-size:0.82em; font-weight:600; list-style:none;">✏️ Edit</summary>
-                                        <form action="/items/edit/{{ item.id }}" method="POST" style="margin-top:10px;">
+                                        <form action="/items/edit/{{ item.id }}" method="POST" enctype="multipart/form-data" style="margin-top:10px;">
                                             <div style="margin-bottom:8px;">
                                                 <input type="text" name="name" value="{{ item.name }}" required style="margin-bottom:6px;">
-                                                <input type="text" name="description" value="{{ item.description }}" required>
+                                                <input type="text" name="description" value="{{ item.description }}" required style="margin-bottom:6px;">
+                                                <input type="number" name="price_per_day" value="{{ item.price_per_day }}" required placeholder="Price per day" style="margin-bottom:6px;">
+                                                <input type="number" name="discount" value="{{ item.discount }}" placeholder="Discount %" style="margin-bottom:6px;">
+                                                <input type="text" name="tags" value="{{ item_tags_map.get(item.id, '') }}" placeholder="Tags e.g. vintage, portable">  {# pre-filled from item_tags_map #}
+                                                <small style="color:#888; display:block; margin-top:4px;">Separate tags with commas. Saving will replace all existing tags.</small>
                                             </div>
                                             <button type="submit" class="btn btn-blue">Save</button>
                                         </form>

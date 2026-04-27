@@ -8,7 +8,7 @@ import models, math
 from database import get_db
 from forms import ItemCreateForm
 import os ,uuid ,shutil 
-from typing import List
+from typing import List, Optional
 
 # Create the router
 router = APIRouter()
@@ -109,6 +109,7 @@ def create_item(
     description: str = Form(...),
     price_per_day: int = Form(0), # New field!
     discount: int = Form(0),      # New field!
+    tags: Optional[str] = Form(None), # Comma-separated tags e.g. "vintage, portable, new"
     pictures: List[UploadFile] = File(None), # Accepts multiple files!
     user_email: str = Cookie(None),
     db: Session = Depends(get_db)
@@ -140,7 +141,17 @@ def create_item(
     )
     new_item_id = db.execute(text("SELECT LAST_INSERT_ID() AS id")).fetchone().id
 
-    # 2. Handle Multiple Images
+    # 2. Handle Tags — split comma-separated string and insert each one
+    if tags and tags.strip():
+        for tag in tags.split(","):
+            tag = tag.strip().lower()
+            if tag:
+                db.execute(
+                    text("INSERT INTO item_tags (item_id, tag) VALUES (:item_id, :tag)"),
+                    {"item_id": new_item_id, "tag": tag}
+                )
+
+    # 3. Handle Multiple Images
     if pictures and pictures[0].filename: # Make sure they actually uploaded something
         os.makedirs("static/items", exist_ok=True)
         for pic in pictures:
@@ -171,6 +182,7 @@ def edit_item(
     description: str = Form(...),
     price_per_day: int = Form(...), 
     discount: int = Form(...),
+    tags: Optional[str] = Form(None), # Comma-separated tags — replaces ALL existing tags on save
     pictures: List[UploadFile] = File(None), # For adding MORE pictures later
     user_email: str = Cookie(None),
     db: Session = Depends(get_db)
@@ -204,6 +216,20 @@ def edit_item(
             """),
             {"name": name, "description": description, "price_per_day": price_per_day, "discount": discount, "iid": item_id}
         )
+
+        # Replace all existing tags with the new ones from the form
+        db.execute(
+            text("DELETE FROM item_tags WHERE item_id = :item_id"),
+            {"item_id": item_id}
+        )
+        if tags and tags.strip():
+            for tag in tags.split(","):
+                tag = tag.strip().lower()
+                if tag:
+                    db.execute(
+                        text("INSERT INTO item_tags (item_id, tag) VALUES (:item_id, :tag)"),
+                        {"item_id": item_id, "tag": tag}
+                    )
         
         # Add new pictures if they uploaded more
         if pictures and pictures[0].filename:

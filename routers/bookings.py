@@ -16,12 +16,15 @@ def bookings(request: Request, current_user: models.User = Depends(get_current_u
     #items i am booking from other users
     # my_rentals = (db.query(models.Booking_details).filter(models.Booking_details.user_id == current_user.id).order_by(models.Booking_details.start_date.desc()).all())
     # JOIN with items AND users to get item_name and rentor_email since rental.item.name and rental.rentor.email no longer work on raw rows
+    # LEFT JOIN payments so we can show payment status on approved rentals without dropping bookings that have no payment yet
     my_rentals = db.execute(
         text("""
-            SELECT bd.*, i.name AS item_name, u.email AS rentor_email
+            SELECT bd.*, i.name AS item_name, u.email AS rentor_email,
+                   p.id AS payment_id, p.payment_status
             FROM booking_details bd
             JOIN items i ON bd.item_id = i.id
             JOIN users u ON bd.rentor_id = u.id
+            LEFT JOIN payments p ON p.booking_id = bd.id
             WHERE bd.user_id = :uid
             ORDER BY bd.start_date DESC
         """),
@@ -90,7 +93,7 @@ def create_booking(
     #     )
     #     .first()
     # )
-    overlap = db.execute( #explain what this does step by step in comments jate bujhte pari
+    overlap = db.execute(
         text("""
             SELECT id FROM booking_details
             WHERE item_id = :iid

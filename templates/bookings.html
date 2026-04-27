@@ -9,7 +9,7 @@
         {% if my_rentals %}
         <table>
             <thead>
-                <tr><th>Item</th><th>Dates</th><th>Price</th><th>Owner</th><th>Status</th><th>Action</th></tr>
+                <tr><th>Item</th><th>Dates</th><th>Price</th><th>Owner</th><th>Status</th><th>Payment</th><th>Action</th></tr>
             </thead>
             <tbody>
                 {% for rental in my_rentals %}
@@ -19,6 +19,59 @@
                     <td>${{ rental.total_price }}</td>
                     <td style="font-size:0.88em;">{{ rental.rentor_email }}</td>
                     <td><span class="badge badge-{{ rental.status }}">{{ rental.status }}</span></td>
+
+                    <!-- Payment column: only shows anything for approved bookings -->
+                    <td>
+                        {% if rental.status == "approved" %}
+                            {% if not rental.payment_id %}
+                                {# No payment yet — show the Pay Now form with dummy card input #}
+                                <details>
+                                    <summary style="cursor:pointer; color:#28a745; font-size:0.85em; font-weight:600; list-style:none;">💳 Pay Now</summary>
+                                    <form action="/payments/create/{{ rental.id }}" method="post" enctype="multipart/form-data" style="margin-top:10px;">
+                                        <div style="margin-bottom:6px;">
+                                            <input type="hidden" name="payment_method" value="card">
+                                            <label style="font-size:0.8em; color:#495057; display:block; margin-bottom:4px;">Card Number</label>
+                                            <input type="text" name="payment_details" maxlength="16" placeholder="1234 5678 9012 3456" required
+                                                style="width:100%; padding:6px 8px; border:1px solid #ced4da; border-radius:4px; font-size:0.85em;"
+                                                oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                                            <small style="color:#aaa; display:block; margin-top:3px;">Dummy card — any 16 digits</small>
+                                        </div>
+                                        <button type="submit" class="btn btn-green" style="width:100%; padding:7px;">Confirm Payment</button>
+                                    </form>
+                                </details>
+                            {% elif rental.payment_status == "pending" %}
+                                {# Payment created but not yet confirmed #}
+                                <div style="display:flex; flex-direction:column; gap:6px;">
+                                    <span class="badge badge-pending" style="font-size:0.78em;">⏳ Payment Pending</span>
+                                    <form action="/payments/complete/{{ rental.payment_id }}" method="post" style="margin:0;">
+                                        <button type="submit" class="btn btn-blue" style="width:100%; padding:6px; font-size:0.82em;">✅ Confirm Received</button>
+                                    </form>
+                                    <form action="/payments/fail/{{ rental.payment_id }}" method="post" style="margin:0;">
+                                        <button type="submit" class="btn btn-red" style="width:100%; padding:6px; font-size:0.82em;">❌ Mark Failed</button>
+                                    </form>
+                                </div>
+                            {% elif rental.payment_status == "completed" %}
+                                <span class="badge badge-approved" style="font-size:0.78em;">✅ Paid</span>
+                            {% elif rental.payment_status == "failed" %}
+                                {# Payment failed — let them try again #}
+                                <details>
+                                    <summary style="cursor:pointer; color:#dc3545; font-size:0.85em; font-weight:600; list-style:none;">❌ Failed — Retry</summary>
+                                    <form action="/payments/create/{{ rental.id }}" method="post" enctype="multipart/form-data" style="margin-top:10px;">
+                                        <input type="hidden" name="payment_method" value="card">
+                                        <label style="font-size:0.8em; color:#495057; display:block; margin-bottom:4px;">Card Number</label>
+                                        <input type="text" name="payment_details" maxlength="16" placeholder="1234 5678 9012 3456" required
+                                            style="width:100%; padding:6px 8px; border:1px solid #ced4da; border-radius:4px; font-size:0.85em;"
+                                            oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+                                        <small style="color:#aaa; display:block; margin-top:3px;">Dummy card — any 16 digits</small>
+                                        <button type="submit" class="btn btn-green" style="width:100%; padding:7px; margin-top:6px;">Retry Payment</button>
+                                    </form>
+                                </details>
+                            {% endif %}
+                        {% else %}
+                            <span style="color:#aaa; font-size:0.82em;">—</span>
+                        {% endif %}
+                    </td>
+
                     <td>
                         {% if rental.status in ["pending", "approved"] %}
                         <form action="/bookings/{{ rental.id }}/cancel" method="post" style="margin:0;">
@@ -63,6 +116,7 @@
                         <form action="/bookings/{{ req.id }}/reject"  method="post" style="margin:0;"><button type="submit" class="btn btn-red">Reject</button></form>
                         {% elif req.status == "approved" %}
                         <form action="/bookings/{{ req.id }}/complete" method="post" style="margin:0;"><button type="submit" class="btn btn-blue">Complete</button></form>
+                        <a href="/payments" class="btn btn-green">💰 View Payments</a>  {# takes owner to /payments to check if renter has paid #}
                         {% endif %}
                         {% if req.status in ["completed", "cancelled", "rejected"] %}
                         <form action="/bookings/{{ req.id }}/delete" method="post" style="margin:0;" onsubmit="return confirm('Remove?');"><button type="submit" class="btn btn-gray">🗑 Remove</button></form>

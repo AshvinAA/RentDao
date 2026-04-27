@@ -72,8 +72,24 @@
         background: #f8f9fa;
     }
 
+    /* New styles for the search bar */
+    .search-bar-container {
+        margin-bottom: 25px;
+        display: flex;
+        gap: 10px;
+    }
+
+    .search-input {
+        flex-grow: 1;
+        padding: 10px 15px;
+        border: 1px solid #dee2e6;
+        border-radius: 4px;
+        font-size: 1em;
+    }
+
     @media (max-width: 600px) {
         .items-grid { grid-template-columns: 1fr 1fr; gap: 12px; }
+        .search-bar-container { flex-direction: column; }
     }
     @media (max-width: 400px) {
         .items-grid { grid-template-columns: 1fr; }
@@ -83,7 +99,19 @@
 {% block content %}
 <div class="container">
     <div class="section-card" style="border-left: 5px solid #007bff;">
-        <h2>📦 Browse Available Items</h2>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2>📦 Browse Available Items</h2>
+            <a href="/add-item" class="btn btn-green" style="text-decoration: none;">+ Post Item</a>
+        </div>
+        
+        <form action="/items" method="GET" class="search-bar-container">
+            <input type="text" name="search" value="{{ search or '' }}" placeholder="Search by tags (e.g. vintage, electronics, outdoor)..." class="search-input">
+            <button type="submit" class="btn btn-blue" style="padding: 10px 20px;">Search</button>
+            {% if search %}
+                <a href="/items" class="btn btn-gray" style="padding: 10px 20px; text-decoration: none; display: flex; align-items: center;">Clear</a>
+            {% endif %}
+        </form>
+
         <p style="color: #888; font-size: 0.88em; margin-top: -10px; margin-bottom: 20px;">Page {{ page }} of {{ total_pages }}</p>
 
         {% if items %}
@@ -108,10 +136,9 @@
             {% endfor %}
         </div>
 
-        <!-- Pagination -->
         <div style="display:flex; justify-content:center; align-items:center; gap:8px; flex-wrap:wrap;">
             {% if page > 1 %}
-            <a href="/items?page={{ page - 1 }}" class="btn btn-gray">← Previous</a>
+            <a href="/items?page={{ page - 1 }}{% if search %}&search={{ search }}{% endif %}" class="btn btn-gray">← Previous</a>
             {% else %}
             <button disabled class="btn btn-gray" style="opacity:0.4; cursor:not-allowed;">← Previous</button>
             {% endif %}
@@ -120,20 +147,25 @@
                 {% if page_num == page %}
                 <button disabled style="padding:7px 13px; border:none; border-radius:4px; background:#007bff; color:white; font-weight:700; cursor:default;">{{ page_num }}</button>
                 {% else %}
-                <a href="/items?page={{ page_num }}" style="padding:7px 13px; border:1px solid #007bff; border-radius:4px; color:#007bff; text-decoration:none; font-weight:600;" onmouseover="this.style.background='#007bff';this.style.color='white';" onmouseout="this.style.background='';this.style.color='#007bff';">{{ page_num }}</a>
+                <a href="/items?page={{ page_num }}{% if search %}&search={{ search }}{% endif %}" style="padding:7px 13px; border:1px solid #007bff; border-radius:4px; color:#007bff; text-decoration:none; font-weight:600;" onmouseover="this.style.background='#007bff';this.style.color='white';" onmouseout="this.style.background='';this.style.color='#007bff';">{{ page_num }}</a>
                 {% endif %}
             {% endfor %}
 
             {% if page < total_pages %}
-            <a href="/items?page={{ page + 1 }}" class="btn btn-gray">Next →</a>
+            <a href="/items?page={{ page + 1 }}{% if search %}&search={{ search }}{% endif %}" class="btn btn-gray">Next →</a>
             {% else %}
             <button disabled class="btn btn-gray" style="opacity:0.4; cursor:not-allowed;">Next →</button>
             {% endif %}
         </div>
 
         {% else %}
-        <p class="empty-msg">No items available in the marketplace right now.</p>
-        <a href="/" class="btn btn-gray" style="margin-top:12px;">← Back to Home</a>
+            {% if search %}
+                <p class="empty-msg" style="color: #dc3545; font-weight: bold;">No items found matching the tag "{{ search }}".</p>
+                <a href="/items" class="btn btn-gray" style="margin-top:12px;">Clear Search</a>
+            {% else %}
+                <p class="empty-msg">No items available in the marketplace right now.</p>
+                <a href="/" class="btn btn-gray" style="margin-top:12px;">← Back to Home</a>
+            {% endif %}
         {% endif %}
     </div>
 </div>

@@ -46,7 +46,7 @@ def read_items(request: Request , db: Session = Depends(get_db), page: int =1, l
 
     # 2. THE SEARCH ENGINE: Dynamically add the tag filter if a search term exists
     if search:
-        search_filter = " AND id IN (SELECT item_id FROM item_tags WHERE tag LIKE :search)"
+        search_filter = " AND (id IN (SELECT item_id FROM item_tags WHERE tag LIKE :search) OR LOWER(name) LIKE :search)"
         count_sql += search_filter
         items_sql += search_filter
         # Wraps the search term in % so it matches partial tags (e.g. "elec" finds "electronics")

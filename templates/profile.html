@@ -141,7 +141,14 @@
 
             <!-- Rental History -->
             <div class="section-card" style="border-left:5px solid #007bff;">
-                <h2>📋 Rental History</h2>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:2px solid #eee; padding-bottom:10px;">
+                    <h2 style="margin:0; border:none; padding:0;">📋 Rental History</h2>
+                    {% if rental_history %}
+                    <form action="/bookings/clear-rental-history" method="post" style="margin:0;" onsubmit="return confirm(\'Clear all completed rental history?\')">
+                        <button type="submit" style="background:none; border:1px solid #dee2e6; color:#aaa; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:0.78em;">🗑 Clear</button>
+                    </form>
+                    {% endif %}
+                </div>
                 {% if rental_history %}
                 <table>
                     <thead>
@@ -172,7 +179,14 @@
 
             <!-- Cancelled Rentals -->
             <div class="section-card" style="border-left:5px solid #dc3545;">
-                <h2>❌ Cancelled Rentals</h2>
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:2px solid #eee; padding-bottom:10px;">
+                    <h2 style="margin:0; border:none; padding:0;">❌ Cancelled Rentals</h2>
+                    {% if cancelled_rentals %}
+                    <form action="/bookings/clear-cancelled" method="post" style="margin:0;" onsubmit="return confirm(\'Clear all cancelled rentals?\')">
+                        <button type="submit" style="background:none; border:1px solid #dee2e6; color:#aaa; padding:4px 10px; border-radius:4px; cursor:pointer; font-size:0.78em;">🗑 Clear</button>
+                    </form>
+                    {% endif %}
+                </div>
                 {% if cancelled_rentals %}
                 <table>
                     <thead>

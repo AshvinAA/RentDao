@@ -2,6 +2,7 @@
 {% block title %}Login - RentDao{% endblock %}
 {% block content %}
 <div class="container" style="max-width: 480px;">
+
     <div class="section-card" style="border-left: 5px solid #007bff;">
         <h2>🔑 Welcome Back to RentDao</h2>
         {% if error %}
@@ -22,5 +23,19 @@
             Don't have an account? <a href="/register" style="color: #007bff;">Sign up here</a>.
         </p>
     </div>
+
+    <div class="section-card" style="border-left: 5px solid #6c757d;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div>
+                <p style="margin: 0; font-weight: 600; color: #2c3e50; font-size: 0.95em;">🚚 RentDao Delivery Partner?</p>
+                <p style="margin: 4px 0 0 0; font-size: 0.83em; color: #888;">Access your driver dashboard or apply to join our fleet.</p>
+            </div>
+            <div style="display: flex; gap: 8px; flex-shrink: 0;">
+                <a href="/driver/login" class="btn btn-dark">Driver Login</a>
+                <a href="/driver/register" class="btn btn-gray">Apply</a>
+            </div>
+        </div>
+    </div>
+
 </div>
 {% endblock %}

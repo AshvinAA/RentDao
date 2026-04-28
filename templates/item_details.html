@@ -61,6 +61,21 @@
             </div>
         </div>
         {% endif %}
+
+        {% if not is_owner %}
+        <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #eee;">
+            {% if is_wishlisted %}
+            <form action="/wishlist/remove-from-detail/{{ item.id }}" method="post" style="margin:0; display:inline;">
+                <button type="submit" class="btn btn-gray">🤍 Remove from Wishlist</button>
+            </form>
+            <span style="font-size:0.85em; color:#888; margin-left:10px;">This item is in your wishlist</span>
+            {% else %}
+            <form action="/wishlist/add/{{ item.id }}" method="post" style="margin:0; display:inline;">
+                <button type="submit" class="btn btn-orange">❤️ Add to Wishlist</button>
+            </form>
+            {% endif %}
+        </div>
+        {% endif %}
     </div>
 
     <!-- Booking Form -->

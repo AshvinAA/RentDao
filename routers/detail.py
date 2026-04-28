@@ -120,6 +120,15 @@ def detail(
     #     )
     #     .first()
     # )
+    # Check if current user has wishlisted this item (safe even if current_user is None)
+    is_wishlisted = False
+    if current_user:
+        wishlisted_row = db.query(models.Wishlist).filter(
+            models.Wishlist.user_id == current_user.id,
+            models.Wishlist.item_id == item_id
+        ).first()
+        is_wishlisted = bool(wishlisted_row)
+
     stats = db.execute(
         text("""
             SELECT COUNT(bd.id) AS total_bookings, AVG(r.rating) AS avg_rating
@@ -146,5 +155,6 @@ def detail(
         "avg_rating": round(float(stats.avg_rating), 1) if stats.avg_rating else 0.0,
         "user": current_user,
         "is_owner": is_owner,
+        "is_wishlisted": is_wishlisted,
         "today": today,
     })

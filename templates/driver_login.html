@@ -1,49 +1,29 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Driver Login - RentDao</title>
-    <style>
-        body { font-family: sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
-        .auth-card { background: white; padding: 40px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); width: 100%; max-width: 400px; }
-        .auth-card h2 { text-align: center; color: #333; margin-top: 0; }
-        .form-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9em; color: #555; }
-        input { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
-        .btn { width: 100%; padding: 10px; background-color: #007bff; color: white; border: none; border-radius: 4px; font-weight: bold; cursor: pointer; font-size: 1em; margin-top: 10px; }
-        .btn:hover { background-color: #0056b3; }
-        .link { display: block; text-align: center; margin-top: 15px; font-size: 0.9em; color: #007bff; text-decoration: none; }
-        
-        .alert-banner { background-color: #f8d7da; color: #721c24; padding: 10px; border-radius: 4px; margin-bottom: 20px; border: 1px solid #f5c6cb; text-align: center; font-weight: bold; }
-    </style>
-</head>
-<body>
-
-    <div class="auth-card">
+{% extends "base.html" %}
+{% block title %}Driver Login - RentDao{% endblock %}
+{% block content %}
+<div class="container" style="max-width: 480px;">
+    <div class="section-card" style="border-left: 5px solid #343a40;">
         <h2>🚚 Driver Login</h2>
-        
         {% if error %}
-            <div class="alert-banner">
-                ⚠️ {{ error }}
-            </div>
+        <div class="message message-error">⚠️ {{ error }}</div>
         {% endif %}
-
         <form action="/driver/login" method="POST">
             <div class="form-group">
-                <label>Email Address:</label>
-                <input type="email" name="email" required>
+                <label for="email">Email Address</label>
+                <input type="email" id="email" name="email" required placeholder="Enter your driver email">
             </div>
-            
             <div class="form-group">
-                <label>Password:</label>
-                <input type="password" name="password" required>
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required placeholder="Enter your password">
             </div>
-            
-            <button type="submit" class="btn">Log In to Dashboard</button>
+            <button type="submit" class="btn btn-dark" style="width: 100%; padding: 10px;">Log In to Dashboard</button>
         </form>
-        
-        <a href="/driver/register" class="link">Want to drive for us? Apply here.</a>
+        <p style="margin-top: 18px; font-size: 0.88em; color: #888; text-align: center;">
+            Not a driver yet? <a href="/driver/register" style="color: #007bff;">Apply to join our fleet</a>.
+        </p>
+        <p style="margin-top: 8px; font-size: 0.88em; color: #888; text-align: center;">
+            Regular user? <a href="/login" style="color: #007bff;">Login here</a>.
+        </p>
     </div>
-
-</body>
-</html>
+</div>
+{% endblock %}

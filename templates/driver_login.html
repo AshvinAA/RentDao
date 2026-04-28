@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% block title %}Driver Login - RentDao{% endblock %}
+{% block title %}Driver Sign In — RentDao{% endblock %}
 {% block content %}
-<div class="container" style="max-width: 480px;">
-    <div class="section-card" style="border-left: 5px solid #343a40;">
-        <h2>🚚 Driver Login</h2>
+<div class="container" style="max-width: 460px;">
+    <div class="section-card">
+        <h2>Driver Sign In</h2>
         {% if error %}
-        <div class="message message-error">⚠️ {{ error }}</div>
+        <div class="message message-error">{{ error }}</div>
         {% endif %}
         <form action="/driver/login" method="POST">
             <div class="form-group">
@@ -16,13 +16,13 @@
                 <label for="password">Password</label>
                 <input type="password" id="password" name="password" required placeholder="Enter your password">
             </div>
-            <button type="submit" class="btn btn-dark" style="width: 100%; padding: 10px;">Log In to Dashboard</button>
+            <button type="submit" class="btn btn-dark" style="width: 100%; padding: 11px;">Sign In to Dashboard</button>
         </form>
-        <p style="margin-top: 18px; font-size: 0.88em; color: #888; text-align: center;">
-            Not a driver yet? <a href="/driver/register" style="color: #007bff;">Apply to join our fleet</a>.
+        <p style="margin-top: 20px; font-size: 0.875em; color: var(--c-text-3); text-align: center;">
+            Not a driver yet? <a href="/driver/register" style="color: var(--c-primary); font-weight: 500;">Apply to join</a>
         </p>
-        <p style="margin-top: 8px; font-size: 0.88em; color: #888; text-align: center;">
-            Regular user? <a href="/login" style="color: #007bff;">Login here</a>.
+        <p style="margin-top: 8px; font-size: 0.875em; color: var(--c-text-3); text-align: center;">
+            Regular user? <a href="/login" style="color: var(--c-primary); font-weight: 500;">Sign in here</a>
         </p>
     </div>
 </div>

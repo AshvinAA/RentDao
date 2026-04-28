@@ -10,7 +10,7 @@ from database import engine
 app = FastAPI()
 app.add_middleware(SessionMiddleware, secret_key="change-this-to-something-secret") #idk this
 
-from routers import items, auth, admin, bookings, insurance, reviews, reports, payments, item_tags, cart, wishlist ,driver ,detail
+from routers import items, auth, admin, bookings, insurance, reviews, reports, payments, item_tags, wishlist ,driver ,detail
 
 models.Base.metadata.create_all(bind=engine) # This is the magic line that tells SQLAlchemy to build the tables!
 
@@ -31,7 +31,6 @@ app.include_router(reports.router)
 app.include_router(payments.router)
 app.include_router(insurance.router)
 app.include_router(item_tags.router)
-app.include_router(cart.router)
 app.include_router(wishlist.router)
 app.include_router(detail.router)
 

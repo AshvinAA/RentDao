@@ -317,3 +317,30 @@ def delete_booking(booking_id: int, current_user: models.User = Depends(get_curr
     db.commit()
 
     return RedirectResponse(url="/bookings", status_code=303)
+@router.post("/clear-rental-history")
+def clear_rental_history(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Soft-delete: removes completed bookings from the renter's view only."""
+    # Get all completed booking IDs for this user as renter
+    completed = db.execute(
+        text("SELECT id FROM booking_details WHERE user_id = :uid AND status = 'completed'"),
+        {"uid": current_user.id}
+    ).fetchall()
+    for row in completed:
+        db.execute(text("DELETE FROM delivery_history WHERE booking_id = :bid"), {"bid": row.id})
+        db.execute(text("DELETE FROM reviews WHERE booking_id = :bid"), {"bid": row.id})
+        db.execute(text("DELETE FROM booking_details WHERE id = :bid"), {"bid": row.id})
+    db.commit()
+    return RedirectResponse(url="/profile", status_code=303)
+
+@router.post("/clear-cancelled")
+def clear_cancelled_rentals(current_user: models.User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Removes cancelled bookings from the renter's view."""
+    cancelled = db.execute(
+        text("SELECT id FROM booking_details WHERE user_id = :uid AND status = 'cancelled'"),
+        {"uid": current_user.id}
+    ).fetchall()
+    for row in cancelled:
+        db.execute(text("DELETE FROM delivery_history WHERE booking_id = :bid"), {"bid": row.id})
+        db.execute(text("DELETE FROM booking_details WHERE id = :bid"), {"bid": row.id})
+    db.commit()
+    return RedirectResponse(url="/profile", status_code=303)

@@ -3,19 +3,7 @@
 {% block content %}
 <div class="container">
 
-    <!-- Nav Actions -->
-    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:25px;">
-        <a href="/items"       class="btn btn-blue">🛒 Marketplace</a>
-        <a href="/add-item"    class="btn btn-green">➕ Post an Item</a>
-        <a href="/bookings"    class="btn btn-gray">📋 My Bookings</a>
-        <a href="/reports/mine" class="btn btn-orange">🚩 My Reports</a>
-        {% if is_admin %}
-        <a href="/admin"       class="btn btn-dark">⚙️ Admin Panel</a>
-        {% endif %}
-        <a href="/logout"      class="btn btn-red">🚪 Logout</a>
-    </div>
-
-    <div style="display:grid; grid-template-columns: 280px 1fr; gap:25px; align-items:start;">
+<div style="display:grid; grid-template-columns: 280px 1fr; gap:25px; align-items:start;">
 
         <!-- LEFT: Profile Card -->
         <div>

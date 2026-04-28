@@ -122,11 +122,15 @@
                     <h3 style="margin-top: 0; font-size: 1em;">Search Results for ID: {{ search_id }}</h3>
                     {% if searched_user %}
                         <p><strong>Name:</strong> {{ searched_user.name }} | <strong>Email:</strong> {{ searched_user.email }}</p>
-                        <form action="/admin/users/{{ searched_user.id }}/suspend" method="POST" style="margin: 0;">
-                            <button type="submit" class="btn btn-red" {% if searched_user.is_suspended %}disabled style="opacity: 0.5;"{% endif %}>
-                                {% if searched_user.is_suspended %}Already Suspended{% else %}Suspend User{% endif %}
-                            </button>
-                        </form>
+                        {% if searched_user.is_suspended %}
+                            <form action="/admin/users/{{ searched_user.id }}/unsuspend" method="POST" style="margin: 0;">
+                                <button type="submit" class="btn btn-green">Unsuspend User</button>
+                            </form>
+                        {% else %}
+                            <form action="/admin/users/{{ searched_user.id }}/suspend" method="POST" style="margin: 0;">
+                                <button type="submit" class="btn btn-red">Suspend User</button>
+                            </form>
+                        {% endif %}
                     {% else %}
                         <p style="color: red; margin: 0;">No user found with that ID.</p>
                     {% endif %}
@@ -157,9 +161,15 @@
                                 {% endif %}
                             </td>
                             <td>
-                                <form action="/admin/users/{{ u.id }}/suspend" method="POST" style="margin: 0;">
-                                    <button type="submit" class="btn btn-red" {% if u.is_suspended %}disabled style="opacity: 0.5;"{% endif %}>Suspend</button>
-                                </form>
+                                {% if u.is_suspended %}
+                                    <form action="/admin/users/{{ u.id }}/unsuspend" method="POST" style="margin: 0;">
+                                        <button type="submit" class="btn btn-green">Unsuspend</button>
+                                    </form>
+                                {% else %}
+                                    <form action="/admin/users/{{ u.id }}/suspend" method="POST" style="margin: 0;">
+                                        <button type="submit" class="btn btn-red">Suspend</button>
+                                    </form>
+                                {% endif %}
                             </td>
                         </tr>
                     {% endfor %}
@@ -293,13 +303,16 @@
                                     {% endif %}
                                 </td>
                                 <td>
-                                    <!-- suspend the reported user directly from here -->
-                                    <form action="/admin/users/{{ report.reported_user_id }}/suspend" method="POST" style="margin: 0 0 6px 0;">
-                                        <button type="submit" class="btn btn-red"
-                                            {% if report.reported_user_is_suspended %}disabled style="opacity: 0.5;"{% endif %}>
-                                            {% if report.reported_user_is_suspended %}Suspended{% else %}Suspend User{% endif %}
-                                        </button>
-                                    </form>
+                                    <!-- suspend/unsuspend the reported user directly from here -->
+                                    {% if report.reported_user_is_suspended %}
+                                        <form action="/admin/users/{{ report.reported_user_id }}/unsuspend" method="POST" style="margin: 0 0 6px 0;">
+                                            <button type="submit" class="btn btn-green">Unsuspend User</button>
+                                        </form>
+                                    {% else %}
+                                        <form action="/admin/users/{{ report.reported_user_id }}/suspend" method="POST" style="margin: 0 0 6px 0;">
+                                            <button type="submit" class="btn btn-red">Suspend User</button>
+                                        </form>
+                                    {% endif %}
                                     <!-- dismiss the report once reviewed -->
                                     <form action="/admin/reports/{{ report.id }}/dismiss" method="POST" style="margin: 0;"
                                         onsubmit="return confirm('Dismiss this report?');">

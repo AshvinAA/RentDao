@@ -1,11 +1,11 @@
 {% extends "base.html" %}
-{% block title %}Driver Registration - RentDao{% endblock %}
+{% block title %}Driver Application — RentDao{% endblock %}
 {% block content %}
-<div class="container" style="max-width: 520px;">
-    <div class="section-card" style="border-left: 5px solid #28a745;">
-        <h2>🚚 Become a RentDao Driver</h2>
+<div class="container" style="max-width: 500px;">
+    <div class="section-card">
+        <h2>Driver Application</h2>
         {% if error %}
-        <div class="message message-error">⚠️ {{ error }}</div>
+        <div class="message message-error">{{ error }}</div>
         {% endif %}
         <form action="/driver/register" method="POST">
             <div class="form-group">
@@ -14,7 +14,7 @@
             </div>
             <div class="form-group">
                 <label for="email">Email Address</label>
-                <input type="email" id="email" name="email" required placeholder="Enter your email">
+                <input type="email" id="email" name="email" required placeholder="you@example.com">
             </div>
             <div class="form-group">
                 <label for="password">Password</label>
@@ -22,11 +22,11 @@
             </div>
             <div class="form-group">
                 <label for="phone_no">Phone Number</label>
-                <input type="text" id="phone_no" name="phone_no" required placeholder="Enter your phone number">
+                <input type="text" id="phone_no" name="phone_no" required placeholder="+1 555 000 0000">
             </div>
             <div class="form-group">
                 <label for="license">Driver's License Number</label>
-                <input type="text" id="license" name="license" required placeholder="Enter your license number">
+                <input type="text" id="license" name="license" required placeholder="e.g. DL-123456">
             </div>
             <div class="form-group">
                 <label for="vehicle_type">Vehicle Type</label>
@@ -37,10 +37,10 @@
                     <option value="Bicycle">Bicycle</option>
                 </select>
             </div>
-            <button type="submit" class="btn btn-green" style="width: 100%; padding: 10px;">Submit Application</button>
+            <button type="submit" class="btn btn-blue" style="width: 100%; padding: 11px;">Submit Application</button>
         </form>
-        <p style="margin-top: 18px; font-size: 0.88em; color: #888; text-align: center;">
-            Already have a driver account? <a href="/driver/login" style="color: #007bff;">Log in here</a>.
+        <p style="margin-top: 20px; font-size: 0.875em; color: var(--c-text-3); text-align: center;">
+            Already have a driver account? <a href="/driver/login" style="color: var(--c-primary); font-weight: 500;">Sign in</a>
         </p>
     </div>
 </div>

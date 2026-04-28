@@ -1,24 +1,24 @@
 {% extends "base.html" %}
-{% block title %}Insurance for {{ item.name }} - RentDao{% endblock %}
+{% block title %}Insurance — {{ item.name }} — RentDao{% endblock %}
 {% block content %}
 <div class="container" style="max-width: 720px;">
-    <a href="/items/{{ item.id }}" class="back-link">← Back to Item</a>
+    <a href="/items/{{ item.id }}" class="back-link">&#8592; Back to Item</a>
 
-    <div class="section-card" style="border-left: 5px solid #fd7e14;">
-        <h2>🛡️ Insurance Records for {{ item.name }}</h2>
+    <div class="section-card">
+        <h2>Insurance Records &mdash; {{ item.name }}</h2>
         {% if records %}
         <table>
             <thead>
-                <tr><th>Provider</th><th>Policy #</th><th>Coverage Details</th><th>Action</th></tr>
+                <tr><th>Provider</th><th>Policy Number</th><th>Coverage Details</th><th>Action</th></tr>
             </thead>
             <tbody>
                 {% for record in records %}
                 <tr>
                     <td><strong>{{ record.insurance_provider }}</strong></td>
                     <td>{{ record.policy_number }}</td>
-                    <td style="color:#555; font-size:0.9em;">{{ record.coverage_details }}</td>
+                    <td style="color: var(--c-text-2); font-size: 0.88em;">{{ record.coverage_details }}</td>
                     <td>
-                        <form action="/insurance/remove/{{ record.id }}" method="post" style="margin:0;">
+                        <form action="/insurance/remove/{{ record.id }}" method="post" style="margin: 0;">
                             <button type="submit" class="btn btn-red">Remove</button>
                         </form>
                     </td>
@@ -31,8 +31,8 @@
         {% endif %}
     </div>
 
-    <div class="section-card" style="border-left: 5px solid #28a745;">
-        <h2>➕ Add New Insurance</h2>
+    <div class="section-card">
+        <h2>Add Insurance Record</h2>
         <form action="/insurance/add/{{ item.id }}" method="post">
             <div class="form-group">
                 <label for="insurance_provider">Provider</label>
@@ -43,10 +43,10 @@
                 <input type="text" name="policy_number" id="policy_number" required placeholder="e.g. POL-2026-XXXX">
             </div>
             <div class="form-group">
-                <label for="coverage_details">Coverage Details <span style="color:#aaa; font-weight:400;">(optional)</span></label>
-                <textarea name="coverage_details" id="coverage_details" rows="4" placeholder="Describe the coverage..."></textarea>
+                <label for="coverage_details">Coverage Details <span style="color: var(--c-text-3); font-weight: 400;">(optional)</span></label>
+                <textarea name="coverage_details" id="coverage_details" rows="4" placeholder="Describe the coverage scope..."></textarea>
             </div>
-            <button type="submit" class="btn btn-green">Add Insurance</button>
+            <button type="submit" class="btn btn-blue">Add Record</button>
         </form>
     </div>
 </div>

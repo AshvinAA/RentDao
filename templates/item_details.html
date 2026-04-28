@@ -1,77 +1,113 @@
 {% extends "base.html" %}
-{% block title %}{{ item.name }} - RentDao{% endblock %}
+{% block title %}{{ item.name }} — RentDao{% endblock %}
+{% block extra_head %}
+<style>
+.carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(255,255,255,0.92);
+    border: 1px solid var(--c-border);
+    border-radius: var(--radius-sm);
+    width: 36px; height: 36px;
+    cursor: pointer;
+    font-size: 14px;
+    z-index: 10;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--c-text-1);
+    transition: background 0.15s;
+}
+.carousel-btn:hover { background: #fff; }
+.carousel-btn-left  { left: 12px; }
+.carousel-btn-right { right: 12px; }
+.c-counter {
+    position: absolute; bottom: 10px; right: 12px;
+    background: rgba(15,23,42,0.6); color: #fff;
+    font-size: 0.72em; border-radius: 20px; padding: 3px 9px;
+}
+.thumb-item {
+    flex-shrink: 0; width: 64px; height: 48px;
+    border-radius: var(--radius-sm); overflow: hidden;
+    cursor: pointer; border: 2px solid transparent;
+    opacity: 0.5; transition: opacity 0.2s, border-color 0.2s;
+}
+.thumb-item.active { opacity: 1; border-color: var(--c-primary); }
+.info-row { display: flex; gap: 0; border-bottom: 1px solid var(--c-border); padding: 10px 0; }
+.info-row:last-child { border-bottom: none; }
+.info-label { width: 160px; font-weight: 500; color: var(--c-text-2); font-size: 0.88em; flex-shrink: 0; }
+.info-value { color: var(--c-text-1); font-size: 0.92em; }
+</style>
+{% endblock %}
 {% block content %}
 <div class="container" style="max-width: 900px;">
-    <a href="/items" class="back-link">← Back to listings</a>
+    <a href="/items" class="back-link">&#8592; Back to listings</a>
 
     <!-- Image Carousel -->
-    <div class="section-card" style="padding: 0; overflow: hidden; border-left: 5px solid #007bff;">
+    <div class="section-card" style="padding: 0; overflow: hidden;">
         {% if images %}
-        <div id="carousel-main" style="position: relative; background: #e9ecef; aspect-ratio: 16/7; overflow: hidden;">
+        <div id="carousel-main" style="position: relative; background: var(--c-bg-subtle); aspect-ratio: 16/7; overflow: hidden;">
             {% for image in images %}
             <img src="{{ image.image_url }}" alt="Image {{ loop.index }}" class="carousel-img {% if loop.first %}active{% endif %}"
                 style="position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.3s;">
             {% endfor %}
-            <button onclick="carouselShift(-1)" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.9); border: none; border-radius: 4px; width: 36px; height: 36px; cursor: pointer; font-size: 16px; z-index: 10;">❮</button>
-            <button onclick="carouselShift(1)"  style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: rgba(255,255,255,0.9); border: none; border-radius: 4px; width: 36px; height: 36px; cursor: pointer; font-size: 16px; z-index: 10;">❯</button>
-            <span id="c-counter" style="position: absolute; bottom: 10px; right: 12px; background: rgba(0,0,0,0.55); color: white; font-size: 11px; border-radius: 12px; padding: 3px 9px;">1 / {{ images|length }}</span>
+            <button onclick="carouselShift(-1)" class="carousel-btn carousel-btn-left">&#8592;</button>
+            <button onclick="carouselShift(1)"  class="carousel-btn carousel-btn-right">&#8594;</button>
+            <span id="c-counter" class="c-counter">1 / {{ images|length }}</span>
         </div>
         {% if images|length > 1 %}
-        <div id="thumb-strip" style="display: flex; gap: 6px; padding: 10px; overflow-x: auto; background: #f8f9fa;">
+        <div id="thumb-strip" style="display: flex; gap: 6px; padding: 10px; overflow-x: auto; background: var(--c-bg-subtle);">
             {% for image in images %}
-            <div class="thumb-item {% if loop.first %}active{% endif %}" onclick="carouselGoTo({{ loop.index0 }})"
-                style="flex-shrink:0; width:64px; height:48px; border-radius:4px; overflow:hidden; cursor:pointer; border: 2px solid transparent; opacity: 0.5; transition: opacity 0.2s, border-color 0.2s;">
-                <img src="{{ image.image_url }}" style="width:100%; height:100%; object-fit:cover; display:block;">
+            <div class="thumb-item {% if loop.first %}active{% endif %}" onclick="carouselGoTo({{ loop.index0 }})">
+                <img src="{{ image.image_url }}" style="width: 100%; height: 100%; object-fit: cover; display: block;">
             </div>
             {% endfor %}
         </div>
         {% endif %}
         {% else %}
-        <div style="background: #e9ecef; aspect-ratio: 16/7; display: flex; align-items: center; justify-content: center; color: #aaa;">No images uploaded</div>
+        <div style="background: var(--c-bg-subtle); aspect-ratio: 16/7; display: flex; align-items: center; justify-content: center; color: var(--c-text-3); font-size: 0.9em;">No images uploaded</div>
         {% endif %}
     </div>
 
     <!-- Item Info -->
     <div class="section-card">
-        <h2 style="font-size: 1.5em; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px;">{{ item.name }}</h2>
-        <table style="margin: 0;">
-            <tbody>
-                <tr><td style="border: none; padding: 8px 0; color: #495057; font-weight: 600; width: 160px;">Description</td><td style="border: none; padding: 8px 0;">{{ item.description }}</td></tr>
-                <tr><td style="border: none; padding: 8px 0; color: #495057; font-weight: 600;">Price per day</td><td style="border: none; padding: 8px 0;"><strong>${{ item.price_per_day }}</strong></td></tr>
-                {% if item.discount and item.discount > 0 %}
-                <tr><td style="border: none; padding: 8px 0; color: #495057; font-weight: 600;">Discount</td><td style="border: none; padding: 8px 0; color: #28a745;">{{ item.discount }}%</td></tr>
-                {% endif %}
-                <tr><td style="border: none; padding: 8px 0; color: #495057; font-weight: 600;">Owner</td><td style="border: none; padding: 8px 0;">{{ owner.owner_email }}</td></tr>
-                <tr><td style="border: none; padding: 8px 0; color: #495057; font-weight: 600;">Total Rentals</td><td style="border: none; padding: 8px 0;">{{ total_bookings }}</td></tr>
-                {% if avg_rating %}
-                <tr><td style="border: none; padding: 8px 0; color: #495057; font-weight: 600;">Rating</td><td style="border: none; padding: 8px 0;">{{ avg_rating }}/5 ⭐</td></tr>
-                {% endif %}
-                {% if item.category %}
-                <tr><td style="border: none; padding: 8px 0; color: #495057; font-weight: 600;">Category</td><td style="border: none; padding: 8px 0;">{{ item.category }}</td></tr>
-                {% endif %}
-            </tbody>
-        </table>
+        <h2 style="font-size: 1.4em; border-bottom: 1px solid var(--c-border); padding-bottom: 14px; margin-bottom: 20px;">{{ item.name }}</h2>
+        <div>
+            <div class="info-row"><span class="info-label">Description</span><span class="info-value">{{ item.description }}</span></div>
+            <div class="info-row"><span class="info-label">Price per day</span><span class="info-value"><strong>${{ item.price_per_day }}</strong></span></div>
+            {% if item.discount and item.discount > 0 %}
+            <div class="info-row"><span class="info-label">Discount</span><span class="info-value" style="color: var(--c-success); font-weight: 600;">{{ item.discount }}% off</span></div>
+            {% endif %}
+            <div class="info-row"><span class="info-label">Owner</span><span class="info-value">{{ owner.owner_email }}</span></div>
+            <div class="info-row"><span class="info-label">Total Rentals</span><span class="info-value">{{ total_bookings }}</span></div>
+            {% if avg_rating %}
+            <div class="info-row"><span class="info-label">Rating</span><span class="info-value"><span class="badge badge-approved">{{ avg_rating }}/5</span></span></div>
+            {% endif %}
+            {% if item.category %}
+            <div class="info-row"><span class="info-label">Category</span><span class="info-value">{{ item.category }}</span></div>
+            {% endif %}
+        </div>
+
         {% if tags %}
         <div style="margin-top: 16px;">
-            <strong style="font-size: 0.9em; color: #495057;">Tags:</strong>
-            <div style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px;">
+            <p style="font-size: 0.82em; font-weight: 600; color: var(--c-text-2); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;">Tags</p>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px;">
                 {% for tag in tags %}
-                <span style="background: #e9ecef; padding: 4px 12px; border-radius: 12px; font-size: 0.82em; color: #495057;">{{ tag.tag }}</span>
+                <span style="background: var(--c-bg-subtle); padding: 4px 12px; border-radius: 20px; font-size: 0.82em; color: var(--c-text-2); border: 1px solid var(--c-border);">{{ tag.tag }}</span>
                 {% endfor %}
             </div>
         </div>
         {% endif %}
 
         {% if not is_owner %}
-        <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid #eee;">
+        <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--c-border);">
             {% if is_wishlisted %}
-            <form action="/wishlist/remove-from-detail/{{ item.id }}" method="post" style="margin:0; display:inline;">
-                <button type="submit" class="btn btn-gray">🤍 Remove from Wishlist</button>
+            <form action="/wishlist/remove-from-detail/{{ item.id }}" method="post" style="margin: 0; display: inline;">
+                <button type="submit" class="btn btn-gray">Remove from Wishlist</button>
             </form>
-            <span style="font-size:0.85em; color:#888; margin-left:10px;">This item is in your wishlist</span>
+            <span style="font-size: 0.84em; color: var(--c-text-3); margin-left: 10px;">Saved to your wishlist</span>
             {% else %}
-            <form action="/wishlist/add/{{ item.id }}" method="post" style="margin:0; display:inline;">
-                <button type="submit" class="btn btn-orange">❤️ Add to Wishlist</button>
+            <form action="/wishlist/add/{{ item.id }}" method="post" style="margin: 0; display: inline;">
+                <button type="submit" class="btn btn-orange">Save to Wishlist</button>
             </form>
             {% endif %}
         </div>
@@ -80,16 +116,16 @@
 
     <!-- Booking Form -->
     {% if is_owner %}
-    <div class="section-card" style="border-left: 5px solid #6c757d;">
-        <div class="message message-info">This is your listing — you can't book your own item.</div>
+    <div class="section-card">
+        <div class="message message-info">This is your listing — you cannot book your own item.</div>
     </div>
     {% elif existing_booking %}
-    <div class="section-card" style="border-left: 5px solid #6c757d;">
+    <div class="section-card">
         <div class="message message-info">You already have an active booking for this item.</div>
     </div>
     {% else %}
-    <div class="section-card" style="border-left: 5px solid #28a745;">
-        <h2>📅 Reserve This Item</h2>
+    <div class="section-card">
+        <h2>Reserve This Item</h2>
         <form action="/bookings/create/{{ item.id }}" method="post">
             <div class="form-group">
                 <label for="start_date">Start Date</label>
@@ -99,29 +135,35 @@
                 <label for="end_date">End Date</label>
                 <input type="date" name="end_date" id="end_date" min="{{ today }}" required>
             </div>
-            <div id="price-summary" style="display: none; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; padding: 14px; margin-bottom: 16px;">
-                <table style="margin:0;">
-                    <tbody>
-                        <tr><td style="border:none; padding: 5px 0; color: #495057;">Daily rate</td><td style="border:none; padding: 5px 0; text-align:right;">${{ item.price_per_day }}</td></tr>
-                        <tr><td style="border:none; padding: 5px 0; color: #495057;" id="days-label">Days</td><td style="border:none; padding: 5px 0; text-align:right;" id="days-count">—</td></tr>
-                        {% if item.discount and item.discount > 0 %}
-                        <tr><td style="border:none; padding: 5px 0; color: #28a745;">Discount ({{ item.discount }}%)</td><td style="border:none; padding: 5px 0; text-align:right; color:#28a745;" id="discount-val">—</td></tr>
-                        {% endif %}
-                        <tr style="font-weight: 700; border-top: 2px solid #dee2e6;"><td style="border:none; padding: 8px 0 0 0;">Total</td><td style="border:none; padding: 8px 0 0 0; text-align:right;" id="total-val">—</td></tr>
-                    </tbody>
-                </table>
+            <div id="price-summary" style="display: none; background: var(--c-bg-subtle); border: 1px solid var(--c-border); border-radius: var(--radius-sm); padding: 16px; margin-bottom: 18px;">
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9em; color: var(--c-text-2);">
+                        <span>Daily rate</span><span>${{ item.price_per_day }}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9em; color: var(--c-text-2);">
+                        <span id="days-label">Days</span><span id="days-count">—</span>
+                    </div>
+                    {% if item.discount and item.discount > 0 %}
+                    <div style="display: flex; justify-content: space-between; font-size: 0.9em; color: var(--c-success);">
+                        <span>Discount ({{ item.discount }}%)</span><span id="discount-val">—</span>
+                    </div>
+                    {% endif %}
+                    <div style="display: flex; justify-content: space-between; font-weight: 700; font-size: 1em; border-top: 1px solid var(--c-border); padding-top: 8px; margin-top: 4px;">
+                        <span>Total</span><span id="total-val">—</span>
+                    </div>
+                </div>
             </div>
-            <button type="submit" class="btn btn-green" style="padding: 10px 24px;">Book Now</button>
+            <button type="submit" class="btn btn-blue" style="padding: 10px 24px;">Book Now</button>
         </form>
     </div>
     {% endif %}
 
     <!-- Insurance -->
     {% if insurance_records %}
-    <div class="section-card" style="border-left: 5px solid #fd7e14;">
-        <h2>🛡️ Insurance</h2>
+    <div class="section-card">
+        <h2>Insurance</h2>
         <table>
-            <thead><tr><th>Provider</th><th>Policy #</th></tr></thead>
+            <thead><tr><th>Provider</th><th>Policy Number</th></tr></thead>
             <tbody>
                 {% for record in insurance_records %}
                 <tr><td>{{ record.insurance_provider }}</td><td>{{ record.policy_number }}</td></tr>
@@ -132,17 +174,17 @@
     {% endif %}
 
     <!-- Reviews -->
-    <div class="section-card" style="border-left: 5px solid #ffc107;">
-        <h2>⭐ Reviews</h2>
+    <div class="section-card">
+        <h2>Reviews</h2>
         {% if reviews %}
         <table>
             <thead><tr><th>Reviewer</th><th>Rating</th><th>Comment</th></tr></thead>
             <tbody>
                 {% for review in reviews %}
                 <tr>
-                    <td>{{ review.reviewer_email }}</td>  {# was review.reviewer.email — now a direct column from the JOIN in detail.py #}
+                    <td>{{ review.reviewer_email }}</td>
                     <td><span class="badge badge-approved">{{ review.rating }}/5</span></td>
-                    <td style="color: #555;">{{ review.comment }}</td>
+                    <td style="color: var(--c-text-2);">{{ review.comment }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -156,11 +198,10 @@
 <script>
 (function() {
   let current = 0;
-  const imgs = document.querySelectorAll('.carousel-img');
+  const imgs   = document.querySelectorAll('.carousel-img');
   const thumbs = document.querySelectorAll('.thumb-item');
   const counter = document.getElementById('c-counter');
   if (imgs[0]) imgs[0].style.opacity = '1';
-  if (thumbs[0]) { thumbs[0].style.opacity = '1'; thumbs[0].style.borderColor = '#007bff'; }
 
   window.carouselGoTo = function(idx) {
     if (!imgs.length) return;
@@ -168,7 +209,7 @@
     if (thumbs[current]) { thumbs[current].style.opacity = '0.5'; thumbs[current].style.borderColor = 'transparent'; }
     current = (idx + imgs.length) % imgs.length;
     imgs[current].style.opacity = '1';
-    if (thumbs[current]) { thumbs[current].style.opacity = '1'; thumbs[current].style.borderColor = '#007bff'; }
+    if (thumbs[current]) { thumbs[current].style.opacity = '1'; thumbs[current].style.borderColor = '#1e40af'; }
     if (counter) counter.textContent = `${current + 1} / ${imgs.length}`;
   };
   window.carouselShift = function(d) { carouselGoTo(current + d); };
@@ -176,14 +217,14 @@
     if (imgs.length > 1) { if (e.key === 'ArrowLeft') carouselShift(-1); if (e.key === 'ArrowRight') carouselShift(1); }
   });
 
-  const s = document.getElementById('start_date');
-  const en = document.getElementById('end_date');
+  const s       = document.getElementById('start_date');
+  const en      = document.getElementById('end_date');
   const summary = document.getElementById('price-summary');
-  const daysLabel = document.getElementById('days-label');
-  const daysCount = document.getElementById('days-count');
+  const daysLabel   = document.getElementById('days-label');
+  const daysCount   = document.getElementById('days-count');
   const discountVal = document.getElementById('discount-val');
-  const totalVal = document.getElementById('total-val');
-  const ppd = {{ item.price_per_day }};
+  const totalVal    = document.getElementById('total-val');
+  const ppd  = {{ item.price_per_day }};
   const disc = {{ item.discount if item.discount else 0 }};
 
   function calc() {
@@ -191,15 +232,15 @@
     const sd = new Date(s.value), ed = new Date(en.value);
     if (!s.value || !en.value || ed <= sd) { summary.style.display = 'none'; return; }
     const days = Math.ceil((ed - sd) / 86400000);
-    const sub = days * ppd;
-    const da = Math.round(sub * disc / 100);
+    const sub  = days * ppd;
+    const da   = Math.round(sub * disc / 100);
     if (daysLabel) daysLabel.textContent = `${days} day${days !== 1 ? 's' : ''}`;
     if (daysCount) daysCount.textContent = `$${sub}`;
     if (discountVal) discountVal.textContent = `-$${da}`;
-    if (totalVal) totalVal.textContent = `$${sub - da}`;
+    if (totalVal)    totalVal.textContent    = `$${sub - da}`;
     summary.style.display = 'block';
   }
-  if (s) s.addEventListener('change', () => { if (en) en.min = s.value; calc(); });
+  if (s)  s.addEventListener('change',  () => { if (en) en.min = s.value; calc(); });
   if (en) en.addEventListener('change', calc);
 })();
 </script>

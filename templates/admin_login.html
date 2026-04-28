@@ -1,22 +1,22 @@
 {% extends "base.html" %}
-{% block title %}Admin Login - RentDao{% endblock %}
+{% block title %}Admin Sign In — RentDao{% endblock %}
 {% block content %}
-<div class="container" style="max-width: 480px;">
-    <div class="section-card" style="border-left: 5px solid #dc3545;">
-        <h2>🛡️ Admin Login</h2>
+<div class="container" style="max-width: 460px;">
+    <div class="section-card">
+        <h2>Admin Sign In</h2>
         {% if error %}
-        <div class="message message-error">⚠️ {{ error }}</div>
+        <div class="message message-error">{{ error }}</div>
         {% endif %}
         <form action="/admin/login" method="post">
             <div class="form-group">
                 <label for="email">Admin Email</label>
-                <input id="email" type="email" name="email" placeholder="Enter admin email" required>
+                <input id="email" type="email" name="email" placeholder="admin@rentdao.com" required>
             </div>
             <div class="form-group">
                 <label for="password">Password</label>
                 <input id="password" type="password" name="password" placeholder="Enter admin password" required>
             </div>
-            <button type="submit" class="btn btn-red" style="width: 100%; padding: 10px;">Login</button>
+            <button type="submit" class="btn btn-dark" style="width: 100%; padding: 11px;">Sign In</button>
         </form>
     </div>
 </div>

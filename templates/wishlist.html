@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% block title %}My Wishlist - RentDao{% endblock %}
+{% block title %}Wishlist — RentDao{% endblock %}
 {% block content %}
 <div class="container">
-    <div class="section-card" style="border-left: 5px solid #fd7e14;">
-        <h2>❤️ My Wishlist</h2>
+    <div class="section-card">
+        <h2>My Wishlist</h2>
 
         {% if wishlist_entries %}
         <table>
@@ -13,33 +13,30 @@
             <tbody>
                 {% for entry in wishlist_entries %}
                 <tr>
-                    <td style="width:80px;">
+                    <td style="width: 80px;">
                         {% if entry.image_url %}
                         <img src="{{ entry.image_url }}" alt="{{ entry.item_name }}"
-                            style="width:72px; height:54px; object-fit:cover; border-radius:4px; border:1px solid #dee2e6;">
+                            style="width: 72px; height: 54px; object-fit: cover; border-radius: var(--radius-sm); border: 1px solid var(--c-border);">
                         {% else %}
-                        <div style="width:72px; height:54px; background:#e9ecef; border-radius:4px; display:flex; align-items:center; justify-content:center; color:#aaa; font-size:0.75em;">No img</div>
+                        <div style="width: 72px; height: 54px; background: var(--c-bg-subtle); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: var(--c-text-3); font-size: 0.75em;">No img</div>
                         {% endif %}
                     </td>
                     <td><strong>{{ entry.item_name }}</strong></td>
-                    <td style="color:#666; font-size:0.9em; max-width:200px;">{{ entry.item_description[:80] }}{% if entry.item_description|length > 80 %}…{% endif %}</td>
+                    <td style="color: var(--c-text-2); font-size: 0.88em; max-width: 200px;">{{ entry.item_description[:80] }}{% if entry.item_description|length > 80 %}…{% endif %}</td>
                     <td><strong>${{ entry.price_per_day }}</strong></td>
-                    <td style="font-size:0.9em;">{{ entry.owner_name }}</td>
+                    <td style="font-size: 0.88em;">{{ entry.owner_name }}</td>
                     <td>
                         {% if entry.avg_rating %}
                         <span class="badge badge-approved">{{ "%.1f"|format(entry.avg_rating) }}/5</span>
                         {% else %}
-                        <span style="color:#ccc; font-size:0.85em;">—</span>
+                        <span style="color: var(--c-text-3); font-size: 0.84em;">—</span>
                         {% endif %}
                     </td>
                     <td>
-                        <div style="display:flex; flex-direction:column; gap:6px;">
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
                             <a href="/items/{{ entry.item_id }}" class="btn btn-blue">View</a>
-                            <form method="post" action="/cart/{{ entry.item_id }}" style="margin:0;">
-                                <button type="submit" class="btn btn-green">Add to Cart</button>
-                            </form>
-                            <form method="post" action="/wishlist/remove/{{ entry.item_id }}" style="margin:0;">
-                                <button type="submit" class="btn btn-gray">🤍 Remove</button>
+<form method="post" action="/wishlist/remove/{{ entry.item_id }}" style="margin: 0;">
+                                <button type="submit" class="btn btn-gray">Remove</button>
                             </form>
                         </div>
                     </td>
@@ -48,16 +45,16 @@
             </tbody>
         </table>
 
-        <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap;">
-            <form method="post" action="/wishlist/clear" style="margin:0;">
-                <button type="submit" class="btn btn-red" onclick="return confirm('Clear entire wishlist?')">🗑 Clear Wishlist</button>
+        <div style="margin-top: 20px; display: flex; gap: 10px; flex-wrap: wrap;">
+            <form method="post" action="/wishlist/clear" style="margin: 0;">
+                <button type="submit" class="btn btn-red" onclick="return confirm('Clear your entire wishlist?')">Clear Wishlist</button>
             </form>
-            <a href="/items" class="btn btn-blue">Continue Shopping</a>
+            <a href="/items" class="btn btn-blue">Continue Browsing</a>
         </div>
 
         {% else %}
         <p class="empty-msg">Your wishlist is empty.</p>
-        <a href="/items" class="btn btn-blue" style="margin-top:14px;">Browse Items</a>
+        <a href="/items" class="btn btn-blue" style="margin-top: 14px;">Browse Items</a>
         {% endif %}
     </div>
 </div>

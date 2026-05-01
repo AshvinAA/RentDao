@@ -300,3 +300,45 @@ def approve_booking(
         db.commit()
 
     return RedirectResponse(url="/profile", status_code=303)
+
+@router.post("/items/delete/{item_id}")
+def delete_item(
+    item_id: int,
+    user_email: str = Cookie(None),
+    db: Session = Depends(get_db)
+):
+    if not user_email:
+        return RedirectResponse(url="/login?error=You aren't logged in.", status_code=303)
+
+    user = db.execute(
+        text("SELECT * FROM users WHERE email = :email"),
+        {"email": user_email}
+    ).fetchone()
+    item = db.execute(
+        text("SELECT * FROM items WHERE id = :iid"),
+        {"iid": item_id}
+    ).fetchone()
+
+    if item and item.owner_id == user.id:  # only owner can delete
+        # Delete associated tags first (foreign key safety)
+        db.execute(
+            text("DELETE FROM item_tags WHERE item_id = :item_id"),
+            {"item_id": item_id}
+        )
+
+        # Delete associated images (foreign key safety)
+        db.execute(
+            text("DELETE FROM item_images WHERE item_id = :item_id"),
+            {"item_id": item_id}
+        )
+
+        # Finally delete the item itself
+        # item = db.query(models.Item).filter(models.Item.id == item_id).first()
+        # db.delete(item)
+        db.execute(
+            text("DELETE FROM items WHERE id = :iid"),
+            {"iid": item_id}
+        )
+        db.commit()
+
+    return RedirectResponse(url="/profile", status_code=303)

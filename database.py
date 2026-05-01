@@ -5,9 +5,9 @@ SQLALCHEMY_DATABASE_URL = "mysql+pymysql://bYQ197N8JPYfXq4.root:zE4l9vk6EZPTabRl
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL) # The Engine is the actual connection to the database
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)#a temporary workspace or template for creating database sessions
 
-Base = declarative_base() # Base is the parent class for all our future table models
+Base = declarative_base() # Base is the parent class for all our future table models that uses sqlalchemys functionalities 
 
 def get_db():   #this works as a open and close mechanism for the database , so that we learn how to open exit the connection each time our databse is  interacted with
     db= SessionLocal()  #opens the connection

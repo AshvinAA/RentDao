@@ -21,7 +21,7 @@ def read_items(request: Request , db: Session = Depends(get_db), page: int =1, l
     offset = (page - 1) * limit 
     today = date.today()
 
-    # 1. Base SQL queries
+    
     count_sql = """
         SELECT COUNT(*) AS cnt FROM items
         WHERE is_approved = 1
@@ -44,7 +44,7 @@ def read_items(request: Request , db: Session = Depends(get_db), page: int =1, l
 
     params = {"today": today, "limit": limit, "offset": offset}
 
-    # 2. THE SEARCH ENGINE: Dynamically add the tag filter if a search term exists
+    # THE SEARCH ENGINE
     if search:
         search_filter = " AND (id IN (SELECT item_id FROM item_tags WHERE tag LIKE :search) OR LOWER(name) LIKE :search)"
         count_sql += search_filter
@@ -52,7 +52,7 @@ def read_items(request: Request , db: Session = Depends(get_db), page: int =1, l
         # Wraps the search term in % so it matches partial tags (e.g. "elec" finds "electronics")
         params["search"] = f"%{search.strip().lower()}%"
 
-    # Add the pagination limits to the very end of the items query
+    # Adding the pagination limits to the very end of the items query
     items_sql += " LIMIT :limit OFFSET :offset"
 
     # Execute the count query

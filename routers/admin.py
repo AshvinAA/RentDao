@@ -227,7 +227,7 @@ def search_user(request: Request, user_id: int, db: Session = Depends(get_db)):
         text("SELECT * FROM users")
     ).fetchall()
 
-    return templates.TemplateResponse("admin.html", {
+    return templates.TemplateResponse("admin.html", {    
         "request": request,
         "items": items,
         "users": users,

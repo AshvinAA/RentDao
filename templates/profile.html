@@ -1,210 +1,204 @@
 {% extends "base.html" %}
-{% block title %}My Profile - RentDao{% endblock %}
+{% block title %}My Account — RentDao{% endblock %}
 {% block content %}
 <div class="container">
 
-    <!-- Nav Actions -->
-    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:25px;">
-        <a href="/items"       class="btn btn-blue">🛒 Marketplace</a>
-        <a href="/add-item"    class="btn btn-green">➕ Post an Item</a>
-        <a href="/bookings"    class="btn btn-gray">📋 My Bookings</a>
-        <a href="/reports/mine" class="btn btn-orange">🚩 My Reports</a>
-        {% if is_admin %}
-        <a href="/admin"       class="btn btn-dark">⚙️ Admin Panel</a>
-        {% endif %}
-        <a href="/logout"      class="btn btn-red">🚪 Logout</a>
-    </div>
+<div class="profile-grid">
 
-    <div style="display:grid; grid-template-columns: 280px 1fr; gap:25px; align-items:start;">
-
-        <!-- LEFT: Profile Card -->
-        <div>
-            <div class="section-card" style="border-left:5px solid #007bff; text-align:center;">
-                {% if user.picture %}
-                <img src="{{ user.picture }}" alt="Profile"
-                    style="width:100px; height:100px; border-radius:50%; object-fit:cover; border:3px solid #dee2e6; margin-bottom:12px;">
-                {% else %}
-                <div style="width:100px; height:100px; border-radius:50%; background:#343a40; margin:0 auto 12px; display:flex; align-items:center; justify-content:center; font-size:2.2em; color:white;">👤</div>
-                {% endif %}
-                <h3 style="margin:0 0 4px; font-size:1.1em; color:#2c3e50;">{{ user.name }}</h3>
-                <p style="color:#888; font-size:0.85em; margin:0;">{{ user.email }}</p>
-            </div>
-
-            <div class="section-card" style="border-left:5px solid #6c757d;">
-                <h2>✏️ Edit Details</h2>
-                <form action="/profile/edit" method="POST" enctype="multipart/form-data">
-                    <div class="form-group">
-                        <label>Full Name</label>
-                        <input type="text" name="name" value="{{ user.name }}" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Location</label>
-                        <input type="text" name="location" value="{{ user.location }}" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Phone Number</label>
-                        <input type="text" name="phone_no" value="{{ user.phone_no }}" required>
-                    </div>
-                    <div class="form-group">
-                        <label>Payment Method</label>
-                        <select name="payment_option">
-                            <option value="Card" {% if user.payment_option=='Card' %}selected{% endif %}>Card</option>
-                            <option value="Cash On Delivery" {% if user.payment_option=='Cash On Delivery' %}selected{% endif %}>Cash On Delivery</option>
-                        </select>
-                    </div>
-                    <div class="form-group">
-                        <label>Profile Picture <span style="color:#aaa; font-weight:400;">(optional)</span></label>
-                        <input type="file" name="picture" accept="image/*">
-                    </div>
-                    <button type="submit" class="btn btn-blue" style="width:100%; padding:10px;">Save Changes</button>
-                </form>
-            </div>
+    <!-- LEFT: Profile Card + Edit -->
+    <div>
+        <div class="section-card" style="text-align: center;">
+            {% if user.picture %}
+            <img src="{{ user.picture }}" alt="Profile" class="profile-avatar">
+            {% else %}
+            <div class="profile-avatar-placeholder">&#128100;</div>
+            {% endif %}
+            <h3 style="margin: 0 0 4px; font-size: 1.05em;">{{ user.name }}</h3>
+            <p style="color: var(--c-text-3); font-size: 0.84em; margin: 0;">{{ user.email }}</p>
         </div>
 
-        <!-- RIGHT: Content -->
-        <div>
+        <div class="section-card">
+            <h2>Edit Details</h2>
+            <form action="/profile/edit" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" name="name" value="{{ user.name }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Location</label>
+                    <input type="text" name="location" value="{{ user.location }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Phone Number</label>
+                    <input type="text" name="phone_no" value="{{ user.phone_no }}" required>
+                </div>
+                <div class="form-group">
+                    <label>Payment Method</label>
+                    <select name="payment_option">
+                        <option value="Card" {% if user.payment_option=='Card' %}selected{% endif %}>Card</option>
+                        <option value="Cash On Delivery" {% if user.payment_option=='Cash On Delivery' %}selected{% endif %}>Cash On Delivery</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Profile Picture <span style="color: var(--c-text-3); font-weight: 400;">(optional)</span></label>
+                    <input type="file" name="picture" accept="image/*">
+                </div>
+                <button type="submit" class="btn btn-blue" style="width: 100%; padding: 10px;">Save Changes</button>
+            </form>
+        </div>
+    </div>
 
-            <!-- Posted Items -->
-            <div class="section-card" style="border-left:5px solid #28a745;">
-                <h2>📦 My Posted Items</h2>
-                {# items_posted is now passed directly from auth.py instead of user.items_posted ORM relationship #}
-                {% set approved_items = items_posted | selectattr("is_approved","equalto",true) | list %}
-                {% if approved_items %}
-                <table>
-                    <thead>
-                        <tr><th>Item</th><th>Description</th><th>Actions</th></tr>
-                    </thead>
-                    <tbody>
-                        {% for item in approved_items %}
-                        <tr>
-                            <td><strong>{{ item.name }}</strong></td>
-                            <td style="color:#666; font-size:0.9em;">{{ item.description }}</td>
-                            <td>
-                                <div style="display:flex; flex-direction:column; gap:6px;">
-                                    <details>
-                                        <summary style="cursor:pointer; color:#007bff; font-size:0.82em; font-weight:600; list-style:none;">✏️ Edit</summary>
-                                        <form action="/items/edit/{{ item.id }}" method="POST" enctype="multipart/form-data" style="margin-top:10px;">
-                                            <div style="margin-bottom:8px;">
-                                                <input type="text" name="name" value="{{ item.name }}" required style="margin-bottom:6px;">
-                                                <input type="text" name="description" value="{{ item.description }}" required style="margin-bottom:6px;">
-                                                <input type="number" name="price_per_day" value="{{ item.price_per_day }}" required placeholder="Price per day" style="margin-bottom:6px;">
-                                                <input type="number" name="discount" value="{{ item.discount }}" placeholder="Discount %" style="margin-bottom:6px;">
-                                                <input type="text" name="tags" value="{{ item_tags_map.get(item.id, '') }}" placeholder="Tags e.g. vintage, portable">  {# pre-filled from item_tags_map #}
-                                                <small style="color:#888; display:block; margin-top:4px;">Separate tags with commas. Saving will replace all existing tags.</small>
-                                            </div>
-                                            <button type="submit" class="btn btn-blue">Save</button>
-                                        </form>
-                                    </details>
-                                    <form action="/items/delete/{{ item.id }}" method="POST" style="margin:0;">
-                                        <button type="submit" class="btn btn-red">Delete</button>
+    <!-- RIGHT: Content -->
+    <div>
+
+        <!-- Posted Items -->
+        <div class="section-card">
+            <h2>My Posted Items</h2>
+            {% set approved_items = items_posted | selectattr("is_approved","equalto",true) | list %}
+            {% if approved_items %}
+            <table>
+                <thead>
+                    <tr><th>Item</th><th>Description</th><th>Actions</th></tr>
+                </thead>
+                <tbody>
+                    {% for item in approved_items %}
+                    <tr>
+                        <td><strong>{{ item.name }}</strong></td>
+                        <td style="color: var(--c-text-2); font-size: 0.88em;">{{ item.description }}</td>
+                        <td>
+                            <div style="display: flex; flex-direction: column; gap: 6px;">
+                                <details>
+                                    <summary style="cursor: pointer; color: var(--c-primary); font-size: 0.82em; font-weight: 600; list-style: none;">Edit</summary>
+                                    <form action="/items/edit/{{ item.id }}" method="POST" enctype="multipart/form-data" style="margin-top: 10px;">
+                                        <div style="margin-bottom: 8px;">
+                                            <input type="text" name="name" value="{{ item.name }}" required style="margin-bottom: 6px;">
+                                            <input type="text" name="description" value="{{ item.description }}" required style="margin-bottom: 6px;">
+                                            <input type="number" name="price_per_day" value="{{ item.price_per_day }}" required placeholder="Price per day" style="margin-bottom: 6px;">
+                                            <input type="number" name="discount" value="{{ item.discount }}" placeholder="Discount %" style="margin-bottom: 6px;">
+                                            <input type="text" name="tags" value="{{ item_tags_map.get(item.id, '') }}" placeholder="Tags e.g. vintage, portable">
+                                            <small style="color: var(--c-text-3); display: block; margin-top: 4px;">Separate tags with commas. Saving replaces all existing tags.</small>
+                                        </div>
+                                        <button type="submit" class="btn btn-blue">Save</button>
                                     </form>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                <p class="empty-msg">No approved items yet. <a href="/add-item" style="color:#007bff;">Post your first item!</a></p>
-                {% endif %}
-            </div>
-
-            <!-- Pending Approval -->
-            <div class="section-card" style="border-left:5px solid #fd7e14;">
-                <h2>⏳ Pending Approval</h2>
-                {# same items_posted list, just filter for pending #}
-                {% set pending_items = items_posted | selectattr("is_approved","equalto",false) | list %}
-                {% if pending_items %}
-                <table>
-                    <thead>
-                        <tr><th>Item</th><th>Description</th><th>Status</th><th>Action</th></tr>
-                    </thead>
-                    <tbody>
-                        {% for item in pending_items %}
-                        <tr>
-                            <td><strong>{{ item.name }}</strong></td>
-                            <td style="color:#666; font-size:0.9em;">{{ item.description }}</td>
-                            <td><span class="badge badge-pending">⏳ Awaiting Approval</span></td>
-                            <td>
-                                <form action="/items/delete/{{ item.id }}" method="POST" style="margin:0;">
+                                    <a href="/insurance/item/{{ item.id }}" class="btn btn-orange" style="margin-top: 6px; display: inline-block;">Manage Insurance</a>
+                                </details>
+                                <form action="/items/delete/{{ item.id }}" method="POST" style="margin: 0;">
                                     <button type="submit" class="btn btn-red">Delete</button>
                                 </form>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                <p class="empty-msg">No items pending approval.</p>
-                {% endif %}
-            </div>
-
-            <!-- Rental History -->
-            <div class="section-card" style="border-left:5px solid #007bff;">
-                <h2>📋 Rental History</h2>
-                {% if rental_history %}
-                <table>
-                    <thead>
-                        <tr><th>Item</th><th>Dates</th><th>Price</th><th>Owner</th><th>Status</th><th>Actions</th></tr>
-                    </thead>
-                    <tbody>
-                        {% for rental in rental_history %}
-                        <tr>
-                            <td><strong>{{ rental.item_name }}</strong><br><span style="color:#aaa; font-size:0.8em;">#{{ rental.item_id }}</span></td>  {# was rental.item.name #}
-                            <td style="font-size:0.85em;">{{ rental.start_date }}<br>→ {{ rental.end_date }}</td>
-                            <td>${{ rental.total_price }}</td>
-                            <td style="font-size:0.85em;">{{ rental.rentor_email }}</td>  {# was rental.rentor.email #}
-                            <td><span class="badge badge-completed">{{ rental.status }}</span></td>
-                            <td>
-                                <div style="display:flex; flex-direction:column; gap:6px;">
-                                    <a href="/reviews/booking/{{ rental.id }}" class="btn btn-green">⭐ Review</a>
-                                    <a href="/reports/create?reported_user_id={{ rental.rentor_id }}&item_id={{ rental.item_id }}" class="btn btn-orange">🚩 Report</a>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                <p class="empty-msg">No completed rentals yet.</p>
-                {% endif %}
-            </div>
-
-            <!-- Cancelled Rentals -->
-            <div class="section-card" style="border-left:5px solid #dc3545;">
-                <h2>❌ Cancelled Rentals</h2>
-                {% if cancelled_rentals %}
-                <table>
-                    <thead>
-                        <tr><th>Item</th><th>Dates</th><th>Price</th><th>Owner</th><th>Status</th><th>Action</th></tr>
-                    </thead>
-                    <tbody>
-                        {% for rental in cancelled_rentals %}
-                        <tr>
-                            <td><strong>{{ rental.item_name }}</strong><br><span style="color:#aaa; font-size:0.8em;">#{{ rental.item_id }}</span></td>  {# was rental.item.name #}
-                            <td style="font-size:0.85em;">{{ rental.start_date }}<br>→ {{ rental.end_date }}</td>
-                            <td>${{ rental.total_price }}</td>
-                            <td style="font-size:0.85em;">{{ rental.rentor_email }}</td>  {# was rental.rentor.email #}
-                            <td><span class="badge badge-cancelled">{{ rental.status }}</span></td>
-                            <td>
-                                <a href="/reports/create?reported_user_id={{ rental.rentor_id }}&item_id={{ rental.item_id }}" class="btn btn-orange">🚩 Report</a>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                <p class="empty-msg">No cancelled rentals.</p>
-                {% endif %}
-            </div>
-
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="empty-msg">No approved items yet. <a href="/add-item" style="color: var(--c-primary);">Post your first item</a></p>
+            {% endif %}
         </div>
+
+        <!-- Pending Approval -->
+        <div class="section-card">
+            <h2>Pending Approval</h2>
+            {% set pending_items = items_posted | selectattr("is_approved","equalto",false) | list %}
+            {% if pending_items %}
+            <table>
+                <thead>
+                    <tr><th>Item</th><th>Description</th><th>Status</th><th>Action</th></tr>
+                </thead>
+                <tbody>
+                    {% for item in pending_items %}
+                    <tr>
+                        <td><strong>{{ item.name }}</strong></td>
+                        <td style="color: var(--c-text-2); font-size: 0.88em;">{{ item.description }}</td>
+                        <td><span class="badge badge-pending">Awaiting Approval</span></td>
+                        <td>
+                            <form action="/items/delete/{{ item.id }}" method="POST" style="margin: 0;">
+                                <button type="submit" class="btn btn-red">Delete</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="empty-msg">No items pending approval.</p>
+            {% endif %}
+        </div>
+
+        <!-- Rental History -->
+        <div class="section-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--c-border);">
+                <h2 style="border: none; padding: 0; margin: 0;">Rental History</h2>
+                {% if rental_history %}
+                <form action="/bookings/clear-rental-history" method="post" style="margin: 0;" onsubmit="return confirm('Clear all completed rental history?')">
+                    <button type="submit" style="background: none; border: 1px solid var(--c-border); color: var(--c-text-3); padding: 4px 10px; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.78em; font-family: inherit;">Clear</button>
+                </form>
+                {% endif %}
+            </div>
+            {% if rental_history %}
+            <table>
+                <thead>
+                    <tr><th>Item</th><th>Dates</th><th>Price</th><th>Owner</th><th>Status</th><th>Actions</th></tr>
+                </thead>
+                <tbody>
+                    {% for rental in rental_history %}
+                    <tr>
+                        <td><strong>{{ rental.item_name }}</strong><br><span style="color: var(--c-text-3); font-size: 0.78em;">#{{ rental.item_id }}</span></td>
+                        <td style="font-size: 0.85em;">{{ rental.start_date }}<br>&#8594; {{ rental.end_date }}</td>
+                        <td>${{ rental.total_price }}</td>
+                        <td style="font-size: 0.85em;">{{ rental.rentor_email }}</td>
+                        <td><span class="badge badge-completed">{{ rental.status }}</span></td>
+                        <td>
+                            <div style="display: flex; flex-direction: column; gap: 6px;">
+                                <a href="/reviews/booking/{{ rental.id }}" class="btn btn-blue">Review</a>
+                                <a href="/reports/create?reported_user_id={{ rental.rentor_id }}&item_id={{ rental.item_id }}" class="btn btn-orange">Report</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="empty-msg">No completed rentals yet.</p>
+            {% endif %}
+        </div>
+
+        <!-- Cancelled Rentals -->
+        <div class="section-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1px solid var(--c-border);">
+                <h2 style="border: none; padding: 0; margin: 0;">Cancelled Rentals</h2>
+                {% if cancelled_rentals %}
+                <form action="/bookings/clear-cancelled" method="post" style="margin: 0;" onsubmit="return confirm('Clear all cancelled rentals?')">
+                    <button type="submit" style="background: none; border: 1px solid var(--c-border); color: var(--c-text-3); padding: 4px 10px; border-radius: var(--radius-sm); cursor: pointer; font-size: 0.78em; font-family: inherit;">Clear</button>
+                </form>
+                {% endif %}
+            </div>
+            {% if cancelled_rentals %}
+            <table>
+                <thead>
+                    <tr><th>Item</th><th>Dates</th><th>Price</th><th>Owner</th><th>Status</th><th>Action</th></tr>
+                </thead>
+                <tbody>
+                    {% for rental in cancelled_rentals %}
+                    <tr>
+                        <td><strong>{{ rental.item_name }}</strong><br><span style="color: var(--c-text-3); font-size: 0.78em;">#{{ rental.item_id }}</span></td>
+                        <td style="font-size: 0.85em;">{{ rental.start_date }}<br>&#8594; {{ rental.end_date }}</td>
+                        <td>${{ rental.total_price }}</td>
+                        <td style="font-size: 0.85em;">{{ rental.rentor_email }}</td>
+                        <td><span class="badge badge-cancelled">{{ rental.status }}</span></td>
+                        <td>
+                            <a href="/reports/create?reported_user_id={{ rental.rentor_id }}&item_id={{ rental.item_id }}" class="btn btn-orange">Report</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <p class="empty-msg">No cancelled rentals.</p>
+            {% endif %}
+        </div>
+
     </div>
 </div>
-
-<style>
-    @media (max-width: 768px) {
-        .container > div[style*="grid"] { display: flex !important; flex-direction: column !important; }
-    }
-</style>
+</div>
 {% endblock %}

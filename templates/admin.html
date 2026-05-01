@@ -2,320 +2,258 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Dashboard - RentDao</title>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; background-color: #f4f7f6; color: #333; }
-
-        /* Navbar */
-        .navbar { background-color: #343a40; color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; }
-        .navbar h1 { margin: 0; font-size: 1.5em; }
-        .logout-btn { color: #ff6b6b; text-decoration: none; font-weight: bold; border: 1px solid #ff6b6b; padding: 5px 15px; border-radius: 4px; }
-        .logout-btn:hover { background-color: #ff6b6b; color: white; }
-
-        /* Main Container */
-        .container { max-width: 1200px; margin: 30px auto; padding: 0 20px; }
-
-        /* Cards & Sections */
-        .section-card { background: white; padding: 25px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 30px; }
-        .section-card h2 { margin-top: 0; color: #2c3e50; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
-
-        /* Tables */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #dee2e6; vertical-align: top; }
-        th { background-color: #f8f9fa; font-weight: 600; color: #495057; }
-
-        /* Buttons */
-        .btn { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 0.85em; text-decoration: none; display: inline-block; }
-        .btn-blue { background-color: #007bff; color: white; }
-        .btn-green { background-color: #28a745; color: white; }
-        .btn-red { background-color: #dc3545; color: white; }
-        .btn-gray { background-color: #6c757d; color: white; }
-        .btn-orange { background-color: #fd7e14; color: white; }
-
-        /* Search Box */
-        .search-box { margin-bottom: 20px; display: flex; gap: 10px; align-items: center; }
-        .search-box input { padding: 8px; border: 1px solid #ccc; border-radius: 4px; width: 200px; }
-
-        /* Status Badges */
-        .badge { padding: 4px 8px; border-radius: 12px; font-size: 0.8em; font-weight: bold; }
-        .badge-active { background-color: #d4edda; color: #155724; }
-        .badge-suspended { background-color: #f8d7da; color: #721c24; }
-        .badge-pending { background-color: #fff3cd; color: #856404; }
-        .badge-reason { background-color: #e2d9f3; color: #4a235a; text-transform: capitalize; }
-
-        /* Report details cell */
-        .report-details-cell {
-            max-width: 280px;
-            color: #555;
-            font-size: 0.92em;
-            line-height: 1.5;
-            word-break: break-word;
-        }
-
-        .report-count {
-            font-size: 0.85em;
-            color: #888;
-            margin-bottom: 15px;
-        }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel — RentDao</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
-    <div class="navbar">
-        <h1>🛡️ RentDao Admin Panel</h1>
-        <a href="/admin/logout" class="logout-btn">Log Out</a>
+    <div class="admin-navbar">
+        <a href="/admin" class="admin-navbar-brand">
+            <span>A</span>
+            RentDao Admin
+        </a>
+        <a href="/admin/logout" class="admin-logout-link">Sign Out</a>
     </div>
 
+    <main>
     <div class="container">
 
-        <!-- delivery -->
-        <div class="section-card" style="border-left: 5px solid #007bff;">
-            <h2>🚚 Deliveries Awaiting Approval</h2>
+        <!-- Deliveries -->
+        <div class="section-card">
+            <h2>Deliveries Awaiting Approval</h2>
             {% if pending_deliveries %}
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Delivery ID</th>
-                            <th>Item Name</th>
-                            <th>Pickup Location</th>
-                            <th>Dropoff Location</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for delivery in pending_deliveries %}
-                            <tr>
-                                <td>#{{ delivery.id }}</td>
-                                <td>{{ delivery.item_name }}</td>
-                                <td>{{ delivery.pickup_location }}</td>
-                                <td>{{ delivery.dropoff_location }}</td>
-                                <td>
-                                    <form action="/admin/deliveries/{{ delivery.id }}/approve" method="POST" style="margin: 0;">
-                                        <button type="submit" class="btn btn-blue">Approve for Drivers</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <table>
+                <thead>
+                    <tr><th>ID</th><th>Item</th><th>Pickup</th><th>Dropoff</th><th>Action</th></tr>
+                </thead>
+                <tbody>
+                    {% for delivery in pending_deliveries %}
+                    <tr>
+                        <td>#{{ delivery.id }}</td>
+                        <td>{{ delivery.item_name }}</td>
+                        <td>{{ delivery.pickup_location }}</td>
+                        <td>{{ delivery.dropoff_location }}</td>
+                        <td>
+                            <form action="/admin/deliveries/{{ delivery.id }}/approve" method="POST" style="margin: 0;">
+                                <button type="submit" class="btn btn-blue">Approve</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
             {% else %}
-                <p style="color: gray;">All clear! There are no deliveries waiting for your approval right now.</p>
+            <p class="empty-msg">No deliveries awaiting approval.</p>
             {% endif %}
         </div>
 
-        <!-- manage users -->
+        <!-- User Management -->
         <div class="section-card">
-            <h2>👥 User Management</h2>
+            <h2>User Management</h2>
 
             <div class="search-box">
                 <form action="/admin/users/search" method="GET" style="display: flex; gap: 10px;">
-                    <input type="number" name="user_id" placeholder="Search by User ID..." required>
+                    <input type="number" name="user_id" placeholder="Search by User ID..." required style="width: 200px;">
                     <button type="submit" class="btn btn-gray">Search</button>
                 </form>
                 {% if search_id %}
-                    <a href="/admin" style="font-size: 0.9em; color: #007bff;">Clear Search</a>
+                <a href="/admin" style="font-size: 0.88em; color: var(--c-primary);">Clear</a>
                 {% endif %}
             </div>
 
             {% if search_id %}
-                <div style="background-color: #e9ecef; padding: 15px; border-radius: 4px; margin-bottom: 20px;">
-                    <h3 style="margin-top: 0; font-size: 1em;">Search Results for ID: {{ search_id }}</h3>
-                    {% if searched_user %}
-                        <p><strong>Name:</strong> {{ searched_user.name }} | <strong>Email:</strong> {{ searched_user.email }}</p>
-                        <form action="/admin/users/{{ searched_user.id }}/suspend" method="POST" style="margin: 0;">
-                            <button type="submit" class="btn btn-red" {% if searched_user.is_suspended %}disabled style="opacity: 0.5;"{% endif %}>
-                                {% if searched_user.is_suspended %}Already Suspended{% else %}Suspend User{% endif %}
-                            </button>
-                        </form>
-                    {% else %}
-                        <p style="color: red; margin: 0;">No user found with that ID.</p>
-                    {% endif %}
-                </div>
+            <div style="background: var(--c-bg-subtle); padding: 16px; border-radius: var(--radius); margin-bottom: 20px; border: 1px solid var(--c-border);">
+                <h3 style="margin-top: 0; font-size: 0.92em;">Results for ID: {{ search_id }}</h3>
+                {% if searched_user %}
+                <p style="margin-bottom: 12px; font-size: 0.9em; color: var(--c-text-2);">
+                    <strong>{{ searched_user.name }}</strong> &mdash; {{ searched_user.email }}
+                </p>
+                {% if searched_user.is_suspended %}
+                <form action="/admin/users/{{ searched_user.id }}/unsuspend" method="POST" style="margin: 0;">
+                    <button type="submit" class="btn btn-green">Unsuspend User</button>
+                </form>
+                {% else %}
+                <form action="/admin/users/{{ searched_user.id }}/suspend" method="POST" style="margin: 0;">
+                    <button type="submit" class="btn btn-red">Suspend User</button>
+                </form>
+                {% endif %}
+                {% else %}
+                <p style="color: var(--c-danger); margin: 0; font-size: 0.9em;">No user found with that ID.</p>
+                {% endif %}
+            </div>
             {% endif %}
 
             <table>
                 <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Name</th>
-                        <th>Email</th>
-                        <th>Status</th>
-                        <th>Action</th>
-                    </tr>
+                    <tr><th>ID</th><th>Name</th><th>Email</th><th>Status</th><th>Action</th></tr>
                 </thead>
                 <tbody>
                     {% for u in users %}
-                        <tr>
-                            <td>{{ u.id }}</td>
-                            <td>{{ u.name }}</td>
-                            <td>{{ u.email }}</td>
-                            <td>
-                                {% if u.is_suspended %}
-                                    <span class="badge badge-suspended">Suspended</span>
-                                {% else %}
-                                    <span class="badge badge-active">Active</span>
-                                {% endif %}
-                            </td>
-                            <td>
-                                <form action="/admin/users/{{ u.id }}/suspend" method="POST" style="margin: 0;">
-                                    <button type="submit" class="btn btn-red" {% if u.is_suspended %}disabled style="opacity: 0.5;"{% endif %}>Suspend</button>
-                                </form>
-                            </td>
-                        </tr>
+                    <tr>
+                        <td>{{ u.id }}</td>
+                        <td>{{ u.name }}</td>
+                        <td>{{ u.email }}</td>
+                        <td>
+                            {% if u.is_suspended %}
+                            <span class="badge badge-suspended">Suspended</span>
+                            {% else %}
+                            <span class="badge badge-active">Active</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if u.is_suspended %}
+                            <form action="/admin/users/{{ u.id }}/unsuspend" method="POST" style="margin: 0;">
+                                <button type="submit" class="btn btn-green">Unsuspend</button>
+                            </form>
+                            {% else %}
+                            <form action="/admin/users/{{ u.id }}/suspend" method="POST" style="margin: 0;">
+                                <button type="submit" class="btn btn-red">Suspend</button>
+                            </form>
+                            {% endif %}
+                        </td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
 
-        <!-- inactive ppl -->
-        <div class="section-card" style="border-left: 5px solid #ffc107;">
-            <h2>⚠️ Inactive Users (Never Posted an Item)</h2>
+        <!-- Inactive Users -->
+        <div class="section-card">
+            <h2>Inactive Users <span style="font-size: 0.75em; font-weight: 500; color: var(--c-text-3);">(Never Posted an Item)</span></h2>
             {% if inactive_users %}
-                <table>
-                    <thead>
-                        <tr>
-                            <th>ID</th>
-                            <th>Name</th>
-                            <th>Email</th>
-                            <th>Status</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for u in inactive_users %}
-                            <tr>
-                                <td>{{ u.id }}</td>
-                                <td>{{ u.name }}</td>
-                                <td>{{ u.email }}</td>
-                                <td>
-                                    {% if u.is_suspended %}
-                                        <span class="badge badge-suspended">Suspended</span>
-                                    {% else %}
-                                        <span class="badge badge-active">Active</span>
-                                    {% endif %}
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <table>
+                <thead>
+                    <tr><th>ID</th><th>Name</th><th>Email</th><th>Status</th></tr>
+                </thead>
+                <tbody>
+                    {% for u in inactive_users %}
+                    <tr>
+                        <td>{{ u.id }}</td>
+                        <td>{{ u.name }}</td>
+                        <td>{{ u.email }}</td>
+                        <td>
+                            {% if u.is_suspended %}
+                            <span class="badge badge-suspended">Suspended</span>
+                            {% else %}
+                            <span class="badge badge-active">Active</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
             {% else %}
-                <p style="color: gray;">All users have posted at least one item.</p>
+            <p class="empty-msg">All users have posted at least one item.</p>
             {% endif %}
         </div>
 
-        <!-- item moderation -->
+        <!-- Item Moderation -->
         <div class="section-card">
-            <h2>📦 Marketplace Item Moderation</h2>
+            <h2>Item Moderation</h2>
             <table>
                 <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Item Name</th>
-                        <th>Owner Email</th>
-                        <th>Status</th>
-                        <th>Actions</th>
-                    </tr>
+                    <tr><th>ID</th><th>Item Name</th><th>Owner</th><th>Status</th><th>Actions</th></tr>
                 </thead>
                 <tbody>
                     {% for item in items %}
-                        <tr>
-                            <td>{{ item.id }}</td>
-                            <td><strong>{{ item.name }}</strong></td>
-                            <td>{{ item.owner_email }}</td>
-                            <td>
-                                {% if item.is_approved %}
-                                    <span class="badge badge-active">Approved</span>
-                                {% else %}
-                                    <span class="badge badge-pending">Needs Approval</span>
-                                {% endif %}
-                            </td>
-                            <td style="display: flex; gap: 10px;">
-                                {% if not item.is_approved %}
-                                    <form action="/admin/items/{{ item.id }}/approve" method="POST" style="margin: 0;">
-                                        <button type="submit" class="btn btn-green">Approve</button>
-                                    </form>
-                                {% endif %}
-                                <form action="/admin/items/{{ item.id }}/remove" method="POST" style="margin: 0;">
-                                    <button type="submit" class="btn btn-red">Remove Post</button>
-                                </form>
-                            </td>
-                        </tr>
+                    <tr>
+                        <td>{{ item.id }}</td>
+                        <td><strong>{{ item.name }}</strong></td>
+                        <td>{{ item.owner_email }}</td>
+                        <td>
+                            {% if item.is_approved %}
+                            <span class="badge badge-active">Approved</span>
+                            {% else %}
+                            <span class="badge badge-pending">Needs Approval</span>
+                            {% endif %}
+                        </td>
+                        <td style="display: flex; gap: 8px;">
+                            {% if not item.is_approved %}
+                            <form action="/admin/items/{{ item.id }}/approve" method="POST" style="margin: 0;">
+                                <button type="submit" class="btn btn-green">Approve</button>
+                            </form>
+                            {% endif %}
+                            <form action="/admin/items/{{ item.id }}/remove" method="POST" style="margin: 0;">
+                                <button type="submit" class="btn btn-red">Remove</button>
+                            </form>
+                        </td>
+                    </tr>
                     {% endfor %}
                 </tbody>
             </table>
         </div>
 
-        <!-- user reports -->
-        <div class="section-card" style="border-left: 5px solid #dc3545;">
-            <h2>🚩 User Reports</h2>
+        <!-- User Reports -->
+        <div class="section-card">
+            <h2>
+                User Reports
+                {% if all_reports %}
+                <span style="font-size: 0.7em; background: var(--c-bg-subtle); color: var(--c-text-2); padding: 3px 10px; border-radius: 20px; font-weight: 600;">{{ all_reports|length }}</span>
+                {% endif %}
+            </h2>
             {% if all_reports %}
-                <p class="report-count">
-                    <strong>{{ all_reports | length }}</strong> report{{ 's' if all_reports | length != 1 else '' }} submitted across all users.
-                </p>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Report ID</th>
-                            <th>Reporter</th>
-                            <th>Reported User</th>
-                            <th>Item ID</th>
-                            <th>Reason</th>
-                            <th>Details</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for report in all_reports %}
-                            <tr>
-                                <td>#{{ report.id }}</td>
-                                <td>
-                                    <strong>{{ report.reporter_name }}</strong><br>
-                                    <span style="font-size: 0.85em; color: #888;">ID {{ report.reporter_id }}</span>
-                                </td>
-                                <td>
-                                    <strong>{{ report.reported_user_name }}</strong><br>
-                                    <span style="font-size: 0.85em; color: #888;">ID {{ report.reported_user_id }}</span>
-                                </td>
-                                <td>
-                                    {% if report.item_id %}
-                                        #{{ report.item_id }}
-                                    {% else %}
-                                        <span style="color: #ccc;">—</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <span class="badge badge-reason">{{ report.reason.replace('_', ' ') }}</span>
-                                </td>
-                                <td class="report-details-cell">
-                                    {% if report.details %}
-                                        {{ report.details }}
-                                    {% else %}
-                                        <span style="color: #ccc; font-style: italic;">No details</span>
-                                    {% endif %}
-                                </td>
-                                <td>
-                                    <!-- suspend the reported user directly from here -->
-                                    <form action="/admin/users/{{ report.reported_user_id }}/suspend" method="POST" style="margin: 0 0 6px 0;">
-                                        <button type="submit" class="btn btn-red"
-                                            {% if report.reported_user_is_suspended %}disabled style="opacity: 0.5;"{% endif %}>
-                                            {% if report.reported_user_is_suspended %}Suspended{% else %}Suspend User{% endif %}
-                                        </button>
-                                    </form>
-                                    <!-- dismiss the report once reviewed -->
-                                    <form action="/admin/reports/{{ report.id }}/dismiss" method="POST" style="margin: 0;"
-                                        onsubmit="return confirm('Dismiss this report?');">
-                                        <button type="submit" class="btn btn-orange">Dismiss</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
+            <table>
+                <thead>
+                    <tr><th>ID</th><th>Reporter</th><th>Reported</th><th>Item</th><th>Reason</th><th>Details</th><th>Action</th></tr>
+                </thead>
+                <tbody>
+                    {% for report in all_reports %}
+                    <tr>
+                        <td style="color: var(--c-text-3); font-size: 0.85em;">#{{ report.id }}</td>
+                        <td>
+                            <strong>{{ report.reporter_name }}</strong><br>
+                            <span style="font-size: 0.82em; color: var(--c-text-3);">ID {{ report.reporter_id }}</span>
+                        </td>
+                        <td>
+                            <strong>{{ report.reported_user_name }}</strong><br>
+                            <span style="font-size: 0.82em; color: var(--c-text-3);">ID {{ report.reported_user_id }}</span>
+                        </td>
+                        <td>
+                            {% if report.item_id %}
+                            #{{ report.item_id }}
+                            {% else %}
+                            <span style="color: var(--c-text-3);">—</span>
+                            {% endif %}
+                        </td>
+                        <td><span class="badge badge-reason">{{ report.reason.replace('_', ' ') }}</span></td>
+                        <td class="report-details-cell">
+                            {% if report.details %}{{ report.details }}
+                            {% else %}<em style="color: var(--c-text-3);">No details</em>{% endif %}
+                        </td>
+                        <td>
+                            {% if report.reported_user_is_suspended %}
+                            <form action="/admin/users/{{ report.reported_user_id }}/unsuspend" method="POST" style="margin: 0 0 6px 0;">
+                                <button type="submit" class="btn btn-green">Unsuspend</button>
+                            </form>
+                            {% else %}
+                            <form action="/admin/users/{{ report.reported_user_id }}/suspend" method="POST" style="margin: 0 0 6px 0;">
+                                <button type="submit" class="btn btn-red">Suspend</button>
+                            </form>
+                            {% endif %}
+                            <form action="/admin/reports/{{ report.id }}/dismiss" method="POST" style="margin: 0;"
+                                onsubmit="return confirm('Dismiss this report?');">
+                                <button type="submit" class="btn btn-gray">Dismiss</button>
+                            </form>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
             {% else %}
-                <p style="color: gray;">No reports have been submitted yet.</p>
+            <p class="empty-msg">No reports have been submitted yet.</p>
             {% endif %}
         </div>
 
     </div>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 RentDao Admin</p>
+    </footer>
 
 </body>
 </html>

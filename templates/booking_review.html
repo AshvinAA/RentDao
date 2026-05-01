@@ -1,62 +1,78 @@
 {% extends "base.html" %}
-{% block title %}My Review - RentDao{% endblock %}
+{% block title %}My Review — RentDao{% endblock %}
 {% block content %}
 <div class="container" style="max-width: 640px;">
-    <a href="/profile" class="back-link">← Back to Profile</a>
+    <a href="/profile" class="back-link">&#8592; Back to Account</a>
 
-    <div class="section-card" style="border-left: 5px solid #ffc107;">
-        <h2>⭐ My Review</h2>
-        <p style="color:#888; font-size:0.9em; margin-top:-10px; margin-bottom:18px;">
-            <strong>{{ booking.item_name }}</strong> <span style="color:#ccc;">#{{ booking.item_id }}</span>
-            — {{ booking.start_date }} to {{ booking.end_date }}
-        </p>
-
-        <table style="margin-bottom: 0;">
-            <tbody>
-                <tr>
-                    <td style="border:none; padding:8px 0; color:#495057; font-weight:600; width:100px;">Rating</td>
-                    <td style="border:none; padding:8px 0;">
-                        <span class="badge badge-approved">{{ review.rating }}/5</span>
-                        &nbsp;{% for i in range(review.rating) %}⭐{% endfor %}
-                    </td>
-                </tr>
-                <tr>
-                    <td style="border:none; padding:8px 0; color:#495057; font-weight:600;">Comment</td>
-                    <td style="border:none; padding:8px 0; color:#555;">
-                        {% if review.comment %}{{ review.comment }}{% else %}<em style="color:#aaa;">No comment left.</em>{% endif %}
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-
-    <div class="section-card" style="border-left: 5px solid #007bff;">
-        <h2>✏️ Edit This Review</h2>
-        <form action="/reviews/{{ review.review_id }}/edit" method="post">
-            <div class="form-group">
-                <label>Rating</label>
-                <select name="rating" required>
-                    <option value="5" {% if review.rating==5 %}selected{% endif %}>⭐⭐⭐⭐⭐ — Excellent</option>
-                    <option value="4" {% if review.rating==4 %}selected{% endif %}>⭐⭐⭐⭐ — Very Good</option>
-                    <option value="3" {% if review.rating==3 %}selected{% endif %}>⭐⭐⭐ — Good</option>
-                    <option value="2" {% if review.rating==2 %}selected{% endif %}>⭐⭐ — Fair</option>
-                    <option value="1" {% if review.rating==1 %}selected{% endif %}>⭐ — Poor</option>
-                </select>
+    <div class="section-card">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid var(--c-border);">
+            <div>
+                <h2 style="border: none; padding: 0; margin: 0 0 6px;">My Review</h2>
+                <p style="color: var(--c-text-3); font-size: 0.87em; margin: 0;">
+                    <strong style="color: var(--c-text-2);">{{ booking.item_name }}</strong>
+                    <span style="color: var(--c-border-strong);">#{{ booking.item_id }}</span>
+                    &mdash; {{ booking.start_date }} to {{ booking.end_date }}
+                </p>
             </div>
-            <div class="form-group">
-                <label>Comment <span style="color:#aaa; font-weight:400;">(optional)</span></label>
-                <textarea name="comment" rows="4">{{ review.comment }}</textarea>
+            <div style="display: flex; gap: 8px; flex-shrink: 0;">
+                <button type="button" class="btn btn-gray" id="editToggleBtn" onclick="toggleEdit()">Edit</button>
+                <form action="/reviews/{{ review.review_id }}/delete" method="post"
+                    onsubmit="return confirm('Delete this review? This cannot be undone.');" style="margin: 0;">
+                    <button type="submit" class="btn btn-red">Delete</button>
+                </form>
             </div>
-            <button type="submit" class="btn btn-blue">Save Changes</button>
-        </form>
-    </div>
+        </div>
 
-    <div class="section-card" style="border-left: 5px solid #dc3545;">
-        <h2>🗑️ Delete Review</h2>
-        <p style="color:#888; font-size:0.88em; margin-bottom:16px;">This action cannot be undone.</p>
-        <form action="/reviews/{{ review.review_id }}/delete" method="post" onsubmit="return confirm('Delete this review?');">
-            <button type="submit" class="btn btn-red">Delete Review</button>
-        </form>
+        <div id="reviewDisplay">
+            <div style="display: flex; gap: 0; border-bottom: 1px solid var(--c-border); padding: 10px 0;">
+                <span style="width: 100px; font-weight: 500; color: var(--c-text-2); font-size: 0.88em; flex-shrink: 0;">Rating</span>
+                <span>
+                    <span class="badge badge-approved">{{ review.rating }}/5</span>
+                    &nbsp;<span style="font-size: 0.9em; color: var(--c-text-2);">{% for i in range(review.rating) %}&#9733;{% endfor %}</span>
+                </span>
+            </div>
+            <div style="display: flex; gap: 0; padding: 10px 0;">
+                <span style="width: 100px; font-weight: 500; color: var(--c-text-2); font-size: 0.88em; flex-shrink: 0;">Comment</span>
+                <span style="color: var(--c-text-1);">
+                    {% if review.comment %}{{ review.comment }}{% else %}<em style="color: var(--c-text-3);">No comment.</em>{% endif %}
+                </span>
+            </div>
+        </div>
+
+        <div id="editPanel" style="display: none; margin-top: 20px; padding-top: 18px; border-top: 1px solid var(--c-border);">
+            <form action="/reviews/{{ review.review_id }}/edit" method="post">
+                <div class="form-group">
+                    <label>Rating</label>
+                    <select name="rating" required>
+                        <option value="5" {% if review.rating==5 %}selected{% endif %}>5 — Excellent</option>
+                        <option value="4" {% if review.rating==4 %}selected{% endif %}>4 — Very Good</option>
+                        <option value="3" {% if review.rating==3 %}selected{% endif %}>3 — Good</option>
+                        <option value="2" {% if review.rating==2 %}selected{% endif %}>2 — Fair</option>
+                        <option value="1" {% if review.rating==1 %}selected{% endif %}>1 — Poor</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Comment <span style="color: var(--c-text-3); font-weight: 400;">(optional)</span></label>
+                    <textarea name="comment" rows="4">{{ review.comment }}</textarea>
+                </div>
+                <div style="display: flex; gap: 8px;">
+                    <button type="submit" class="btn btn-blue">Save Changes</button>
+                    <button type="button" class="btn btn-gray" onclick="toggleEdit()">Cancel</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+    function toggleEdit() {
+        const panel = document.getElementById('editPanel');
+        const btn   = document.getElementById('editToggleBtn');
+        const open  = panel.style.display === 'none';
+        panel.style.display = open ? 'block' : 'none';
+        btn.textContent = open ? 'Close' : 'Edit';
+    }
+</script>
 {% endblock %}

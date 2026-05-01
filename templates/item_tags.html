@@ -1,28 +1,32 @@
 {% extends "base.html" %}
-{% block title %}Manage Tags - RentDao{% endblock %}
+{% block title %}Manage Tags — RentDao{% endblock %}
 {% block content %}
 <div class="container" style="max-width: 640px;">
-    <a href="/items/{{ item.id }}" class="back-link">← Back to Item</a>
+    <a href="/items/{{ item.id }}" class="back-link">&#8592; Back to Item</a>
 
-    <div class="section-card" style="border-left: 5px solid #007bff;">
-        <h2>🏷️ Manage Tags for: {{ item.name }}</h2>
-        <table style="margin-bottom: 0;">
-            <tbody>
-                <tr><td style="border:none; padding: 6px 0; color:#495057; font-weight:600; width:140px;">Item ID</td><td style="border:none; padding: 6px 0;">#{{ item.id }}</td></tr>
-                <tr><td style="border:none; padding: 6px 0; color:#495057; font-weight:600;">Price/Day</td><td style="border:none; padding: 6px 0;">${{ item.price_per_day }}</td></tr>
-            </tbody>
-        </table>
+    <div class="section-card">
+        <h2>{{ item.name }}</h2>
+        <div style="display: flex; gap: 24px; flex-wrap: wrap;">
+            <div>
+                <p style="font-size: 0.78em; font-weight: 600; color: var(--c-text-3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Item ID</p>
+                <p style="color: var(--c-text-2); font-size: 0.92em;">#{{ item.id }}</p>
+            </div>
+            <div>
+                <p style="font-size: 0.78em; font-weight: 600; color: var(--c-text-3); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 4px;">Price / Day</p>
+                <p style="color: var(--c-text-2); font-size: 0.92em;">${{ item.price_per_day }}</p>
+            </div>
+        </div>
     </div>
 
-    <div class="section-card" style="border-left: 5px solid #6c757d;">
+    <div class="section-card">
         <h2>Current Tags</h2>
         {% if tags %}
-        <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+        <div style="display: flex; flex-wrap: wrap; gap: 8px;">
             {% for tag in tags %}
-            <div style="display: inline-flex; align-items: center; gap: 8px; background: #343a40; color: white; padding: 6px 14px; border-radius: 12px; font-size: 0.88em;">
-                <span>{{ tag.tag }}</span>  {# was tag.tag_name — column is called tag #}
-                <form method="post" action="/items/{{ item.id }}/tags/{{ tag.id }}/remove" style="display:inline; margin:0;">
-                    <button type="submit" style="background:none; border:none; color:white; cursor:pointer; font-size:16px; line-height:1; padding:0; opacity:0.75;">×</button>
+            <div style="display: inline-flex; align-items: center; gap: 8px; background: var(--c-bg-subtle); color: var(--c-text-1); padding: 6px 12px; border-radius: 20px; font-size: 0.84em; border: 1px solid var(--c-border);">
+                <span>{{ tag.tag }}</span>
+                <form method="post" action="/items/{{ item.id }}/tags/{{ tag.id }}/remove" style="display: inline; margin: 0;">
+                    <button type="submit" style="background: none; border: none; color: var(--c-text-3); cursor: pointer; font-size: 15px; line-height: 1; padding: 0; transition: color 0.15s;" onmouseover="this.style.color='var(--c-danger)'" onmouseout="this.style.color='var(--c-text-3)'">&times;</button>
                 </form>
             </div>
             {% endfor %}
@@ -32,14 +36,14 @@
         {% endif %}
     </div>
 
-    <div class="section-card" style="border-left: 5px solid #28a745;">
-        <h2>Add a New Tag</h2>
+    <div class="section-card">
+        <h2>Add a Tag</h2>
         <form method="post" action="/items/{{ item.id }}/tags/add">
             <div class="form-group">
                 <label for="tag">Tag Name</label>
-                <input type="text" id="tag" name="tag" required placeholder="e.g. New, Vintage, Portable">  {# was name="tag_name" — TagForm expects "tag" #}
+                <input type="text" id="tag" name="tag" required placeholder="e.g. New, Vintage, Portable">
             </div>
-            <button type="submit" class="btn btn-green">Add Tag</button>
+            <button type="submit" class="btn btn-blue">Add Tag</button>
         </form>
     </div>
 </div>

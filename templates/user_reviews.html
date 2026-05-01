@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% block title %}Reviews for {{ reviewed_user.email }} - RentDao{% endblock %}
+{% block title %}Reviews for {{ reviewed_user.email }} — RentDao{% endblock %}
 {% block content %}
 <div class="container" style="max-width: 800px;">
-    <div class="section-card" style="border-left: 5px solid #ffc107;">
-        <h2>⭐ Reviews for {{ reviewed_user.email }}</h2>
+    <div class="section-card">
+        <h2>Reviews for <span style="font-weight: 500; color: var(--c-text-2);">{{ reviewed_user.email }}</span></h2>
         {% if reviews %}
         <table>
             <thead>
@@ -14,7 +14,7 @@
                 <tr>
                     <td>{{ review.reviewer_email }}</td>
                     <td><span class="badge badge-approved">{{ review.rating }}/5</span></td>
-                    <td style="color:#555;">{{ review.comment }}</td>
+                    <td style="color: var(--c-text-2);">{{ review.comment }}</td>
                 </tr>
                 {% endfor %}
             </tbody>

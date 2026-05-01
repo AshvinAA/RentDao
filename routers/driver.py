@@ -2,9 +2,10 @@ from fastapi import APIRouter, Request, Depends, Form, Cookie
 from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 from sqlalchemy.orm import Session
+from sqlalchemy import text # <--- Brought in the raw SQL engine!
 import models
 from database import get_db
-from security import get_password_hash, verify_password  # Assuming you have this from your auth setup!
+from security import get_password_hash, verify_password  
 
 router = APIRouter(prefix="/driver")
 templates = Jinja2Templates(directory="templates")
@@ -27,24 +28,32 @@ def register_driver(
     vehicle_type: str = Form(...),
     db: Session = Depends(get_db)
 ):
-    # FIXED: Changed to Delivery_drivers
-    existing_driver = db.query(models.Delivery_drivers).filter(models.Delivery_drivers.email == email).first()
+    # Checking if the driver exists
+    existing_driver = db.execute(
+        text("SELECT id FROM delivery_drivers WHERE email = :email"),
+        {"email": email}
+    ).fetchone()
 
     if existing_driver:
         return RedirectResponse(url="/driver/register?error=Email already in use", status_code=303)
+        
     hashed_pw = get_password_hash(password)
     
-    # FIXED: Changed to Delivery_drivers
-    new_driver = models.Delivery_drivers(
-        name=name,
-        email=email,
-        hashed_password=hashed_pw,
-        phone_no=phone_no,
-        license=license,
-        vehicle_type=vehicle_type,
-        is_available=True
+    #Inserting a new driver 
+    db.execute(
+        text("""
+            INSERT INTO delivery_drivers (name, email, hashed_password, phone_no, license, vehicle_type, is_available)
+            VALUES (:name, :email, :password, :phone_no, :license, :vehicle_type, 1)
+        """),
+        {
+            "name": name, 
+            "email": email, 
+            "password": hashed_pw, 
+            "phone_no": phone_no, 
+            "license": license, 
+            "vehicle_type": vehicle_type
+        }
     )
-    db.add(new_driver)
     db.commit()
 
     return RedirectResponse(url="/driver/login", status_code=303)
@@ -59,15 +68,17 @@ def login_driver(
     password: str = Form(...),
     db: Session = Depends(get_db)
 ):
-    driver = db.query(models.Delivery_drivers).filter(models.Delivery_drivers.email == email).first()
+    # RAW SQL: Fetch driver by email
+    driver = db.execute(
+        text("SELECT * FROM delivery_drivers WHERE email = :email"),
+        {"email": email}
+    ).fetchone()
 
     if not driver or not verify_password(password, driver.hashed_password):
         return RedirectResponse(url="/driver/login?error=Invalid Credentials", status_code=303)
 
     # SUCCESS! Redirect to driver dashboard
     response = RedirectResponse(url="/driver/dashboard", status_code=303)
-    
-    # Give them the DRIVER cookie, not the normal user cookie
     response.set_cookie(key="driver_email", value=driver.email, path="/")
     return response
 
@@ -81,26 +92,39 @@ def logout_driver():
 # 2. DRIVER DASHBOARD & OPERATIONS
 # ==========================================
 
-
 @router.get("/dashboard")
 def driver_dashboard(request: Request, driver_email: str = Cookie(None), db: Session = Depends(get_db)):
-    # Shield: Bounce unauthenticated drivers
     if not driver_email:
         return RedirectResponse(url="/driver/login?error=Please log in first", status_code=303)
         
-    driver = db.query(models.Delivery_drivers).filter(models.Delivery_drivers.email == driver_email).first()
+    # RAW SQL: Get current driver
+    driver = db.execute(
+        text("SELECT * FROM delivery_drivers WHERE email = :email"),
+        {"email": driver_email}
+    ).fetchone()
     
-    # Fetch jobs that Admins have approved ("pending") AND have no driver yet
-    available_jobs = db.query(models.Delivery_history).filter(
-        models.Delivery_history.delivery_status == "pending",
-        models.Delivery_history.driver_id == None
-    ).all()
+    # RAW SQL: Fetch available jobs with JOINs to get the item name
+    available_jobs = db.execute(
+        text("""
+            SELECT dh.*, i.name AS item_name 
+            FROM delivery_history dh
+            JOIN booking_details bd ON dh.booking_id = bd.id
+            JOIN items i ON bd.item_id = i.id
+            WHERE dh.delivery_status = 'pending' AND dh.driver_id IS NULL
+        """)
+    ).fetchall()
     
-    # Fetch jobs this specific driver has accepted and is currently delivering
-    my_active_jobs = db.query(models.Delivery_history).filter(
-        models.Delivery_history.driver_id == driver.id,
-        models.Delivery_history.delivery_status == "in_transit"
-    ).all()
+    # RAW SQL: Fetch active jobs for THIS driver
+    my_active_jobs = db.execute(
+        text("""
+            SELECT dh.*, i.name AS item_name 
+            FROM delivery_history dh
+            JOIN booking_details bd ON dh.booking_id = bd.id
+            JOIN items i ON bd.item_id = i.id
+            WHERE dh.driver_id = :driver_id AND dh.delivery_status = 'in_transit'
+        """),
+        {"driver_id": driver.id}
+    ).fetchall()
 
     return templates.TemplateResponse("driver_dashboard.html", {
         "request": request, 
@@ -114,16 +138,30 @@ def accept_delivery(delivery_id: int, driver_email: str = Cookie(None), db: Sess
     if not driver_email:
         return RedirectResponse(url="/driver/login", status_code=303)
 
-    driver = db.query(models.Delivery_drivers).filter(models.Delivery_drivers.email == driver_email).first()
-    delivery = db.query(models.Delivery_history).filter(models.Delivery_history.id == delivery_id).first()
+    driver = db.execute(
+        text("SELECT id FROM delivery_drivers WHERE email = :email"),
+        {"email": driver_email}
+    ).fetchone()
     
-    # Ensure the job hasn't been taken by another driver in the meantime
-    if delivery and delivery.driver_id is None and delivery.delivery_status == "pending":
-        delivery.driver_id = driver.id
-        delivery.delivery_status = "in_transit"
-        
-        # Mark driver as busy
-        driver.is_available = False 
+    if not driver:
+        return RedirectResponse(url="/driver/login", status_code=303)
+
+    # RAW SQL: Safely attempt to claim the job (prevents race conditions)
+    result = db.execute(
+        text("""
+            UPDATE delivery_history 
+            SET driver_id = :driver_id, delivery_status = 'in_transit'
+            WHERE id = :delivery_id AND driver_id IS NULL AND delivery_status = 'pending'
+        """),
+        {"driver_id": driver.id, "delivery_id": delivery_id}
+    )
+    
+    # If the update was successful, mark the driver as busy
+    if result.rowcount > 0:
+        db.execute(
+            text("UPDATE delivery_drivers SET is_available = 0 WHERE id = :driver_id"),
+            {"driver_id": driver.id}
+        )
         db.commit()
         
     return RedirectResponse(url="/driver/dashboard", status_code=303)
@@ -133,19 +171,39 @@ def complete_delivery(delivery_id: int, driver_email: str = Cookie(None), db: Se
     if not driver_email:
         return RedirectResponse(url="/driver/login", status_code=303)
 
-    driver = db.query(models.Delivery_drivers).filter(models.Delivery_drivers.email == driver_email).first()
-    delivery = db.query(models.Delivery_history).filter(models.Delivery_history.id == delivery_id).first()
+    driver = db.execute(
+        text("SELECT id FROM delivery_drivers WHERE email = :email"),
+        {"email": driver_email}
+    ).fetchone()
     
-    # Ensure this is the correct driver updating their own job
-    if delivery and delivery.driver_id == driver.id:
-        delivery.delivery_status = "delivered"
-        driver.is_available = True # Free them up for the next job
+    if not driver:
+        return RedirectResponse(url="/driver/login", status_code=303)
+
+    # RAW SQL: Find the delivery to verify ownership and get the booking_id
+    delivery = db.execute(
+        text("SELECT id, booking_id FROM delivery_history WHERE id = :delivery_id AND driver_id = :driver_id"),
+        {"delivery_id": delivery_id, "driver_id": driver.id}
+    ).fetchone()
+    
+    if delivery:
+        # 1. Update delivery status to delivered
+        db.execute(
+            text("UPDATE delivery_history SET delivery_status = 'delivered' WHERE id = :delivery_id"),
+            {"delivery_id": delivery_id}
+        )
         
-        # Automatically update the core Booking status to complete!
-        if delivery.booking:
-            delivery.booking.status = "completed"
-            delivery.booking.booking_status = True
-            
+        # 2. Free up the driver for the next job
+        db.execute(
+            text("UPDATE delivery_drivers SET is_available = 1 WHERE id = :driver_id"),
+            {"driver_id": driver.id}
+        )
+        
+        # 3. Automatically complete the core Booking
+        db.execute(
+            text("UPDATE booking_details SET status = 'completed' WHERE id = :booking_id"),
+            {"booking_id": delivery.booking_id}
+        )
+        
         db.commit()
         
     return RedirectResponse(url="/driver/dashboard", status_code=303)

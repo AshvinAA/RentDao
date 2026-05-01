@@ -1,9 +1,9 @@
 {% extends "base.html" %}
-{% block title %}Report User - RentDao{% endblock %}
+{% block title %}Report a User — RentDao{% endblock %}
 {% block content %}
-<div class="container" style="max-width: 560px;">
-    <div class="section-card" style="border-left: 5px solid #dc3545;">
-        <h2>🚩 Report a User</h2>
+<div class="container" style="max-width: 540px;">
+    <div class="section-card">
+        <h2>Report a User</h2>
         <form action="/reports/create" method="post">
             <input type="hidden" name="reported_user_id" value="{{ reported_user_id }}">
             <input type="hidden" name="item_id" value="{{ item_id }}">
@@ -18,8 +18,8 @@
                 </select>
             </div>
             <div class="form-group">
-                <label for="details">Details <span style="color:#aaa; font-weight:400;">(optional)</span></label>
-                <textarea name="details" id="details" rows="4" placeholder="Describe the issue..."></textarea>
+                <label for="details">Details <span style="color: var(--c-text-3); font-weight: 400;">(optional)</span></label>
+                <textarea name="details" id="details" rows="4" placeholder="Describe the issue in detail..."></textarea>
             </div>
             <button type="submit" class="btn btn-red" style="padding: 10px 22px;">Submit Report</button>
         </form>

@@ -186,6 +186,25 @@ def suspend(user_id: int, db: Session=Depends(get_db)):
         db.commit()
     return RedirectResponse(url="/admin", status_code=303)
 
+# unsuspend user
+@router.post("/users/{user_id}/unsuspend", dependencies=[Depends(require_admin)])
+def unsuspend(user_id: int, db: Session = Depends(get_db)):
+    # user = db.query(models.User).filter(models.User.id==user_id).first()
+    # if user:
+    #     user.is_suspended=False
+    #     db.commit()
+    user = db.execute(
+        text("SELECT id FROM users WHERE id = :uid"),
+        {"uid": user_id}
+    ).fetchone()
+    if user:
+        db.execute(
+            text("UPDATE users SET is_suspended = 0 WHERE id = :uid"),
+            {"uid": user_id}
+        )
+        db.commit()
+    return RedirectResponse(url="/admin", status_code=303)
+
 # search based on uid
 @router.get("/users/search", dependencies=[Depends(require_admin)])
 def search_user(request: Request, user_id: int, db: Session = Depends(get_db)):
@@ -234,5 +253,18 @@ def approve_delivery(delivery_id: int, db: Session = Depends(get_db)):
             {"did": delivery_id}
         )
         db.commit()
+    return RedirectResponse(url="/admin", status_code=303)
 
+# dismiss a report
+@router.post("/reports/{report_id}/dismiss", dependencies=[Depends(require_admin)])
+def dismiss_report(report_id: int, db: Session = Depends(get_db)):
+    # report = db.query(models.Report).filter(models.Report.id == report_id).first()
+    # if report:
+    #     db.delete(report)
+    #     db.commit()
+    db.execute(
+        text("DELETE FROM reports WHERE id = :rid"),
+        {"rid": report_id}
+    )
+    db.commit()
     return RedirectResponse(url="/admin", status_code=303)

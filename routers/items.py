@@ -288,7 +288,7 @@ def approve_booking(
         db.execute(
             text("""
                 INSERT INTO delivery_history (booking_id, delivery_status, pickup_location, dropoff_location, delivery_date)
-                VALUES (:booking_id, 'awaiting_admin', :pickup_location, :dropoff_location, :delivery_date)
+                VALUES (:booking_id, 'pending', :pickup_location, :dropoff_location, :delivery_date)
             """),
             {
                 "booking_id": booking_id,

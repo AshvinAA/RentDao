@@ -81,18 +81,6 @@ def adminDash(request: Request, db: Session = Depends(get_db)):
         """)
     ).fetchall()
 
-    # deliveries waiting for admin approval {REMOVE TS}
-    # pending_deliveries = db.query(models.Delivery_history).filter(models.Delivery_history.delivery_status == "awaiting_admin").all()
-    pending_deliveries = db.execute(
-        text("""
-            SELECT dh.*, i.name AS item_name
-            FROM delivery_history dh
-            JOIN booking_details bd ON dh.booking_id = bd.id
-            JOIN items i ON bd.item_id = i.id
-            WHERE dh.delivery_status = 'awaiting_admin'
-        """)
-    ).fetchall()
-
     # items": db.query(models.Item).all()
     # JOIN with users to get owner email since item.owner.email no longer works on raw rows
     items = db.execute(
@@ -123,7 +111,6 @@ def adminDash(request: Request, db: Session = Depends(get_db)):
         "items": items,
         "users": non_admin_users,
         "inactive_users": inactive_users,
-        "pending_deliveries": pending_deliveries,
         "all_reports": all_reports,
     })
 
@@ -235,25 +222,6 @@ def search_user(request: Request, user_id: int, db: Session = Depends(get_db)):
         "search_id": user_id
     })
 
-
-# approve delivery {REMOVE TS}
-@router.post("/deliveries/{delivery_id}/approve", dependencies=[Depends(require_admin)])
-def approve_delivery(delivery_id: int, db: Session = Depends(get_db)):
-    # delivery = db.query(models.Delivery_history).filter(models.Delivery_history.id == delivery_id).first()
-    # if delivery and delivery.delivery_status == "awaiting_admin":
-    #     delivery.delivery_status = "pending"
-    #     db.commit()
-    delivery = db.execute(
-        text("SELECT id, delivery_status FROM delivery_history WHERE id = :did"),
-        {"did": delivery_id}
-    ).fetchone()
-    if delivery and delivery.delivery_status == "awaiting_admin":
-        db.execute(
-            text("UPDATE delivery_history SET delivery_status = 'pending' WHERE id = :did"),
-            {"did": delivery_id}
-        )
-        db.commit()
-    return RedirectResponse(url="/admin", status_code=303)
 
 # dismiss a report
 @router.post("/reports/{report_id}/dismiss", dependencies=[Depends(require_admin)])

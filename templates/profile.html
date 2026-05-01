@@ -15,6 +15,18 @@
             {% endif %}
             <h3 style="margin: 0 0 4px; font-size: 1.05em;">{{ user.name }}</h3>
             <p style="color: var(--c-text-3); font-size: 0.84em; margin: 0;">{{ user.email }}</p>
+
+            <div style="margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--c-border); display: flex; justify-content: center; gap: 20px;">
+                <div style="text-align: center;">
+                    <span style="display: block; font-size: 1.5em; font-weight: 700; color: var(--c-text-1); letter-spacing: -0.5px;">{{ items_posted | selectattr("is_approved") | list | length }}</span>
+                    <span style="display: block; font-size: 0.72em; color: var(--c-text-3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px;">Active Listings</span>
+                </div>
+                <div style="width: 1px; background: var(--c-border);"></div>
+                <div style="text-align: center;">
+                    <span style="display: block; font-size: 1.5em; font-weight: 700; color: var(--c-text-1); letter-spacing: -0.5px;">{{ items_posted | rejectattr("is_approved") | list | length }}</span>
+                    <span style="display: block; font-size: 0.72em; color: var(--c-text-3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px;">Pending</span>
+                </div>
+            </div>
         </div>
 
         <div class="section-card">
@@ -51,22 +63,29 @@
     <!-- RIGHT: Content -->
     <div>
 
-        <!-- Posted Items -->
+        <!-- Posted Items (approved + pending merged) -->
         <div class="section-card">
             <h2>My Posted Items</h2>
-            {% set approved_items = items_posted | selectattr("is_approved","equalto",true) | list %}
-            {% if approved_items %}
+            {% if items_posted %}
             <table>
                 <thead>
-                    <tr><th>Item</th><th>Description</th><th>Actions</th></tr>
+                    <tr><th>Item</th><th>Description</th><th>Status</th><th>Actions</th></tr>
                 </thead>
                 <tbody>
-                    {% for item in approved_items %}
+                    {% for item in items_posted %}
                     <tr>
                         <td><strong>{{ item.name }}</strong></td>
                         <td style="color: var(--c-text-2); font-size: 0.88em;">{{ item.description }}</td>
                         <td>
+                            {% if item.is_approved %}
+                            <span class="badge badge-active">Active</span>
+                            {% else %}
+                            <span class="badge badge-pending">Pending</span>
+                            {% endif %}
+                        </td>
+                        <td>
                             <div style="display: flex; flex-direction: column; gap: 6px;">
+                                {% if item.is_approved %}
                                 <details>
                                     <summary style="cursor: pointer; color: var(--c-primary); font-size: 0.82em; font-weight: 600; list-style: none;">Edit</summary>
                                     <form action="/items/edit/{{ item.id }}" method="POST" enctype="multipart/form-data" style="margin-top: 10px;">
@@ -82,6 +101,7 @@
                                     </form>
                                     <a href="/insurance/item/{{ item.id }}" class="btn btn-orange" style="margin-top: 6px; display: inline-block;">Manage Insurance</a>
                                 </details>
+                                {% endif %}
                                 <form action="/items/delete/{{ item.id }}" method="POST" style="margin: 0;">
                                     <button type="submit" class="btn btn-red">Delete</button>
                                 </form>
@@ -92,36 +112,7 @@
                 </tbody>
             </table>
             {% else %}
-            <p class="empty-msg">No approved items yet. <a href="/add-item" style="color: var(--c-primary);">Post your first item</a></p>
-            {% endif %}
-        </div>
-
-        <!-- Pending Approval -->
-        <div class="section-card">
-            <h2>Pending Approval</h2>
-            {% set pending_items = items_posted | selectattr("is_approved","equalto",false) | list %}
-            {% if pending_items %}
-            <table>
-                <thead>
-                    <tr><th>Item</th><th>Description</th><th>Status</th><th>Action</th></tr>
-                </thead>
-                <tbody>
-                    {% for item in pending_items %}
-                    <tr>
-                        <td><strong>{{ item.name }}</strong></td>
-                        <td style="color: var(--c-text-2); font-size: 0.88em;">{{ item.description }}</td>
-                        <td><span class="badge badge-pending">Awaiting Approval</span></td>
-                        <td>
-                            <form action="/items/delete/{{ item.id }}" method="POST" style="margin: 0;">
-                                <button type="submit" class="btn btn-red">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            {% else %}
-            <p class="empty-msg">No items pending approval.</p>
+            <p class="empty-msg">No items posted yet. <a href="/add-item" style="color: var(--c-primary);">Post your first item</a></p>
             {% endif %}
         </div>
 

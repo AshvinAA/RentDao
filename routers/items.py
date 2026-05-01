@@ -21,7 +21,7 @@ def read_items(request: Request , db: Session = Depends(get_db), page: int =1, l
     offset = (page - 1) * limit 
     today = date.today()
 
-    # 1. Base SQL queries
+    
     count_sql = """
         SELECT COUNT(*) AS cnt FROM items
         WHERE is_approved = 1
@@ -44,7 +44,7 @@ def read_items(request: Request , db: Session = Depends(get_db), page: int =1, l
 
     params = {"today": today, "limit": limit, "offset": offset}
 
-    # 2. THE SEARCH ENGINE: Dynamically add the tag filter if a search term exists
+    # THE SEARCH ENGINE
     if search:
         search_filter = " AND (id IN (SELECT item_id FROM item_tags WHERE tag LIKE :search) OR LOWER(name) LIKE :search)"
         count_sql += search_filter
@@ -52,7 +52,7 @@ def read_items(request: Request , db: Session = Depends(get_db), page: int =1, l
         # Wraps the search term in % so it matches partial tags (e.g. "elec" finds "electronics")
         params["search"] = f"%{search.strip().lower()}%"
 
-    # Add the pagination limits to the very end of the items query
+    # Adding the pagination limits to the very end of the items query
     items_sql += " LIMIT :limit OFFSET :offset"
 
     # Execute the count query
@@ -130,16 +130,21 @@ def create_item(
         {"name": name, "description": description, "price_per_day": price_per_day, "discount": discount, "owner_id": user.id}
     )
     new_item_id = db.execute(text("SELECT LAST_INSERT_ID() AS id")).fetchone().id
-
-    # 2. Handle Tags — split comma-separated string and insert each one
+    #initial tag set to prevent errors if they submit the form with no tags — ensures the item gets created and then they can add tags from the item details page
+    final_tags = set([name.strip().lower()])
+    
     if tags and tags.strip():
         for tag in tags.split(","):
-            tag = tag.strip().lower()
-            if tag:
-                db.execute(
-                    text("INSERT INTO item_tags (item_id, tag) VALUES (:item_id, :tag)"),
-                    {"item_id": new_item_id, "tag": tag}
-                )
+            clean_tag = tag.strip().lower()
+            if clean_tag:
+                final_tags.add(clean_tag)
+                
+    # Insert all tags (the name + the custom tags) into the database
+    for tag in final_tags:
+        db.execute(
+            text("INSERT INTO item_tags (item_id, tag) VALUES (:item_id, :tag)"),
+            {"item_id": new_item_id, "tag": tag}
+        )
 
     # 3. Handle Multiple Images
     if pictures and pictures[0].filename: # Make sure they actually uploaded something

@@ -191,4 +191,3 @@ Item.insurance_records = relationship("Insurance", back_populates="item", foreig
 Booking_details.delivery_history = relationship("Delivery_history", back_populates="booking", foreign_keys="Delivery_history.booking_id")
 Booking_details.reviews = relationship("Reviews", back_populates="booking", foreign_keys="Reviews.booking_id")
 Booking_details.payment = relationship("Payment", back_populates="booking", foreign_keys="Payment.booking_id", uselist=False)
-

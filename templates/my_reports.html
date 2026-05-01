@@ -22,12 +22,12 @@
                 <tr>
                     <td style="color: var(--c-text-3); font-size: 0.84em;">#{{ report.id }}</td>
                     <td>
-                        <strong>{{ report.reported_user.name }}</strong><br>
+                        <strong>{{ report.reported_user_name }}</strong><br>
                         <span style="font-size: 0.8em; color: var(--c-text-3);">ID {{ report.reported_user_id }}</span>
                     </td>
                     <td>
                         {% if report.item_id %}
-                        {{ report.item.name }}<br>
+                        {{ report.item_name }}<br>
                         <span style="font-size: 0.8em; color: var(--c-text-3);">#{{ report.item_id }}</span>
                         {% else %}
                         <span style="color: var(--c-text-3);">—</span>

@@ -40,13 +40,19 @@ def submit_report(
         raise HTTPException(status_code=400, detail="You cannot report yourself")
 
     # reported_user = db.query(models.User).filter(models.User.id == reported_user_id).first()
-    reported_user=db.execute(text("select id from users where id=:uid"),{"uid": reported_user_id}).fetchone()
+    reported_user = db.execute(
+        text("SELECT id FROM users WHERE id = :uid"),
+        {"uid": reported_user_id}
+    ).fetchone()
     if not reported_user:
         raise HTTPException(status_code=404, detail="User not found")
 
     if item_id:
         # item = db.query(models.Item).filter(models.Item.id == item_id).first()
-        item=db.execute(text("select id from items where id=:item_id"),{"item_id":item_id}).fetchone
+        item = db.execute(
+            text("SELECT id FROM items WHERE id = :item_id"),
+            {"item_id": item_id}
+        ).fetchone()
         if not item:
             item_id = None
 
@@ -60,8 +66,8 @@ def submit_report(
     # db.add(new_report)
     db.execute(
         text("""
-            insert into reports (reporter_id, reported_user_id, item_id, reason, details)
-            values (:reporter_id, :reported_user_id, :item_id, :reason, :details)
+            INSERT INTO reports (reporter_id, reported_user_id, item_id, reason, details)
+            VALUES (:reporter_id, :reported_user_id, :item_id, :reason, :details)
         """),
         {
             "reporter_id": current_user.id,
@@ -82,11 +88,21 @@ def my_reports(
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    reports = (
-        db.query(models.Reports)
-        .filter(models.Reports.reporter_id == current_user.id)
-        .all()
-    )
+    # reports = (
+    #     db.query(models.Reports)
+    #     .filter(models.Reports.reporter_id == current_user.id)
+    #     .all()
+    # )
+    reports = db.execute(
+        text("""
+            SELECT r.*, u.name AS reported_user_name, i.name AS item_name
+            FROM reports r
+            JOIN users u ON r.reported_user_id = u.id
+            LEFT JOIN items i ON r.item_id = i.id
+            WHERE r.reporter_id = :uid
+        """),
+        {"uid": current_user.id}
+    ).fetchall()
     return templates.TemplateResponse("my_reports.html", {
         "request": request,
         "user": current_user,
@@ -102,7 +118,11 @@ def edit_report(
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    report = db.query(models.Reports).filter(models.Reports.id == report_id).first()
+    # report = db.query(models.Reports).filter(models.Reports.id == report_id).first()
+    report = db.execute(
+        text("SELECT id, reporter_id FROM reports WHERE id = :rid"),
+        {"rid": report_id}
+    ).fetchone()
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
 
@@ -110,8 +130,13 @@ def edit_report(
     if report.reporter_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    report.reason = reason
-    report.details = details
+    # report.reason = reason
+    # report.details = details
+    # db.commit()
+    db.execute(
+        text("UPDATE reports SET reason = :reason, details = :details WHERE id = :rid"),
+        {"reason": reason, "details": details, "rid": report_id}
+    )
     db.commit()
 
     return RedirectResponse(url="/reports/mine", status_code=303)
@@ -123,14 +148,23 @@ def delete_report(
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    report = db.query(models.Reports).filter(models.Reports.id == report_id).first()
+    # report = db.query(models.Reports).filter(models.Reports.id == report_id).first()
+    report = db.execute(
+        text("SELECT id, reporter_id FROM reports WHERE id = :rid"),
+        {"rid": report_id}
+    ).fetchone()
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
 
     if report.reporter_id != current_user.id:
         raise HTTPException(status_code=403, detail="Not authorized")
 
-    db.delete(report)
+    # db.delete(report)
+    # db.commit()
+    db.execute(
+        text("DELETE FROM reports WHERE id = :rid"),
+        {"rid": report_id}
+    )
     db.commit()
 
     return RedirectResponse(url="/reports/mine", status_code=303)

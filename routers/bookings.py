@@ -183,7 +183,7 @@ def approve_booking(booking_id: int, current_user: models.User = Depends(get_cur
     db.execute(
         text("""
             INSERT INTO delivery_history (booking_id, delivery_status, pickup_location, dropoff_location, delivery_date)
-            VALUES (:booking_id, 'awaiting_admin', :pickup, :dropoff, :delivery_date)
+            VALUES (:booking_id, 'pending', :pickup, :dropoff, :delivery_date)
         """),
         {
             "booking_id": booking_id,

@@ -22,35 +22,6 @@
     <main>
     <div class="container">
 
-        <!-- Deliveries -->
-        <div class="section-card">
-            <h2>Deliveries Awaiting Approval</h2>
-            {% if pending_deliveries %}
-            <table>
-                <thead>
-                    <tr><th>ID</th><th>Item</th><th>Pickup</th><th>Dropoff</th><th>Action</th></tr>
-                </thead>
-                <tbody>
-                    {% for delivery in pending_deliveries %}
-                    <tr>
-                        <td>#{{ delivery.id }}</td>
-                        <td>{{ delivery.item_name }}</td>
-                        <td>{{ delivery.pickup_location }}</td>
-                        <td>{{ delivery.dropoff_location }}</td>
-                        <td>
-                            <form action="/admin/deliveries/{{ delivery.id }}/approve" method="POST" style="margin: 0;">
-                                <button type="submit" class="btn btn-blue">Approve</button>
-                            </form>
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            {% else %}
-            <p class="empty-msg">No deliveries awaiting approval.</p>
-            {% endif %}
-        </div>
-
         <!-- User Management -->
         <div class="section-card">
             <h2>User Management</h2>

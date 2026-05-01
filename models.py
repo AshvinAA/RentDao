@@ -39,7 +39,7 @@ class User(Base):
     #Admin/Suspended Flags
     is_admin = Column(Boolean , default=False)
     is_suspended = Column(Boolean , default=False)
-    user_rating = Column(Float,index=True, default=0.0)
+    # user_rating = Column(Float,index=True, default=0.0)
     items_count = Column(Integer, index=True, default=0)
 
 

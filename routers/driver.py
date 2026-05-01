@@ -101,6 +101,11 @@ def driver_dashboard(request: Request, driver_email: str = Cookie(None), db: Ses
         text("SELECT * FROM delivery_drivers WHERE email = :email"),
         {"email": driver_email}
     ).fetchone()
+
+    if not driver:
+        response = RedirectResponse(url="/driver/login?error=Session expired or invalid. Please log in again", status_code=303)
+        response.delete_cookie("driver_email")
+        return response
     
     # Fetch available jobs with JOINs to get the item name
     available_jobs = db.execute(

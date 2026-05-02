@@ -92,36 +92,6 @@
             </table>
         </div>
 
-        <!-- Inactive Users -->
-        <div class="section-card">
-            <h2>Inactive Users <span style="font-size: 0.75em; font-weight: 500; color: var(--c-text-3);">(Never Posted an Item)</span></h2>
-            {% if inactive_users %}
-            <table>
-                <thead>
-                    <tr><th>ID</th><th>Name</th><th>Email</th><th>Status</th></tr>
-                </thead>
-                <tbody>
-                    {% for u in inactive_users %}
-                    <tr>
-                        <td>{{ u.id }}</td>
-                        <td>{{ u.name }}</td>
-                        <td>{{ u.email }}</td>
-                        <td>
-                            {% if u.is_suspended %}
-                            <span class="badge badge-suspended">Suspended</span>
-                            {% else %}
-                            <span class="badge badge-active">Active</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-            {% else %}
-            <p class="empty-msg">All users have posted at least one item.</p>
-            {% endif %}
-        </div>
-
         <!-- Item Moderation -->
         <div class="section-card">
             <h2>Item Moderation</h2>

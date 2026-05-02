@@ -70,17 +70,6 @@ def adminDash(request: Request, db: Session = Depends(get_db)):
     ).fetchall()
     non_admin_users = [u for u in all_users if u.email not in ADMIN_EMAILS]
 
-    #subquery to help find users who have never posted an item(inactive users)
-    # users_with_items = db.query(models.Item.owner_id).distinct().subquery() #users who have posted items
-    # actually showing the inactive users
-    # inactive_users = (db.query(models.User).filter(~models.User.id.in_(users_with_items)).all())
-    inactive_users = db.execute(
-        text("""
-            SELECT * FROM users
-            WHERE id NOT IN (SELECT DISTINCT owner_id FROM items)
-        """)
-    ).fetchall()
-
     # items": db.query(models.Item).all()
     # JOIN with users to get owner email since item.owner.email no longer works on raw rows
     items = db.execute(
@@ -110,7 +99,6 @@ def adminDash(request: Request, db: Session = Depends(get_db)):
         "request": request, 
         "items": items,
         "users": non_admin_users,
-        "inactive_users": inactive_users,
         "all_reports": all_reports,
     })
 

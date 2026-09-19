@@ -1,8 +1,8 @@
-# 🛒 RentDao: Peer-to-Peer Rental Marketplace
+#  RentDao: Peer-to-Peer Rental Marketplace
 
 RentDao is a full-stack, peer-to-peer rental marketplace built with FastAPI and MySQL. It empowers users to securely rent items to one another while integrating a fully automated, 3-tier logistics pipeline for delivery drivers and administrators.
 
-## 🚀 Key Features
+##  Key Features
 
 * **Three-Tier Architecture:** Dedicated portals and authorization logic for Standard Users, Delivery Drivers, and Administrators.
 * **Secure Authentication:** Cookie-based session management and password hashing via `bcrypt` for secure, role-based access control.
@@ -19,7 +19,7 @@ RentDao is a full-stack, peer-to-peer rental marketplace built with FastAPI and 
 * **Frontend:** HTML, CSS, Jinja2 Templates
 * **Security:** `bcrypt`, Python `secrets`, FastAPI Cookie/Session middleware
 
-## 📂 Project Structure
+##  Project Structure
 
 ```text
 RentDao/
@@ -41,3 +41,6 @@ RentDao/
     ├── profile.html      # User dashboard and item management
     ├── admin.html        # Admin moderation panel
     └── driver_*.html     # Driver portals
+
+
+

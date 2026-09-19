@@ -11,7 +11,7 @@ RentDao is a full-stack, peer-to-peer rental marketplace built with FastAPI and 
 * **Automated Logistics Pipeline:** An integrated Driver Dashboard where delivery personnel can view available jobs, accept deliveries, and automatically complete item bookings in real-time.
 * **Admin Moderation Panel:** A robust control center for admins to approve/delete items, suspend/unsuspend users, and dismiss user reports.
 
-## 🛠️ Tech Stack
+##  Tech Stack
 
 * **Backend:** FastAPI (Python)
 * **Database:** MySQL (hosted on TiDB Cloud)
